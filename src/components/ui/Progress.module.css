@@ -1,4 +1,4 @@
-/* Progress Component Styles */
+/* Progress Component Styles - Premium Design */
 
 .container {
   width: 100%;
@@ -25,7 +25,7 @@
 
 .track {
   width: 100%;
-  background-color: var(--bg-surface);
+  background-color: var(--bg-secondary);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -48,19 +48,19 @@
 }
 
 .bar.default {
-  background-color: var(--accent-orange);
+  background-color: var(--accent-primary);
 }
 
 .bar.success {
-  background-color: var(--accent-green);
+  background-color: var(--state-success);
 }
 
 .bar.warning {
-  background-color: var(--accent-yellow);
+  background-color: var(--state-warning);
 }
 
 .bar.error {
-  background-color: var(--accent-red);
+  background-color: var(--state-error);
 }
 
 /* Circular Progress */
@@ -73,7 +73,7 @@
 
 .circleTrack {
   fill: none;
-  stroke: var(--bg-surface);
+  stroke: var(--bg-secondary);
 }
 
 .circleBar {
@@ -82,19 +82,19 @@
 }
 
 .circleBar.default {
-  stroke: var(--accent-orange);
+  stroke: var(--accent-primary);
 }
 
 .circleBar.success {
-  stroke: var(--accent-green);
+  stroke: var(--state-success);
 }
 
 .circleBar.warning {
-  stroke: var(--accent-yellow);
+  stroke: var(--state-warning);
 }
 
 .circleBar.error {
-  stroke: var(--accent-red);
+  stroke: var(--state-error);
 }
 
 .circularLabel {

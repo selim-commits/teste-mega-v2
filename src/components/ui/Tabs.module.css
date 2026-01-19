@@ -1,4 +1,4 @@
-/* Tabs Component Styles */
+/* Tabs Component Styles - Premium Design */
 
 .tabs {
   display: flex;
@@ -14,8 +14,8 @@
 }
 
 .list-default {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   padding: var(--space-1);
 }
@@ -25,7 +25,7 @@
 }
 
 .list-underline {
-  gap: var(--space-4);
+  gap: var(--space-6);
   border-bottom: 1px solid var(--border-default);
   padding-bottom: 0;
 }
@@ -67,19 +67,20 @@
 }
 
 .trigger-pills {
-  background-color: var(--bg-surface);
+  background-color: transparent;
   border: 1px solid var(--border-default);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-md);
 }
 
 .trigger-pills:hover:not(.disabled) {
   border-color: var(--border-strong);
+  background-color: var(--bg-secondary);
 }
 
 .trigger-pills.active {
-  background-color: var(--color-white);
-  color: var(--color-black);
-  border-color: var(--color-white);
+  background-color: var(--accent-primary);
+  color: var(--color-white);
+  border-color: var(--accent-primary);
 }
 
 .trigger-underline {
@@ -131,8 +132,9 @@
 .indicator {
   position: absolute;
   inset: 0;
-  background-color: var(--bg-elevated);
+  background-color: var(--bg-primary);
   border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
   z-index: -1;
 }
 
@@ -143,7 +145,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background-color: var(--accent-orange);
+  background-color: var(--accent-primary);
   border-radius: var(--radius-full);
 }
 

@@ -1,4 +1,4 @@
-/* Button Component Styles */
+/* Button Component Styles - Premium Design */
 
 .button {
   display: inline-flex;
@@ -7,9 +7,8 @@
   gap: var(--space-2);
   font-family: var(--font-sans);
   font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  border: none;
+  letter-spacing: var(--tracking-normal);
+  border: 1px solid transparent;
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-default);
   white-space: nowrap;
@@ -30,66 +29,73 @@
 }
 
 .md {
-  height: 44px;
-  padding: 0 var(--space-5);
+  height: 40px;
+  padding: 0 var(--space-4);
   font-size: var(--text-sm);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
 }
 
 .lg {
-  height: 52px;
-  padding: 0 var(--space-8);
+  height: 48px;
+  padding: 0 var(--space-6);
   font-size: var(--text-base);
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
 }
 
 /* Variants */
 .primary {
-  background-color: var(--color-white);
-  color: var(--color-black);
+  background-color: var(--accent-primary);
+  color: var(--color-white);
+  border-color: var(--accent-primary);
 }
 
 .primary:hover:not(:disabled) {
-  background-color: var(--gray-100);
+  background-color: var(--accent-primary-hover);
+  border-color: var(--accent-primary-hover);
 }
 
 .secondary {
-  background-color: var(--bg-surface);
+  background-color: transparent;
   color: var(--text-primary);
-  border: 1px solid var(--border-default);
+  border-color: var(--border-default);
 }
 
 .secondary:hover:not(:disabled) {
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-secondary);
   border-color: var(--border-strong);
 }
 
 .ghost {
   background-color: transparent;
   color: var(--text-secondary);
+  border-color: transparent;
 }
 
 .ghost:hover:not(:disabled) {
-  background-color: var(--bg-surface);
+  background-color: var(--bg-secondary);
   color: var(--text-primary);
 }
 
 .danger {
-  background-color: var(--accent-red);
+  background-color: var(--state-error);
   color: var(--color-white);
+  border-color: var(--state-error);
 }
 
 .danger:hover:not(:disabled) {
-  background-color: #c62828;
+  background-color: #dc2626;
+  border-color: #dc2626;
 }
 
 .success {
-  background-color: var(--accent-green);
+  background-color: var(--state-success);
   color: var(--color-white);
+  border-color: var(--state-success);
 }
 
 .success:hover:not(:disabled) {
-  background-color: #00963a;
+  background-color: #16a34a;
+  border-color: #16a34a;
 }
 
 /* States */
@@ -140,13 +146,16 @@
 }
 
 .spinnerIcon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   color: currentColor;
-  animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.primary .spinnerIcon {
+  color: var(--color-white);
+}
+
+.secondary .spinnerIcon,
+.ghost .spinnerIcon {
+  color: var(--text-primary);
 }

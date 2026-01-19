@@ -1,19 +1,20 @@
-/* Card Component Styles */
+/* Card Component Styles - Premium Design */
 
 .card {
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   transition: all var(--duration-base) var(--ease-default);
 }
 
 /* Variants */
 .default {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-default);
 }
 
 .elevated {
   background-color: var(--bg-elevated);
-  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border-default);
+  box-shadow: var(--shadow-md);
 }
 
 .outlined {
@@ -22,9 +23,7 @@
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background-color: var(--bg-secondary);
   border: 1px solid var(--border-default);
 }
 
@@ -52,7 +51,7 @@
 
 .hoverable:hover {
   border-color: var(--border-strong);
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-secondary);
 }
 
 /* Header */
@@ -70,6 +69,7 @@
 }
 
 .title {
+  font-family: var(--font-sans);
   font-size: var(--text-lg);
   font-weight: 600;
   color: var(--text-primary);

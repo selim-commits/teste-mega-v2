@@ -1,13 +1,14 @@
-/* Badge Component Styles */
+/* Badge Component Styles - Premium Design */
 
 .badge {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
+  font-family: var(--font-sans);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-sm);
   white-space: nowrap;
 }
 
@@ -26,34 +27,34 @@
 
 /* Variants */
 .default {
-  background-color: var(--bg-surface);
+  background-color: var(--bg-secondary);
   color: var(--text-secondary);
   border: 1px solid var(--border-default);
 }
 
 .success {
-  background-color: rgba(0, 184, 61, 0.15);
-  color: var(--accent-green);
+  background-color: var(--state-success-bg);
+  color: var(--state-success);
 }
 
 .warning {
-  background-color: rgba(255, 184, 0, 0.15);
-  color: var(--accent-yellow);
+  background-color: var(--state-warning-bg);
+  color: var(--state-warning);
 }
 
 .error {
-  background-color: rgba(229, 57, 53, 0.15);
-  color: var(--accent-red);
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
 }
 
 .info {
-  background-color: rgba(24, 144, 204, 0.15);
-  color: var(--accent-blue);
+  background-color: var(--state-info-bg);
+  color: var(--state-info);
 }
 
 .orange {
-  background-color: rgba(255, 68, 0, 0.15);
-  color: var(--accent-orange);
+  background-color: var(--accent-primary-light);
+  color: var(--accent-primary);
 }
 
 /* Dot */

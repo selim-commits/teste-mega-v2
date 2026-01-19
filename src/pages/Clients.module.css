@@ -1,20 +1,20 @@
-/* Client 360 CRM Page Styles */
+/* Client 360 CRM Page Styles - Premium Design */
 
 .page {
   min-height: 100vh;
-  background-color: var(--bg-primary);
+  background-color: var(--bg-secondary);
 }
 
 .content {
-  padding: var(--space-6);
+  padding: var(--content-padding);
 }
 
 /* Stats Grid */
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
+  gap: var(--card-gap);
+  margin-bottom: var(--section-gap);
 }
 
 @media (max-width: 1200px) {
@@ -44,6 +44,8 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background-color: var(--accent-primary-light);
+  color: var(--accent-primary);
 }
 
 .statInfo {
@@ -53,8 +55,10 @@
 }
 
 .statValue {
+  font-family: var(--font-display);
   font-size: var(--text-2xl);
-  font-weight: 600;
+  font-weight: 400;
+  font-style: italic;
   color: var(--text-primary);
   letter-spacing: var(--tracking-tight);
 }
@@ -67,7 +71,7 @@
 .statChange {
   font-size: var(--text-sm);
   font-weight: 500;
-  color: var(--accent-green);
+  color: var(--state-success);
 }
 
 /* Toolbar */
@@ -99,9 +103,9 @@
   width: 100%;
   height: 40px;
   padding: 0 var(--space-4) 0 var(--space-10);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
+  background-color: var(--bg-primary);
+  border: none;
+  border-bottom: 1px solid var(--border-default);
   font-size: var(--text-sm);
   color: var(--text-primary);
   transition: all var(--duration-fast) var(--ease-default);
@@ -113,8 +117,7 @@
 
 .searchInput:focus {
   outline: none;
-  border-color: var(--accent-orange);
-  box-shadow: 0 0 0 3px rgba(255, 68, 0, 0.1);
+  border-bottom-color: var(--accent-primary);
 }
 
 .toolbarActions {
@@ -125,7 +128,7 @@
 
 .viewToggle {
   display: flex;
-  background-color: var(--bg-surface);
+  background-color: var(--bg-primary);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -145,20 +148,20 @@
 }
 
 .viewBtn:hover {
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
 }
 
 .viewBtn.active {
-  background-color: var(--bg-surface-hover);
-  color: var(--accent-orange);
+  background-color: var(--bg-hover);
+  color: var(--accent-primary);
 }
 
 /* Filters */
 .filters {
   display: flex;
   gap: var(--space-2);
-  margin-bottom: var(--space-6);
+  margin-bottom: var(--section-gap);
   overflow-x: auto;
   padding-bottom: var(--space-2);
 }
@@ -168,7 +171,7 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  background-color: var(--bg-surface);
+  background-color: var(--bg-primary);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
@@ -180,13 +183,13 @@
 }
 
 .filterBtn:hover {
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
 }
 
 .filterBtn.active {
-  background-color: var(--color-black);
-  border-color: var(--color-black);
+  background-color: var(--accent-primary);
+  border-color: var(--accent-primary);
   color: var(--color-white);
 }
 
@@ -211,7 +214,7 @@
 .clientsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: var(--space-4);
+  gap: var(--card-gap);
 }
 
 .clientsList {
@@ -231,15 +234,15 @@
   align-items: flex-start;
   justify-content: space-between;
   padding: var(--space-4);
-  background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-primary) 100%);
-  border-bottom: 1px solid var(--border-subtle);
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%);
+  border-bottom: 1px solid var(--border-light);
 }
 
 .clientAvatar {
   width: 56px;
   height: 56px;
   border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--accent-orange) 0%, #ff6b35 100%);
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-primary-hover) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -263,7 +266,7 @@
 }
 
 .clientMenu:hover {
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-hover);
   color: var(--text-secondary);
 }
 
@@ -281,8 +284,10 @@
 }
 
 .clientName {
+  font-family: var(--font-display);
   font-size: var(--text-lg);
-  font-weight: 600;
+  font-weight: 400;
+  font-style: italic;
   color: var(--text-primary);
   margin: 0;
 }
@@ -317,7 +322,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-3);
   padding-top: var(--space-4);
-  border-top: 1px solid var(--border-subtle);
+  border-top: 1px solid var(--border-light);
 }
 
 .clientStat {
@@ -333,8 +338,10 @@
 }
 
 .clientStatValue {
+  font-family: var(--font-display);
   font-size: var(--text-base);
-  font-weight: 600;
+  font-weight: 400;
+  font-style: italic;
   color: var(--text-primary);
 }
 
@@ -348,8 +355,8 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  background-color: var(--bg-surface);
-  border-top: 1px solid var(--border-subtle);
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-light);
 }
 
 .lastVisit {
@@ -374,7 +381,7 @@
 
 /* Filters Panel */
 .filtersPanel {
-  background-color: var(--bg-surface);
+  background-color: var(--bg-secondary);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
@@ -404,7 +411,7 @@
   width: 40px;
   height: 40px;
   border: 3px solid var(--border-default);
-  border-top-color: var(--accent-orange);
+  border-top-color: var(--accent-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -442,8 +449,10 @@
 }
 
 .emptyState h3 {
-  font-size: var(--text-lg);
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 400;
+  font-style: italic;
   color: var(--text-primary);
   margin: 0;
 }
@@ -483,9 +492,9 @@
 .textarea {
   width: 100%;
   padding: var(--space-3);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-md);
+  background-color: var(--bg-primary);
+  border: none;
+  border-bottom: 1px solid var(--border-default);
   font-size: var(--text-sm);
   color: var(--text-primary);
   resize: vertical;
@@ -500,7 +509,7 @@
 
 .textarea:focus {
   outline: none;
-  border-color: var(--border-strong);
+  border-bottom-color: var(--accent-primary);
 }
 
 /* Tags Section */
@@ -523,7 +532,7 @@
 
 .commonTag {
   padding: var(--space-1) var(--space-3);
-  background-color: var(--bg-surface);
+  background-color: var(--bg-secondary);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
@@ -533,13 +542,13 @@
 }
 
 .commonTag:hover {
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
 }
 
 .commonTag.active {
-  background-color: var(--accent-blue);
-  border-color: var(--accent-blue);
+  background-color: var(--state-info);
+  border-color: var(--state-info);
   color: var(--color-white);
 }
 
@@ -571,13 +580,13 @@
 
 /* Delete Button */
 .deleteBtn {
-  background-color: var(--accent-red) !important;
-  border-color: var(--accent-red) !important;
+  background-color: var(--state-error) !important;
+  border-color: var(--state-error) !important;
   color: var(--color-white) !important;
 }
 
 .deleteBtn:hover {
-  background-color: var(--accent-red-dark, #d32f2f) !important;
+  background-color: #d32f2f !important;
 }
 
 /* Table Styles */
@@ -605,7 +614,7 @@
 }
 
 .scoreCell svg {
-  color: var(--accent-orange);
+  color: var(--accent-primary);
 }
 
 .tagsCell {
@@ -643,7 +652,7 @@
 .sidebarHeader {
   padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--border-default);
-  background-color: var(--bg-surface);
+  background-color: var(--bg-secondary);
 }
 
 .sidebarTitle {
@@ -653,8 +662,10 @@
 }
 
 .sidebarTitle h2 {
-  font-size: var(--text-lg);
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 400;
+  font-style: italic;
   color: var(--text-primary);
   margin: 0;
 }
@@ -674,7 +685,7 @@
 }
 
 .sidebarTitle button:hover {
-  background-color: var(--bg-surface-hover);
+  background-color: var(--bg-hover);
   color: var(--text-primary);
 }
 
@@ -687,7 +698,7 @@
 .sidebarFooter {
   padding: var(--space-4) var(--space-6);
   border-top: 1px solid var(--border-default);
-  background-color: var(--bg-surface);
+  background-color: var(--bg-secondary);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
@@ -700,7 +711,7 @@
   align-items: center;
   text-align: center;
   padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-light);
   margin-bottom: var(--space-6);
 }
 
@@ -718,8 +729,10 @@
 }
 
 .clientProfile h3 {
+  font-family: var(--font-display);
   font-size: var(--text-xl);
-  font-weight: 600;
+  font-weight: 400;
+  font-style: italic;
   color: var(--text-primary);
   margin: 0 0 var(--space-1) 0;
 }
@@ -742,11 +755,12 @@
 }
 
 .sidebarSection h4 {
-  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
   font-weight: 600;
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: var(--tracking-wider);
   margin: 0 0 var(--space-3) 0;
 }
 
@@ -769,13 +783,12 @@
 }
 
 .contactRow a {
-  color: var(--accent-blue);
+  color: var(--state-info);
   text-decoration: none;
   transition: color var(--duration-fast);
 }
 
 .contactRow a:hover {
-  color: var(--accent-blue-dark, #1976d2);
   text-decoration: underline;
 }
 
@@ -790,12 +803,12 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3);
-  background-color: var(--bg-surface);
+  background-color: var(--bg-secondary);
   border-radius: var(--radius-md);
 }
 
 .statItem svg {
-  color: var(--accent-orange);
+  color: var(--accent-primary);
 }
 
 .statItem > div {
@@ -804,8 +817,10 @@
 }
 
 .statItem .statValue {
+  font-family: var(--font-display);
   font-size: var(--text-lg);
-  font-weight: 600;
+  font-weight: 400;
+  font-style: italic;
   color: var(--text-primary);
 }
 

@@ -1,4 +1,4 @@
-/* Toast Component Styles */
+/* Toast Component Styles - Premium Design */
 
 .container {
   position: fixed;
@@ -54,7 +54,7 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-4);
-  background-color: var(--bg-elevated);
+  background-color: var(--bg-primary);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-lg);
@@ -63,39 +63,39 @@
 
 /* Variants */
 .default {
-  border-left: 3px solid var(--gray-500);
+  border-left: 3px solid var(--text-tertiary);
 }
 
 .success {
-  border-left: 3px solid var(--accent-green);
+  border-left: 3px solid var(--state-success);
 }
 
 .success .icon {
-  color: var(--accent-green);
+  color: var(--state-success);
 }
 
 .warning {
-  border-left: 3px solid var(--accent-yellow);
+  border-left: 3px solid var(--state-warning);
 }
 
 .warning .icon {
-  color: var(--accent-yellow);
+  color: var(--state-warning);
 }
 
 .error {
-  border-left: 3px solid var(--accent-red);
+  border-left: 3px solid var(--state-error);
 }
 
 .error .icon {
-  color: var(--accent-red);
+  color: var(--state-error);
 }
 
 .info {
-  border-left: 3px solid var(--accent-blue);
+  border-left: 3px solid var(--state-info);
 }
 
 .info .icon {
-  color: var(--accent-blue);
+  color: var(--state-info);
 }
 
 /* Icon */
@@ -139,16 +139,16 @@
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
-  color: var(--accent-orange);
+  color: var(--accent-primary);
   background: transparent;
-  border: 1px solid var(--accent-orange);
+  border: 1px solid var(--accent-primary);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--duration-fast) var(--ease-default);
 }
 
 .action:hover {
-  background-color: var(--accent-orange);
+  background-color: var(--accent-primary);
   color: var(--color-white);
 }
 
