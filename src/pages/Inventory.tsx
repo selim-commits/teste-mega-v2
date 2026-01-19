@@ -19,6 +19,11 @@ import {
   QrCode,
   Wrench,
   Archive,
+  DollarSign,
+  Boxes,
+  Mic,
+  Speaker,
+  Music,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -44,8 +49,8 @@ import { useEquipmentStore, selectFilteredEquipment } from '../stores/equipmentS
 import type { Equipment, EquipmentInsert, EquipmentStatus } from '../types/database';
 import styles from './Inventory.module.css';
 
-// TODO: Replace with actual studioId from user context/store
-const DEMO_STUDIO_ID = 'demo-studio-id';
+// Studio ID for Rooom OS
+const STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 interface EquipmentFormData {
   name: string;
@@ -58,6 +63,9 @@ interface EquipmentFormData {
   condition: number;
   purchase_date: string;
   purchase_price: string;
+  current_value: string;
+  hourly_rate: string;
+  daily_rate: string;
   location: string;
   image_url: string;
 }
@@ -73,6 +81,9 @@ const defaultFormData: EquipmentFormData = {
   condition: 10,
   purchase_date: '',
   purchase_price: '',
+  current_value: '',
+  hourly_rate: '',
+  daily_rate: '',
   location: '',
   image_url: '',
 };
@@ -120,8 +131,8 @@ export function Inventory() {
   const filteredEquipment = useEquipmentStore(selectFilteredEquipment);
 
   // API hooks
-  const { data: equipment, isLoading, refetch } = useEquipment({ studioId: DEMO_STUDIO_ID });
-  const { data: categoriesData } = useEquipmentCategories(DEMO_STUDIO_ID);
+  const { data: equipment, isLoading, refetch } = useEquipment({ studioId: STUDIO_ID });
+  const { data: categoriesData } = useEquipmentCategories(STUDIO_ID);
 
   const createMutation = useCreateEquipment();
   const updateMutation = useUpdateEquipment();
@@ -159,8 +170,11 @@ export function Inventory() {
 
   // Stats
   const stats = useMemo(() => {
-    if (!equipment) return { available: 0, inUse: 0, maintenance: 0, retired: 0 };
+    if (!equipment) return { total: 0, totalValue: 0, available: 0, inUse: 0, maintenance: 0, retired: 0 };
+    const totalValue = equipment.reduce((sum, e) => sum + (e.current_value || e.purchase_price || 0), 0);
     return {
+      total: equipment.length,
+      totalValue,
       available: equipment.filter((e) => e.status === 'available').length,
       inUse: equipment.filter((e) => e.status === 'in_use' || e.status === 'reserved').length,
       maintenance: equipment.filter((e) => e.status === 'maintenance').length,
@@ -212,7 +226,7 @@ export function Inventory() {
     if (!validateForm()) return;
 
     const newEquipment: Omit<EquipmentInsert, 'id' | 'created_at' | 'updated_at'> = {
-      studio_id: DEMO_STUDIO_ID,
+      studio_id: STUDIO_ID,
       name: formData.name,
       description: formData.description || null,
       category: formData.category,
@@ -223,6 +237,9 @@ export function Inventory() {
       condition: formData.condition,
       purchase_date: formData.purchase_date || null,
       purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
+      current_value: formData.current_value ? parseFloat(formData.current_value) : null,
+      hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+      daily_rate: formData.daily_rate ? parseFloat(formData.daily_rate) : null,
       location: formData.location || null,
       image_url: formData.image_url || null,
       qr_code: `EQ-${Date.now()}-${Math.random().toString(36).substring(7)}`,
@@ -255,6 +272,9 @@ export function Inventory() {
           condition: formData.condition,
           purchase_date: formData.purchase_date || null,
           purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
+          current_value: formData.current_value ? parseFloat(formData.current_value) : null,
+          hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
+          daily_rate: formData.daily_rate ? parseFloat(formData.daily_rate) : null,
           location: formData.location || null,
           image_url: formData.image_url || null,
         },
@@ -332,6 +352,9 @@ export function Inventory() {
       condition: item.condition,
       purchase_date: item.purchase_date || '',
       purchase_price: item.purchase_price?.toString() || '',
+      current_value: item.current_value?.toString() || '',
+      hourly_rate: item.hourly_rate?.toString() || '',
+      daily_rate: item.daily_rate?.toString() || '',
       location: item.location || '',
       image_url: item.image_url || '',
     });
@@ -464,6 +487,17 @@ export function Inventory() {
       render: (item: Equipment) => item.location || '-',
     },
     {
+      key: 'pricing',
+      header: 'Tarifs',
+      render: (item: Equipment) => (
+        <div className={styles.pricingCell}>
+          {item.hourly_rate && <span className={styles.priceTag}>{item.hourly_rate}$/h</span>}
+          {item.daily_rate && <span className={styles.priceTag}>{item.daily_rate}$/j</span>}
+          {!item.hourly_rate && !item.daily_rate && <span className={styles.noPrice}>-</span>}
+        </div>
+      ),
+    },
+    {
       key: 'actions',
       header: '',
       width: '80px',
@@ -522,6 +556,24 @@ export function Inventory() {
         {/* Stats Overview */}
         <div className={styles.statsGrid}>
           <Card padding="md" className={styles.statCard}>
+            <div className={styles.statIcon} style={{ backgroundColor: 'rgba(156, 39, 176, 0.15)' }}>
+              <Boxes size={20} color="#9c27b0" />
+            </div>
+            <div className={styles.statInfo}>
+              <span className={styles.statValue}>{stats.total}</span>
+              <span className={styles.statLabel}>Total equipements</span>
+            </div>
+          </Card>
+          <Card padding="md" className={styles.statCard}>
+            <div className={styles.statIcon} style={{ backgroundColor: 'rgba(76, 175, 80, 0.15)' }}>
+              <DollarSign size={20} color="#4caf50" />
+            </div>
+            <div className={styles.statInfo}>
+              <span className={styles.statValue}>{stats.totalValue.toLocaleString('fr-FR')} $</span>
+              <span className={styles.statLabel}>Valeur du parc</span>
+            </div>
+          </Card>
+          <Card padding="md" className={styles.statCard}>
             <div className={styles.statIcon} style={{ backgroundColor: 'rgba(0, 184, 61, 0.15)' }}>
               <CheckCircle size={20} color="var(--accent-green)" />
             </div>
@@ -531,30 +583,12 @@ export function Inventory() {
             </div>
           </Card>
           <Card padding="md" className={styles.statCard}>
-            <div className={styles.statIcon} style={{ backgroundColor: 'rgba(24, 144, 204, 0.15)' }}>
-              <Clock size={20} color="var(--accent-blue)" />
-            </div>
-            <div className={styles.statInfo}>
-              <span className={styles.statValue}>{stats.inUse}</span>
-              <span className={styles.statLabel}>En utilisation</span>
-            </div>
-          </Card>
-          <Card padding="md" className={styles.statCard}>
             <div className={styles.statIcon} style={{ backgroundColor: 'rgba(255, 184, 0, 0.15)' }}>
               <AlertTriangle size={20} color="var(--accent-yellow)" />
             </div>
             <div className={styles.statInfo}>
               <span className={styles.statValue}>{stats.maintenance}</span>
-              <span className={styles.statLabel}>Maintenance</span>
-            </div>
-          </Card>
-          <Card padding="md" className={styles.statCard}>
-            <div className={styles.statIcon} style={{ backgroundColor: 'rgba(229, 57, 53, 0.15)' }}>
-              <Package size={20} color="var(--accent-red)" />
-            </div>
-            <div className={styles.statInfo}>
-              <span className={styles.statValue}>{stats.retired}</span>
-              <span className={styles.statLabel}>Retir\u00e9s</span>
+              <span className={styles.statLabel}>En maintenance</span>
             </div>
           </Card>
         </div>
@@ -755,7 +789,7 @@ export function Inventory() {
                           </DropdownItem>
                         </Dropdown>
                       </div>
-                      <p className={styles.itemCategory}>{item.category}</p>
+                      <span className={styles.categoryBadge}>{item.category}</span>
                       {item.brand && item.model && (
                         <p className={styles.itemBrand}>{item.brand} {item.model}</p>
                       )}
@@ -763,8 +797,24 @@ export function Inventory() {
                         <span className={styles.itemLocation}>{item.location || '-'}</span>
                         {getStatusBadge(item.status)}
                       </div>
+                      {(item.hourly_rate || item.daily_rate) && (
+                        <div className={styles.itemPricing}>
+                          {item.hourly_rate && (
+                            <span className={styles.priceTag}>
+                              <Clock size={12} />
+                              {item.hourly_rate}$/h
+                            </span>
+                          )}
+                          {item.daily_rate && (
+                            <span className={styles.priceTag}>
+                              <DollarSign size={12} />
+                              {item.daily_rate}$/j
+                            </span>
+                          )}
+                        </div>
+                      )}
                       <div className={styles.itemCondition}>
-                        <span className={styles.conditionLabel}>\u00c9tat</span>
+                        <span className={styles.conditionLabel}>Etat</span>
                         <div className={styles.conditionBar}>
                           <div
                             className={styles.conditionFill}
@@ -858,12 +908,38 @@ export function Inventory() {
               fullWidth
             />
             <Input
-              label="Prix d'achat"
+              label="Prix d'achat ($)"
               type="number"
               value={formData.purchase_price}
               onChange={(e) => handleFormChange('purchase_price', e.target.value)}
+              placeholder="0.00"
               fullWidth
             />
+            <Input
+              label="Valeur actuelle ($)"
+              type="number"
+              value={formData.current_value}
+              onChange={(e) => handleFormChange('current_value', e.target.value)}
+              placeholder="0.00"
+              fullWidth
+            />
+            <Input
+              label="Tarif horaire ($)"
+              type="number"
+              value={formData.hourly_rate}
+              onChange={(e) => handleFormChange('hourly_rate', e.target.value)}
+              placeholder="0.00"
+              fullWidth
+            />
+            <Input
+              label="Tarif journalier ($)"
+              type="number"
+              value={formData.daily_rate}
+              onChange={(e) => handleFormChange('daily_rate', e.target.value)}
+              placeholder="0.00"
+              fullWidth
+            />
+            <div />
             <div className={styles.fullWidth}>
               <Input
                 label="Description"
@@ -877,6 +953,7 @@ export function Inventory() {
                 label="URL de l'image"
                 value={formData.image_url}
                 onChange={(e) => handleFormChange('image_url', e.target.value)}
+                placeholder="https://exemple.com/image.jpg"
                 fullWidth
               />
             </div>
@@ -891,7 +968,7 @@ export function Inventory() {
             onClick={handleCreate}
             disabled={createMutation.isPending}
           >
-            {createMutation.isPending ? 'Cr\u00e9ation...' : 'Cr\u00e9er'}
+            {createMutation.isPending ? 'Creation...' : 'Creer'}
           </Button>
         </ModalFooter>
       </Modal>
@@ -961,12 +1038,38 @@ export function Inventory() {
               fullWidth
             />
             <Input
-              label="Prix d'achat"
+              label="Prix d'achat ($)"
               type="number"
               value={formData.purchase_price}
               onChange={(e) => handleFormChange('purchase_price', e.target.value)}
+              placeholder="0.00"
               fullWidth
             />
+            <Input
+              label="Valeur actuelle ($)"
+              type="number"
+              value={formData.current_value}
+              onChange={(e) => handleFormChange('current_value', e.target.value)}
+              placeholder="0.00"
+              fullWidth
+            />
+            <Input
+              label="Tarif horaire ($)"
+              type="number"
+              value={formData.hourly_rate}
+              onChange={(e) => handleFormChange('hourly_rate', e.target.value)}
+              placeholder="0.00"
+              fullWidth
+            />
+            <Input
+              label="Tarif journalier ($)"
+              type="number"
+              value={formData.daily_rate}
+              onChange={(e) => handleFormChange('daily_rate', e.target.value)}
+              placeholder="0.00"
+              fullWidth
+            />
+            <div />
             <div className={styles.fullWidth}>
               <Input
                 label="Description"
@@ -980,6 +1083,7 @@ export function Inventory() {
                 label="URL de l'image"
                 value={formData.image_url}
                 onChange={(e) => handleFormChange('image_url', e.target.value)}
+                placeholder="https://exemple.com/image.jpg"
                 fullWidth
               />
             </div>
@@ -994,7 +1098,7 @@ export function Inventory() {
             onClick={handleUpdate}
             disabled={updateMutation.isPending}
           >
-            {updateMutation.isPending ? 'Mise \u00e0 jour...' : 'Enregistrer'}
+            {updateMutation.isPending ? 'Mise a jour...' : 'Enregistrer'}
           </Button>
         </ModalFooter>
       </Modal>
@@ -1058,8 +1162,11 @@ export function Inventory() {
 // Helper function to get icon for category
 function getCategoryIcon(category: string) {
   const cat = category.toLowerCase();
-  if (cat.includes('cam\u00e9ra') || cat.includes('camera')) return Camera;
-  if (cat.includes('\u00e9clair') || cat.includes('light')) return Lightbulb;
-  if (cat.includes('\u00e9cran') || cat.includes('monitor')) return Monitor;
+  if (cat.includes('camera') || cat.includes('video')) return Camera;
+  if (cat.includes('eclair') || cat.includes('light') || cat.includes('lumiere')) return Lightbulb;
+  if (cat.includes('ecran') || cat.includes('monitor') || cat.includes('display')) return Monitor;
+  if (cat.includes('micro') || cat.includes('mic')) return Mic;
+  if (cat.includes('speaker') || cat.includes('enceinte') || cat.includes('hp')) return Speaker;
+  if (cat.includes('audio') || cat.includes('son') || cat.includes('music')) return Music;
   return Package;
 }
