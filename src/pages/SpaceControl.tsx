@@ -757,7 +757,7 @@ export function SpaceControl() {
       <div className={styles.content}>
         <div className={styles.layout}>
           {/* Sidebar */}
-          <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.collapsed : ''}`}>
+          <aside className={styles.sidebar}>
             <div className={styles.sidebarContent}>
               {/* New Booking Button */}
               <Button

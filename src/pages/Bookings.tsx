@@ -1,8 +1,7 @@
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   Plus,
   Calendar as CalendarIcon,
-  User,
 } from 'lucide-react';
 import { format, addDays, startOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -53,8 +52,8 @@ export function Bookings() {
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
 
   // Fetch data
-  const { data: bookings = [], isLoading: bookingsLoading } = useBookings(studioId || '');
-  const { data: spaces = [], isLoading: spacesLoading } = useActiveSpaces(studioId || '');
+  const { data: bookings = [] } = useBookings({ studioId: studioId || '' });
+  const { data: spaces = [] } = useActiveSpaces(studioId || '');
   const { data: clients = [] } = useActiveClients(studioId || '');
   const createBooking = useCreateBooking();
 
@@ -144,6 +143,7 @@ export function Bookings() {
         status: 'confirmed' as BookingStatus,
         notes: formData.notes,
         total_amount: 0,
+        created_by: '00000000-0000-0000-0000-000000000000', // System user for demo
       });
       setIsModalOpen(false);
       setFormData(initialFormData);
@@ -161,8 +161,6 @@ export function Bookings() {
         (selectedSpace === '' || booking.space_id === selectedSpace);
     }).length;
   }, [bookings, selectedSpace]);
-
-  const isLoading = bookingsLoading || spacesLoading;
 
   return (
     <div className={styles.page}>
@@ -279,9 +277,10 @@ export function Bookings() {
 
       {/* Booking Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="md">
-        <ModalHeader>
-          <h2>Nouvelle reservation</h2>
-        </ModalHeader>
+        <ModalHeader
+          title="Nouvelle reservation"
+          onClose={() => setIsModalOpen(false)}
+        />
         <ModalBody>
           <div className={styles.form}>
             <Input
@@ -294,28 +293,30 @@ export function Bookings() {
             <Select
               label="Espace"
               value={formData.space_id}
-              onChange={(e) => setFormData({ ...formData, space_id: e.target.value })}
-            >
-              <option value="">Selectionner un espace</option>
-              {spaces.map((space) => (
-                <option key={space.id} value={space.id}>
-                  {space.name}
-                </option>
-              ))}
-            </Select>
+              onChange={(value) => setFormData({ ...formData, space_id: value })}
+              placeholder="Selectionner un espace"
+              options={[
+                { value: '', label: 'Selectionner un espace' },
+                ...spaces.map((space) => ({
+                  value: space.id,
+                  label: space.name,
+                })),
+              ]}
+            />
 
             <Select
               label="Client"
               value={formData.client_id}
-              onChange={(e) => setFormData({ ...formData, client_id: e.target.value })}
-            >
-              <option value="">Selectionner un client</option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
-            </Select>
+              onChange={(value) => setFormData({ ...formData, client_id: value })}
+              placeholder="Selectionner un client"
+              options={[
+                { value: '', label: 'Selectionner un client' },
+                ...clients.map((client) => ({
+                  value: client.id,
+                  label: client.name,
+                })),
+              ]}
+            />
 
             <div className={styles.timeInputs}>
               <Input
