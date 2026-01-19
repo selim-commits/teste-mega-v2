@@ -12,6 +12,7 @@ import { Finance } from './pages/Finance';
 import { AIConsole } from './pages/AIConsole';
 import { Team } from './pages/Team';
 import { Settings } from './pages/Settings';
+import { Bookings } from './pages/Bookings';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
               <Route element={<AppLayout />}>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/spaces" element={<SpaceControl />} />
+                <Route path="/bookings" element={<Bookings />} />
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/finance" element={<Finance />} />

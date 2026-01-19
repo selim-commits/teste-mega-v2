@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { User } from '@supabase/supabase-js';
 
 // Demo studio ID for development - replace with real studio lookup in production
-export const DEMO_STUDIO_ID = '00000000-0000-0000-0000-000000000001';
+export const DEMO_STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 interface AuthState {
   user: User | null;

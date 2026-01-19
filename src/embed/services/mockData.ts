@@ -63,21 +63,23 @@ export function generateMockAvailability(date: string, serviceId: string): Avail
   const service = mockServices.find(s => s.id === serviceId);
   const hourlyRate = service?.hourly_rate || 50;
 
+  // Simple: make most slots available (only 12:00 and 17:00 unavailable for demo)
+  const unavailableHours = [12, 17];
+
   // Generate slots from 9am to 8pm
   for (let hour = 9; hour < 20; hour++) {
-    const startDate = new Date(`${date}T${hour.toString().padStart(2, '0')}:00:00`);
-    const endDate = new Date(`${date}T${(hour + 1).toString().padStart(2, '0')}:00:00`);
-
-    // Randomly make some slots unavailable (30% chance)
-    const available = Math.random() > 0.3;
+    const startHour = hour.toString().padStart(2, '0');
+    const endHour = (hour + 1).toString().padStart(2, '0');
 
     slots.push({
-      start: startDate.toISOString(),
-      end: endDate.toISOString(),
-      available,
+      start: `${date}T${startHour}:00:00`,
+      end: `${date}T${endHour}:00:00`,
+      available: !unavailableHours.includes(hour),
       price: hourlyRate,
     });
   }
+
+  console.log('[Rooom Mock] Generated slots for', date, ':', slots.filter(s => s.available).length, 'available');
 
   return { date, slots };
 }

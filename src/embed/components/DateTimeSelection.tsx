@@ -46,7 +46,17 @@ export function DateTimeSelection() {
   // Fetch availability when date changes
   const fetchAvailability = useCallback(
     async (date: string) => {
-      if (!config?.studioId || !selectedService?.id) return;
+      console.log('[Rooom Debug] fetchAvailability called', {
+        date,
+        config: config,
+        studioId: config?.studioId,
+        selectedService: selectedService,
+        serviceId: selectedService?.id,
+      });
+      if (!config?.studioId || !selectedService?.id) {
+        console.log('[Rooom Debug] Missing config or service, returning', { hasConfig: !!config, hasService: !!selectedService });
+        return;
+      }
 
       // Check if already cached
       if (availability.has(date)) {

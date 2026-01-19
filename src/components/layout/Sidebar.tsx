@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   LayoutDashboard,
   Calendar,
+  CalendarCheck,
   Package,
   Users,
   BarChart3,
@@ -27,6 +28,7 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
   { icon: Calendar, label: 'Space Control', path: '/spaces' },
+  { icon: CalendarCheck, label: 'Réservations', path: '/bookings' },
   { icon: Package, label: 'Inventaire', path: '/inventory' },
   { icon: Users, label: 'Clients', path: '/clients' },
   { icon: UsersRound, label: 'Equipe', path: '/team' },
