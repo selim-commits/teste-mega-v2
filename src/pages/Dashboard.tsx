@@ -13,6 +13,7 @@ import {
   CheckCircle,
   Activity,
   AlertCircle,
+  TrendingUp,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
@@ -28,6 +29,7 @@ import {
   useMaintenanceNeeded,
   useActiveClients,
   useBookings,
+  useActiveSpaces,
 } from '../hooks';
 import { useTeamMembersByUser } from '../hooks/useTeam';
 import type { Booking, Equipment } from '../types/database';
@@ -106,6 +108,57 @@ function calculateAverageBookingDuration(bookings: Booking[]): string {
   return `${hours}h ${mins}m`;
 }
 
+// Helper to get bookings for the last 7 days
+interface DailyBookingData {
+  date: string;
+  dayName: string;
+  count: number;
+  maxCount: number;
+}
+
+function getLast7DaysBookings(bookings: Booking[]): DailyBookingData[] {
+  const result: DailyBookingData[] = [];
+  const now = new Date();
+  const dayNames = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'];
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(now.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+
+    const count = bookings.filter(booking => {
+      const bookingDate = new Date(booking.start_time).toISOString().split('T')[0];
+      return bookingDate === dateStr;
+    }).length;
+
+    result.push({
+      date: dateStr,
+      dayName: dayNames[date.getDay()],
+      count,
+      maxCount: 0,
+    });
+  }
+
+  const maxCount = Math.max(...result.map(d => d.count), 1);
+  return result.map(d => ({ ...d, maxCount }));
+}
+
+// Helper to check if a booking is tomorrow
+function isTomorrow(dateStr: string): boolean {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowStr = tomorrow.toISOString().split('T')[0];
+  const bookingDate = new Date(dateStr).toISOString().split('T')[0];
+  return bookingDate === tomorrowStr;
+}
+
+// Helper to check if a booking is today
+function isToday(dateStr: string): boolean {
+  const today = new Date().toISOString().split('T')[0];
+  const bookingDate = new Date(dateStr).toISOString().split('T')[0];
+  return bookingDate === today;
+}
+
 export function Dashboard() {
   const { user } = useAuthContext();
 
@@ -154,15 +207,81 @@ export function Dashboard() {
     isLoading: clientsLoading
   } = useActiveClients(studioId);
 
-  // Calculate equipment utilization
+  // Fetch active spaces for occupancy calculation
+  const {
+    data: activeSpaces,
+    isLoading: spacesLoading
+  } = useActiveSpaces(studioId);
+
+  // Fetch last 7 days bookings for chart
+  const sevenDaysAgo = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return date.toISOString();
+  }, []);
+
+  const tomorrow = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 2);
+    date.setHours(23, 59, 59, 999);
+    return date.toISOString();
+  }, []);
+
+  const {
+    data: weekBookings,
+    isLoading: weekBookingsLoading
+  } = useBookings({
+    studioId,
+    startDate: sevenDaysAgo,
+    endDate: tomorrow
+  });
+
+  // Calculate equipment stats
   const equipmentStats = useMemo(() => {
-    if (!equipment) return { total: 0, available: 0, utilizationRate: 0 };
+    if (!equipment) return { total: 0, available: 0 };
     const available = equipment.filter(e => e.status === 'available').length;
-    const inUse = equipment.filter(e => e.status === 'in_use' || e.status === 'reserved').length;
     const total = equipment.length;
-    const utilizationRate = total > 0 ? Math.round((inUse / total) * 100) : 0;
-    return { total, available, utilizationRate };
+    return { total, available };
   }, [equipment]);
+
+  // Calculate real occupancy rate based on spaces and bookings
+  const occupancyRate = useMemo(() => {
+    if (!activeSpaces || activeSpaces.length === 0 || !todayBookings) return 0;
+
+    // Calculate hours booked today vs total available hours
+    const totalSpaces = activeSpaces.length;
+    const workingHours = 12; // Assume 12 working hours per day
+    const totalAvailableHours = totalSpaces * workingHours;
+
+    const bookedHours = todayBookings.reduce((sum, booking) => {
+      const start = new Date(booking.start_time);
+      const end = new Date(booking.end_time);
+      const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      return sum + hours;
+    }, 0);
+
+    return Math.min(Math.round((bookedHours / totalAvailableHours) * 100), 100);
+  }, [activeSpaces, todayBookings]);
+
+  // Get 7-day chart data
+  const chartData = useMemo(() => {
+    return getLast7DaysBookings(weekBookings || []);
+  }, [weekBookings]);
+
+  // Get upcoming bookings (today + tomorrow)
+  const upcomingBookings = useMemo(() => {
+    if (!weekBookings) return [];
+
+    return weekBookings
+      .filter(booking => {
+        const bookingDate = booking.start_time;
+        return (isToday(bookingDate) || isTomorrow(bookingDate)) &&
+               booking.status !== 'cancelled' &&
+               booking.status !== 'completed';
+      })
+      .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+      .slice(0, 6);
+  }, [weekBookings]);
 
   // Calculate average booking duration from recent bookings
   const avgDuration = useMemo(() => {
@@ -309,15 +428,15 @@ export function Dashboard() {
             )}
           </motion.div>
           <motion.div variants={itemVariants}>
-            {equipmentLoading ? (
+            {spacesLoading || bookingsLoading ? (
               <KPICardSkeleton />
             ) : (
               <KPICard
                 title="Taux d'occupation"
-                value={`${equipmentStats.utilizationRate}%`}
+                value={`${occupancyRate}%`}
                 change={0}
                 icon={<Activity size={20} />}
-                trend="up"
+                trend={occupancyRate >= 50 ? 'up' : 'down'}
               />
             )}
           </motion.div>
@@ -338,12 +457,12 @@ export function Dashboard() {
 
         {/* Bento Grid */}
         <div className={styles.bentoGrid}>
-          {/* Today's Schedule - Large */}
+          {/* Today + Tomorrow Schedule - Large */}
           <motion.div variants={itemVariants} className={styles.bentoLarge}>
             <Card padding="lg" className={styles.scheduleCard}>
               <CardHeader
-                title="Aujourd'hui"
-                subtitle={bookingsLoading ? 'Chargement...' : `${todayBookings?.length || 0} reservations`}
+                title="Prochaines reservations"
+                subtitle={weekBookingsLoading ? 'Chargement...' : `${upcomingBookings.length} a venir`}
                 action={
                   <Button variant="ghost" size="sm">
                     Voir tout
@@ -351,21 +470,21 @@ export function Dashboard() {
                 }
               />
               <CardContent>
-                {bookingsLoading ? (
+                {weekBookingsLoading ? (
                   <div className={styles.scheduleList}>
                     {[1, 2, 3, 4].map((i) => (
                       <ScheduleItemSkeleton key={i} />
                     ))}
                   </div>
-                ) : todayBookings && todayBookings.length > 0 ? (
+                ) : upcomingBookings.length > 0 ? (
                   <div className={styles.scheduleList}>
-                    {todayBookings.slice(0, 4).map((booking) => (
+                    {upcomingBookings.map((booking) => (
                       <ScheduleItem
                         key={booking.id}
                         time={formatBookingTime(booking.start_time, booking.end_time)}
                         studio={booking.title}
                         client={booking.description || 'Client'}
-                        type={booking.status === 'in_progress' ? 'En cours' : 'Confirme'}
+                        type={isToday(booking.start_time) ? "Aujourd'hui" : 'Demain'}
                         status={getBookingDisplayStatus(booking)}
                       />
                     ))}
@@ -373,31 +492,50 @@ export function Dashboard() {
                 ) : (
                   <div className={styles.emptySchedule}>
                     <Calendar size={32} />
-                    <p>Aucune reservation aujourd'hui</p>
+                    <p>Aucune reservation prevue</p>
                   </div>
                 )}
               </CardContent>
             </Card>
           </motion.div>
 
-          {/* AI Insights */}
+          {/* 7-Day Bookings Chart */}
           <motion.div variants={itemVariants} className={styles.bentoMedium}>
-            <Card padding="lg" variant="glass" className={styles.aiCard}>
-              <div className={styles.aiHeader}>
-                <div className={styles.aiIcon}>
-                  <Zap size={18} />
-                </div>
-                <span className={styles.aiLabel}>YODA AI</span>
-              </div>
-              <h3 className={styles.aiTitle}>Insight du jour</h3>
-              <p className={styles.aiText}>
-                {stats?.totalBookings && stats.totalBookings > 0
-                  ? `Vous avez ${stats.totalBookings} reservations ce mois-ci. ${stats.revenueGrowth > 0 ? `Une croissance de ${stats.revenueGrowth}% par rapport au mois dernier!` : 'Continuez vos efforts!'}`
-                  : 'Commencez a ajouter des reservations pour voir des insights personnalises.'}
-              </p>
-              <Button variant="secondary" size="sm" className={styles.aiBtn}>
-                Appliquer la suggestion
-              </Button>
+            <Card padding="lg">
+              <CardHeader
+                title="Reservations"
+                subtitle="7 derniers jours"
+                action={<TrendingUp size={16} className={styles.chartIcon} />}
+              />
+              <CardContent>
+                {weekBookingsLoading ? (
+                  <div className={styles.chartContainer}>
+                    {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                      <div key={i} className={styles.chartBarWrapper}>
+                        <Skeleton width={24} height={60} />
+                        <Skeleton width={20} height={12} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.chartContainer}>
+                    {chartData.map((day) => (
+                      <div key={day.date} className={styles.chartBarWrapper}>
+                        <div className={styles.chartBarContainer}>
+                          <div
+                            className={styles.chartBar}
+                            style={{
+                              height: `${day.maxCount > 0 ? (day.count / day.maxCount) * 100 : 0}%`,
+                            }}
+                          />
+                        </div>
+                        <span className={styles.chartLabel}>{day.dayName}</span>
+                        <span className={styles.chartValue}>{day.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
             </Card>
           </motion.div>
 
@@ -439,6 +577,27 @@ export function Dashboard() {
                   <div className={styles.statLabel}>Equipements actifs</div>
                 </>
               )}
+            </Card>
+          </motion.div>
+
+          {/* AI Insights - Small */}
+          <motion.div variants={itemVariants} className={styles.bentoMedium}>
+            <Card padding="lg" variant="glass" className={styles.aiCard}>
+              <div className={styles.aiHeader}>
+                <div className={styles.aiIcon}>
+                  <Zap size={18} />
+                </div>
+                <span className={styles.aiLabel}>YODA AI</span>
+              </div>
+              <h3 className={styles.aiTitle}>Insight du jour</h3>
+              <p className={styles.aiText}>
+                {stats?.totalBookings && stats.totalBookings > 0
+                  ? `Vous avez ${stats.totalBookings} reservations ce mois-ci. ${stats.revenueGrowth > 0 ? `Une croissance de ${stats.revenueGrowth}% par rapport au mois dernier!` : 'Continuez vos efforts!'}`
+                  : 'Commencez a ajouter des reservations pour voir des insights personnalises.'}
+              </p>
+              <Button variant="secondary" size="sm" className={styles.aiBtn}>
+                Appliquer la suggestion
+              </Button>
             </Card>
           </motion.div>
 

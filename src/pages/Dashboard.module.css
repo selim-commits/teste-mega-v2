@@ -468,3 +468,58 @@
 .noActivity p {
   font-size: var(--text-sm);
 }
+
+/* Chart Styles */
+.chartIcon {
+  color: var(--text-tertiary);
+}
+
+.chartContainer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-2);
+  height: 100px;
+  padding-top: var(--space-2);
+}
+
+.chartBarWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.chartBarContainer {
+  width: 100%;
+  height: 60px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.chartBar {
+  width: 100%;
+  background: linear-gradient(to top, var(--accent-primary), var(--accent-primary-light));
+  border-radius: var(--radius-sm);
+  min-height: 4px;
+  transition: height var(--duration-normal) var(--ease-default);
+}
+
+.chartLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+}
+
+.chartValue {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-primary);
+}
