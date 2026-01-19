@@ -11,7 +11,6 @@ import {
   Upload,
   Link2,
   ExternalLink,
-  CheckCircle,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -39,12 +38,16 @@ interface StudioProfile {
   slug: string;
   description: string;
   logoUrl: string;
+  coverUrl: string;
   email: string;
   phone: string;
+  website: string;
   address: string;
   city: string;
   postalCode: string;
   country: string;
+  timezone: string;
+  currency: string;
 }
 
 interface DayHours {
@@ -101,12 +104,16 @@ const defaultStudioProfile: StudioProfile = {
   slug: 'rooom-studio',
   description: 'Studio photo et video professionnel au coeur de Paris. Espaces modulables pour tous types de productions.',
   logoUrl: '',
+  coverUrl: '',
   email: 'contact@rooom.studio',
   phone: '+33 1 42 68 53 00',
+  website: 'https://rooom.studio',
   address: '15 Rue de Bretagne',
   city: 'Paris',
   postalCode: '75003',
   country: 'France',
+  timezone: 'Europe/Paris',
+  currency: 'EUR',
 };
 
 const defaultBusinessHours: BusinessHours = {
@@ -238,29 +245,51 @@ function StudioProfileSection() {
         </div>
 
         <Card padding="lg" className={styles.formCard}>
-          {/* Logo */}
-          <div className={styles.formGroup}>
-            <label className={styles.label}>Logo du studio</label>
-            <div className={styles.logoUploadContainer}>
-              <div className={styles.uploadArea}>
-                {profile.logoUrl ? (
-                  <img src={profile.logoUrl} alt="Logo" className={styles.logoPreview} />
-                ) : (
-                  <div className={styles.uploadPlaceholder}>
-                    <Upload size={24} />
-                    <span>Deposez votre logo ici</span>
-                    <span className={styles.uploadHint}>PNG, JPG ou SVG - Max 2MB</span>
-                  </div>
-                )}
+          {/* Logo and Cover */}
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Logo du studio</label>
+              <div className={styles.logoUploadContainer}>
+                <div className={styles.uploadAreaSmall}>
+                  {profile.logoUrl ? (
+                    <img src={profile.logoUrl} alt="Logo" className={styles.logoPreview} />
+                  ) : (
+                    <div className={styles.uploadPlaceholder}>
+                      <Upload size={20} />
+                      <span className={styles.uploadHint}>Logo</span>
+                    </div>
+                  )}
+                </div>
+                <Input
+                  placeholder="https://example.com/logo.png"
+                  value={profile.logoUrl}
+                  onChange={(e) => setProfile(prev => ({ ...prev, logoUrl: e.target.value }))}
+                  icon={<Link2 size={16} />}
+                  fullWidth
+                />
               </div>
-              <Input
-                label="URL du logo (temporaire)"
-                placeholder="https://example.com/logo.png"
-                value={profile.logoUrl}
-                onChange={(e) => setProfile(prev => ({ ...prev, logoUrl: e.target.value }))}
-                icon={<Link2 size={16} />}
-                fullWidth
-              />
+            </div>
+            <div className={styles.formGroup}>
+              <label className={styles.label}>Image de couverture</label>
+              <div className={styles.logoUploadContainer}>
+                <div className={styles.uploadAreaSmall}>
+                  {profile.coverUrl ? (
+                    <img src={profile.coverUrl} alt="Cover" className={styles.logoPreview} />
+                  ) : (
+                    <div className={styles.uploadPlaceholder}>
+                      <Upload size={20} />
+                      <span className={styles.uploadHint}>Cover</span>
+                    </div>
+                  )}
+                </div>
+                <Input
+                  placeholder="https://example.com/cover.jpg"
+                  value={profile.coverUrl}
+                  onChange={(e) => setProfile(prev => ({ ...prev, coverUrl: e.target.value }))}
+                  icon={<Link2 size={16} />}
+                  fullWidth
+                />
+              </div>
             </div>
           </div>
 
@@ -317,6 +346,17 @@ function StudioProfileSection() {
             />
           </div>
 
+          {/* Website */}
+          <Input
+            label="Site web"
+            type="url"
+            placeholder="https://www.monstudio.com"
+            value={profile.website}
+            onChange={(e) => setProfile(prev => ({ ...prev, website: e.target.value }))}
+            icon={<ExternalLink size={16} />}
+            fullWidth
+          />
+
           {/* Address */}
           <Input
             label="Adresse"
@@ -350,6 +390,37 @@ function StudioProfileSection() {
             onChange={(e) => setProfile(prev => ({ ...prev, country: e.target.value }))}
             fullWidth
           />
+
+          {/* Timezone and Currency */}
+          <div className={styles.formRow}>
+            <Select
+              label="Fuseau horaire"
+              options={[
+                { value: 'Europe/Paris', label: 'Europe/Paris (UTC+1)' },
+                { value: 'Europe/London', label: 'Europe/London (UTC+0)' },
+                { value: 'Europe/Berlin', label: 'Europe/Berlin (UTC+1)' },
+                { value: 'Europe/Brussels', label: 'Europe/Brussels (UTC+1)' },
+                { value: 'America/New_York', label: 'America/New_York (UTC-5)' },
+                { value: 'America/Los_Angeles', label: 'America/Los_Angeles (UTC-8)' },
+              ]}
+              value={profile.timezone}
+              onChange={(value) => setProfile(prev => ({ ...prev, timezone: value }))}
+              fullWidth
+            />
+            <Select
+              label="Devise"
+              options={[
+                { value: 'EUR', label: 'Euro (EUR)' },
+                { value: 'USD', label: 'Dollar US (USD)' },
+                { value: 'GBP', label: 'Livre Sterling (GBP)' },
+                { value: 'CHF', label: 'Franc Suisse (CHF)' },
+                { value: 'CAD', label: 'Dollar Canadien (CAD)' },
+              ]}
+              value={profile.currency}
+              onChange={(value) => setProfile(prev => ({ ...prev, currency: value }))}
+              fullWidth
+            />
+          </div>
 
           <div className={styles.formActions}>
             <Button
@@ -871,42 +942,26 @@ function IntegrationsSection() {
     {
       id: 'google-calendar',
       name: 'Google Calendar',
-      description: 'Synchronisez vos reservations avec Google Calendar',
+      description: 'Synchronisez automatiquement vos reservations avec Google Calendar pour une vue unifiee de votre emploi du temps.',
       icon: '📅',
       connected: false,
-      available: false,
+      status: 'Non connecte',
     },
     {
       id: 'stripe',
       name: 'Stripe',
-      description: 'Acceptez les paiements en ligne avec Stripe',
+      description: 'Acceptez les paiements en ligne de maniere securisee. Cartes bancaires, Apple Pay, Google Pay et plus.',
       icon: '💳',
       connected: false,
-      available: false,
+      status: 'Non connecte',
     },
     {
-      id: 'zapier',
-      name: 'Zapier',
-      description: 'Connectez ROOOM a des milliers d\'applications',
-      icon: '⚡',
-      connected: false,
-      available: false,
-    },
-    {
-      id: 'mailchimp',
-      name: 'Mailchimp',
-      description: 'Synchronisez vos contacts avec Mailchimp',
+      id: 'sendgrid',
+      name: 'SendGrid',
+      description: 'Envoyez des emails transactionnels et des notifications professionnelles a vos clients.',
       icon: '📧',
       connected: false,
-      available: false,
-    },
-    {
-      id: 'slack',
-      name: 'Slack',
-      description: 'Recevez des notifications dans Slack',
-      icon: '💬',
-      connected: false,
-      available: false,
+      status: 'Non connecte',
     },
   ];
 
@@ -920,7 +975,7 @@ function IntegrationsSection() {
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Integrations</h2>
           <p className={styles.sectionDescription}>
-            Connectez ROOOM a vos outils preferes
+            Connectez ROOOM a vos outils preferes pour automatiser votre workflow
           </p>
         </div>
 
@@ -934,49 +989,102 @@ function IntegrationsSection() {
                   <p className={styles.integrationDescription}>{integration.description}</p>
                 </div>
               </div>
+              <div className={styles.integrationStatus}>
+                <div className={styles.statusIndicator}>
+                  <span className={`${styles.statusDot} ${integration.connected ? styles.statusConnected : styles.statusDisconnected}`}></span>
+                  <span className={styles.statusText}>{integration.status}</span>
+                </div>
+              </div>
               <div className={styles.integrationActions}>
                 {integration.connected ? (
-                  <div className={styles.integrationConnected}>
-                    <CheckCircle size={16} />
-                    <span>Connecte</span>
-                  </div>
+                  <>
+                    <Button variant="ghost" size="sm">
+                      Configurer
+                    </Button>
+                    <Button variant="ghost" size="sm" className={styles.disconnectButton}>
+                      Deconnecter
+                    </Button>
+                  </>
                 ) : (
                   <Button
                     variant="secondary"
                     size="sm"
-                    disabled={!integration.available}
                     icon={<ExternalLink size={14} />}
+                    disabled
                   >
-                    {integration.available ? 'Connecter' : 'Bientot'}
+                    Connecter
                   </Button>
                 )}
               </div>
             </Card>
           ))}
         </div>
+
+        <Card padding="lg" className={styles.formCard}>
+          <div className={styles.integrationNote}>
+            <span className={styles.noteIcon}>💡</span>
+            <div className={styles.noteContent}>
+              <h4 className={styles.noteTitle}>Integrations a venir</h4>
+              <p className={styles.noteText}>
+                Les integrations sont actuellement en developpement. Vous serez notifie des qu'elles seront disponibles.
+              </p>
+            </div>
+          </div>
+        </Card>
       </div>
     </motion.div>
   );
 }
 
-function BillingSection() {
-  const currentPlan = {
-    name: 'Pro',
-    price: '49',
-    billingCycle: 'mois',
-    features: [
-      'Reservations illimitees',
-      'Jusqu\'a 5 espaces',
-      'Rappels automatiques',
-      'Support prioritaire',
-    ],
-  };
+// Billing settings interface
+interface BillingSettings {
+  vatRate: string;
+  paymentTerms: string;
+  legalMentions: string;
+  siret: string;
+  vatNumber: string;
+}
 
-  const paymentMethod = {
-    type: 'card',
-    brand: 'Visa',
-    last4: '4242',
-    expiry: '12/25',
+const defaultBillingSettings: BillingSettings = {
+  vatRate: '20',
+  paymentTerms: 'Paiement a la reservation. Annulation gratuite jusqu\'a 48h avant.',
+  legalMentions: 'ROOOM Studio - SARL au capital de 10 000 EUR\nRCS Paris B 123 456 789',
+  siret: '123 456 789 00012',
+  vatNumber: 'FR 12 123456789',
+};
+
+function BillingSection() {
+  const { addToast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [settings, setSettings] = useState<BillingSettings>(defaultBillingSettings);
+
+  const vatRateOptions = [
+    { value: '0', label: '0% (Exonere)' },
+    { value: '5.5', label: '5,5% (Taux reduit)' },
+    { value: '10', label: '10% (Taux intermediaire)' },
+    { value: '20', label: '20% (Taux normal)' },
+  ];
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      addToast({
+        title: 'Facturation mise a jour',
+        description: 'Les informations de facturation ont ete enregistrees.',
+        variant: 'success',
+        duration: 5000,
+      });
+    } catch {
+      addToast({
+        title: 'Erreur',
+        description: 'Impossible de sauvegarder les informations.',
+        variant: 'error',
+        duration: 5000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -989,87 +1097,92 @@ function BillingSection() {
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Facturation</h2>
           <p className={styles.sectionDescription}>
-            Gerez votre abonnement et vos paiements
+            Configurez vos informations de facturation et mentions legales
           </p>
         </div>
 
-        {/* Current Plan */}
+        {/* Tax Settings */}
         <Card padding="lg" className={styles.formCard}>
-          <div className={styles.planHeader}>
-            <div className={styles.planInfo}>
-              <h3 className={styles.subsectionTitle}>Abonnement actuel</h3>
-              <div className={styles.planBadge}>Plan {currentPlan.name}</div>
-            </div>
-            <div className={styles.planPrice}>
-              <span className={styles.priceAmount}>{currentPlan.price}EUR</span>
-              <span className={styles.pricePeriod}>/{currentPlan.billingCycle}</span>
-            </div>
-          </div>
+          <h3 className={styles.subsectionTitle}>Parametres de TVA</h3>
+          <p className={styles.subsectionDescription}>
+            Configurez le taux de TVA applique a vos prestations
+          </p>
 
-          <div className={styles.planFeatures}>
-            {currentPlan.features.map((feature, index) => (
-              <div key={index} className={styles.planFeature}>
-                <CheckCircle size={16} className={styles.featureIcon} />
-                <span>{feature}</span>
-              </div>
-            ))}
-          </div>
+          <Select
+            label="Taux de TVA"
+            options={vatRateOptions}
+            value={settings.vatRate}
+            onChange={(value) => setSettings(prev => ({ ...prev, vatRate: value }))}
+            fullWidth
+          />
+        </Card>
 
-          <div className={styles.planActions}>
-            <Button variant="secondary" disabled>
-              Changer de plan
-            </Button>
+        {/* Payment Terms */}
+        <Card padding="lg" className={styles.formCard}>
+          <h3 className={styles.subsectionTitle}>Conditions de paiement</h3>
+          <p className={styles.subsectionDescription}>
+            Definissez vos conditions de paiement affichees sur les factures
+          </p>
+
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Conditions de paiement</label>
+            <textarea
+              className={styles.textarea}
+              placeholder="Ex: Paiement a la reservation. Annulation gratuite jusqu'a 48h avant."
+              rows={3}
+              value={settings.paymentTerms}
+              onChange={(e) => setSettings(prev => ({ ...prev, paymentTerms: e.target.value }))}
+            />
           </div>
         </Card>
 
-        {/* Payment Method */}
+        {/* Legal Information */}
         <Card padding="lg" className={styles.formCard}>
-          <h3 className={styles.subsectionTitle}>Methode de paiement</h3>
+          <h3 className={styles.subsectionTitle}>Informations legales</h3>
+          <p className={styles.subsectionDescription}>
+            Ces informations apparaitront sur vos factures
+          </p>
 
-          <div className={styles.paymentMethod}>
-            <div className={styles.paymentCard}>
-              <div className={styles.cardIcon}>💳</div>
-              <div className={styles.cardInfo}>
-                <span className={styles.cardBrand}>{paymentMethod.brand}</span>
-                <span className={styles.cardNumber}>**** **** **** {paymentMethod.last4}</span>
-              </div>
-              <span className={styles.cardExpiry}>Expire {paymentMethod.expiry}</span>
-            </div>
-            <Button variant="ghost" size="sm" disabled>
-              Modifier
-            </Button>
+          <div className={styles.formRow}>
+            <Input
+              label="SIRET"
+              placeholder="123 456 789 00012"
+              value={settings.siret}
+              onChange={(e) => setSettings(prev => ({ ...prev, siret: e.target.value }))}
+              fullWidth
+            />
+            <Input
+              label="N° TVA Intracommunautaire"
+              placeholder="FR 12 123456789"
+              value={settings.vatNumber}
+              onChange={(e) => setSettings(prev => ({ ...prev, vatNumber: e.target.value }))}
+              fullWidth
+            />
           </div>
-        </Card>
 
-        {/* Billing History */}
-        <Card padding="lg" className={styles.formCard}>
-          <h3 className={styles.subsectionTitle}>Historique de facturation</h3>
+          <div className={styles.formGroup}>
+            <label className={styles.label}>Mentions legales</label>
+            <textarea
+              className={styles.textarea}
+              placeholder="Raison sociale, forme juridique, capital social, RCS..."
+              rows={4}
+              value={settings.legalMentions}
+              onChange={(e) => setSettings(prev => ({ ...prev, legalMentions: e.target.value }))}
+            />
+            <span className={styles.hint}>
+              Ces mentions seront incluses sur toutes vos factures.
+            </span>
+          </div>
 
-          <div className={styles.billingHistory}>
-            <div className={styles.billingItem}>
-              <div className={styles.billingDate}>1 jan. 2026</div>
-              <div className={styles.billingDescription}>Abonnement Pro - Janvier 2026</div>
-              <div className={styles.billingAmount}>49,00 EUR</div>
-              <Button variant="ghost" size="sm" disabled>
-                Telecharger
-              </Button>
-            </div>
-            <div className={styles.billingItem}>
-              <div className={styles.billingDate}>1 dec. 2025</div>
-              <div className={styles.billingDescription}>Abonnement Pro - Decembre 2025</div>
-              <div className={styles.billingAmount}>49,00 EUR</div>
-              <Button variant="ghost" size="sm" disabled>
-                Telecharger
-              </Button>
-            </div>
-            <div className={styles.billingItem}>
-              <div className={styles.billingDate}>1 nov. 2025</div>
-              <div className={styles.billingDescription}>Abonnement Pro - Novembre 2025</div>
-              <div className={styles.billingAmount}>49,00 EUR</div>
-              <Button variant="ghost" size="sm" disabled>
-                Telecharger
-              </Button>
-            </div>
+          <div className={styles.formActions}>
+            <Button
+              variant="primary"
+              icon={<Save size={16} />}
+              onClick={handleSave}
+              loading={isLoading}
+            >
+              Enregistrer
+            </Button>
           </div>
         </Card>
       </div>
