@@ -1,0 +1,140 @@
+{
+  "project": "rooom-os",
+  "total_iterations": 10,
+  "current_iteration": 0,
+  "status": "ready",
+  "iterations": [
+    {
+      "number": 1,
+      "name": "Supabase Foundation",
+      "status": "pending",
+      "tasks": [
+        "Create Supabase project configuration",
+        "Set up environment variables",
+        "Install Supabase client library",
+        "Create auth context and hooks",
+        "Implement login/signup pages",
+        "Create auth middleware",
+        "Test authentication flow"
+      ],
+      "verification": "npm run build && User can sign up, login, logout"
+    },
+    {
+      "number": 2,
+      "name": "Core Database Schema",
+      "status": "pending",
+      "tasks": [
+        "Create SQL migration files",
+        "Set up all core tables",
+        "Apply migrations",
+        "Create RLS policies"
+      ],
+      "verification": "All tables created in Supabase"
+    },
+    {
+      "number": 3,
+      "name": "Service Layer & Types",
+      "status": "pending",
+      "tasks": [
+        "Generate TypeScript types",
+        "Create base CRUD service pattern",
+        "Create all domain services"
+      ],
+      "verification": "npm run build passes"
+    },
+    {
+      "number": 4,
+      "name": "State Management & Hooks",
+      "status": "pending",
+      "tasks": [
+        "Install and configure Zustand",
+        "Create stores for each domain",
+        "Implement real-time subscriptions"
+      ],
+      "verification": "Stores working with real data"
+    },
+    {
+      "number": 5,
+      "name": "Enhanced UI Components",
+      "status": "pending",
+      "tasks": [
+        "Create Input, Select, Checkbox components",
+        "Create Modal, Dropdown, Tabs",
+        "Create Table, Calendar, DatePicker",
+        "Create Toast, Avatar, Progress, Skeleton"
+      ],
+      "verification": "All components render correctly"
+    },
+    {
+      "number": 6,
+      "name": "Dashboard & Space Control",
+      "status": "pending",
+      "tasks": [
+        "Refactor Dashboard with real data",
+        "Implement calendar views",
+        "Add booking CRUD",
+        "Implement drag & resize"
+      ],
+      "verification": "Create, edit, delete bookings works"
+    },
+    {
+      "number": 7,
+      "name": "Inventory & Clients",
+      "status": "pending",
+      "tasks": [
+        "Implement equipment management",
+        "Add QR codes and maintenance",
+        "Complete CRM features",
+        "Add client scoring and tags"
+      ],
+      "verification": "Full CRUD for equipment and clients"
+    },
+    {
+      "number": 8,
+      "name": "Finance Module",
+      "status": "pending",
+      "tasks": [
+        "Implement quote and invoice builder",
+        "Set up Stripe integration",
+        "Add payment tracking",
+        "Create financial reports"
+      ],
+      "verification": "Quote to invoice to payment flow works"
+    },
+    {
+      "number": 9,
+      "name": "AI Console & Team",
+      "status": "pending",
+      "tasks": [
+        "Set up Claude API integration",
+        "Implement agent conversations",
+        "Create workflow builder",
+        "Complete team management"
+      ],
+      "verification": "AI agents respond, team CRUD works"
+    },
+    {
+      "number": 10,
+      "name": "Settings & Polish",
+      "status": "pending",
+      "tasks": [
+        "Implement all settings",
+        "Performance optimization",
+        "Add loading and error states",
+        "Final testing"
+      ],
+      "verification": "npm run build && npm run lint && Full test pass"
+    }
+  ],
+  "agents": {
+    "foundation": "Setup Supabase, auth, database",
+    "services": "TypeScript types, services, hooks",
+    "ui": "UI component library",
+    "features": "Dashboard, SpaceControl, Inventory, Clients, Finance",
+    "ai": "AI Console, Claude integration",
+    "team": "Team management",
+    "settings": "Settings and configuration",
+    "polish": "Testing, optimization, final fixes"
+  },
+  "completion_promise": "All 10 iterations complete, npm run build passes, all features functional"
+}
