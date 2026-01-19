@@ -86,6 +86,20 @@ export {
 } from './useInvoices';
 export type { InvoiceFilters } from './useInvoices';
 
+// Payments
+export {
+  usePayments,
+  usePayment,
+  usePaymentsByInvoice,
+  usePaymentWithInvoice,
+  useRecentPayments,
+  useTotalReceived,
+  useCreatePayment,
+  useUpdatePayment,
+  useDeletePayment,
+} from './usePayments';
+export type { PaymentFilters } from './usePayments';
+
 // Team
 export {
   useTeamMembers,

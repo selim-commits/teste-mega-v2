@@ -55,6 +55,16 @@ export const queryKeys = {
     pending: (studioId: string) => [...queryKeys.invoices.all, 'pending', studioId] as const,
   },
 
+  // Payments
+  payments: {
+    all: ['payments'] as const,
+    lists: () => [...queryKeys.payments.all, 'list'] as const,
+    list: (filters: object) => [...queryKeys.payments.lists(), filters] as const,
+    details: () => [...queryKeys.payments.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.payments.details(), id] as const,
+    byInvoice: (invoiceId: string) => [...queryKeys.payments.all, 'byInvoice', invoiceId] as const,
+  },
+
   // Team
   team: {
     all: ['team'] as const,

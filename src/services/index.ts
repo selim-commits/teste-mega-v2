@@ -10,4 +10,6 @@ export type { BookingFilters } from './bookings';
 export { clientService } from './clients';
 export { equipmentService } from './equipment';
 export { invoiceService } from './invoices';
+export { paymentService } from './payments';
+export type { PaymentFilters } from './payments';
 export { teamService } from './team';

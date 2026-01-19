@@ -1014,3 +1014,133 @@
 .cancelBtn:hover {
   background-color: var(--state-error-bg) !important;
 }
+
+/* Payment Form */
+.paymentForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.paymentSummary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  border-left: 3px solid var(--accent-primary);
+}
+
+.paymentSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.paymentSummaryRow span:last-child {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.paymentSummaryTotal {
+  padding-top: var(--space-2);
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--border-default);
+}
+
+.paymentSummaryTotal span {
+  font-weight: 600 !important;
+}
+
+.paymentSummaryTotal span:last-child {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-style: italic;
+  color: var(--accent-primary) !important;
+}
+
+/* Delete Confirmation */
+.deleteConfirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.deleteWarningIcon {
+  color: var(--state-error);
+}
+
+.deleteConfirm p {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.deleteConfirm p strong {
+  color: var(--text-primary);
+}
+
+.deleteWarningText {
+  font-size: var(--text-xs) !important;
+  color: var(--text-muted) !important;
+}
+
+.deleteBtn {
+  background-color: var(--state-error) !important;
+  border-color: var(--state-error) !important;
+}
+
+.deleteBtn:hover {
+  background-color: var(--state-error-hover, #c53030) !important;
+}
+
+/* Recent Payments Section */
+.recentPayments {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.paymentItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.paymentItem:hover {
+  background-color: var(--bg-hover);
+}
+
+.paymentInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.paymentMethod {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.paymentDate {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.paymentAmount {
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--state-success);
+}

@@ -22,6 +22,8 @@ import {
   X,
   Calendar,
   User,
+  Banknote,
+  Trash2,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
@@ -44,16 +46,18 @@ import {
   useTotalRevenue,
   useOverdueInvoices,
   usePendingInvoices,
+  useDeleteInvoice,
 } from '../hooks/useInvoices';
+import { useCreatePayment, useTotalReceived, useRecentPayments } from '../hooks/usePayments';
 import { useActiveClients } from '../hooks/useClients';
 import { useFinanceStore } from '../stores/financeStore';
 import { useNotifications } from '../stores/uiStore';
-import type { Invoice, InvoiceStatus, InvoiceInsert, Client } from '../types/database';
+import type { Invoice, InvoiceStatus, InvoiceInsert, Client, PaymentMethod, PaymentInsert } from '../types/database';
 import { formatCurrency, formatDate } from '../lib/utils';
 import styles from './Finance.module.css';
 
-// Demo studioId - in production, this would come from useAuthStore or context
-const DEMO_STUDIO_ID = 'demo-studio-id';
+// Studio ID - in production, this would come from useAuthStore or context
+const STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 // Invoice line item type
 interface LineItem {
@@ -95,13 +99,36 @@ const defaultFormData: InvoiceFormData = {
   discount_amount: 0,
 };
 
+// Payment form data
+interface PaymentFormData {
+  amount: number;
+  method: PaymentMethod;
+  reference: string;
+  notes: string;
+}
+
+const defaultPaymentFormData: PaymentFormData = {
+  amount: 0,
+  method: 'bank_transfer',
+  reference: '',
+  notes: '',
+};
+
 const statusOptions = [
   { value: 'all', label: 'Tous les statuts' },
   { value: 'draft', label: 'Brouillon' },
-  { value: 'sent', label: 'Envoyée' },
-  { value: 'paid', label: 'Payée' },
+  { value: 'sent', label: 'Envoyee' },
+  { value: 'paid', label: 'Payee' },
   { value: 'overdue', label: 'En retard' },
-  { value: 'cancelled', label: 'Annulée' },
+  { value: 'cancelled', label: 'Annulee' },
+];
+
+const paymentMethodOptions = [
+  { value: 'card', label: 'Carte bancaire' },
+  { value: 'bank_transfer', label: 'Virement bancaire' },
+  { value: 'cash', label: 'Especes' },
+  { value: 'check', label: 'Cheque' },
+  { value: 'other', label: 'Autre' },
 ];
 
 const revenueData = [
@@ -135,11 +162,17 @@ export function Finance() {
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [invoiceForPayment, setInvoiceForPayment] = useState<Invoice | null>(null);
+  const [invoiceToDelete, setInvoiceToDelete] = useState<Invoice | null>(null);
 
   // Form state
   const [formData, setFormData] = useState<InvoiceFormData>(defaultFormData);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof InvoiceFormData, string>>>({});
+  const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>(defaultPaymentFormData);
+  const [paymentFormErrors, setPaymentFormErrors] = useState<Partial<Record<keyof PaymentFormData, string>>>({});
 
   // Hooks
   const { success: showSuccess, error: showError } = useNotifications();
@@ -147,15 +180,15 @@ export function Finance() {
 
   // Queries
   const { data: invoices = [], isLoading, error: queryError } = useInvoices({
-    studioId: DEMO_STUDIO_ID,
+    studioId: STUDIO_ID,
     status: statusFilter !== 'all' ? statusFilter : undefined,
     startDate: dateFrom || undefined,
     endDate: dateTo || undefined,
   });
 
-  const { data: clients = [] } = useActiveClients(DEMO_STUDIO_ID);
-  void useOverdueInvoices(DEMO_STUDIO_ID); // Data fetched for cache warming
-  const { data: pendingInvoices = [] } = usePendingInvoices(DEMO_STUDIO_ID);
+  const { data: clients = [] } = useActiveClients(STUDIO_ID);
+  void useOverdueInvoices(STUDIO_ID); // Data fetched for cache warming
+  const { data: pendingInvoices = [] } = usePendingInvoices(STUDIO_ID);
 
   // Revenue calculations - current month
   const now = new Date();
@@ -165,11 +198,15 @@ export function Finance() {
   const endOfPrevMonth = new Date(now.getFullYear(), now.getMonth(), 0).toISOString().split('T')[0];
   const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString().split('T')[0];
 
-  const { data: currentMonthRevenue = 0 } = useTotalRevenue(DEMO_STUDIO_ID, startOfMonth, endOfMonth);
-  const { data: prevMonthRevenue = 0 } = useTotalRevenue(DEMO_STUDIO_ID, startOfPrevMonth, endOfPrevMonth);
-  const { data: ytdRevenue = 0 } = useTotalRevenue(DEMO_STUDIO_ID, startOfYear);
+  const { data: currentMonthRevenue = 0 } = useTotalRevenue(STUDIO_ID, startOfMonth, endOfMonth);
+  const { data: prevMonthRevenue = 0 } = useTotalRevenue(STUDIO_ID, startOfPrevMonth, endOfPrevMonth);
+  const { data: ytdRevenue = 0 } = useTotalRevenue(STUDIO_ID, startOfYear);
 
-  const { data: generatedInvoiceNumber } = useGenerateInvoiceNumber(DEMO_STUDIO_ID, isCreateModalOpen);
+  const { data: generatedInvoiceNumber } = useGenerateInvoiceNumber(STUDIO_ID, isCreateModalOpen);
+
+  // Payment queries - data available for future use in dashboard
+  void useTotalReceived(STUDIO_ID, startOfMonth, endOfMonth);
+  void useRecentPayments(STUDIO_ID, 5);
 
   // Mutations
   const createMutation = useCreateInvoice();
@@ -178,6 +215,8 @@ export function Finance() {
   const markAsSentMutation = useMarkInvoiceAsSent();
   const markAsOverdueMutation = useMarkInvoiceAsOverdue();
   const cancelMutation = useCancelInvoice();
+  const deleteMutation = useDeleteInvoice();
+  const createPaymentMutation = useCreatePayment();
 
   // Computed values
   const maxRevenue = Math.max(...revenueData.map((d) => d.value));
@@ -395,7 +434,7 @@ export function Finance() {
     if (!validateForm() || !generatedInvoiceNumber) return;
 
     const invoiceData: Omit<InvoiceInsert, 'id' | 'created_at' | 'updated_at'> = {
-      studio_id: DEMO_STUDIO_ID,
+      studio_id: STUDIO_ID,
       client_id: formData.client_id,
       invoice_number: generatedInvoiceNumber,
       status: 'draft',
@@ -456,6 +495,87 @@ export function Finance() {
   const openDetailModal = useCallback((invoice: Invoice) => {
     setSelectedInvoice(invoice);
     setIsDetailModalOpen(true);
+  }, []);
+
+  const openPaymentModal = useCallback((invoice: Invoice) => {
+    setInvoiceForPayment(invoice);
+    const remainingAmount = invoice.total_amount - invoice.paid_amount;
+    setPaymentFormData({
+      ...defaultPaymentFormData,
+      amount: remainingAmount > 0 ? remainingAmount : 0,
+    });
+    setPaymentFormErrors({});
+    setIsPaymentModalOpen(true);
+  }, []);
+
+  const validatePaymentForm = useCallback((): boolean => {
+    const errors: Partial<Record<keyof PaymentFormData, string>> = {};
+
+    if (!paymentFormData.amount || paymentFormData.amount <= 0) {
+      errors.amount = 'Le montant doit etre superieur a 0';
+    }
+
+    if (invoiceForPayment && paymentFormData.amount > (invoiceForPayment.total_amount - invoiceForPayment.paid_amount)) {
+      errors.amount = 'Le montant ne peut pas depasser le solde restant';
+    }
+
+    if (!paymentFormData.method) {
+      errors.method = 'Veuillez selectionner une methode de paiement';
+    }
+
+    setPaymentFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [paymentFormData, invoiceForPayment]);
+
+  const handleCreatePayment = useCallback(async () => {
+    if (!validatePaymentForm() || !invoiceForPayment) return;
+
+    const paymentData: Omit<PaymentInsert, 'id' | 'created_at'> = {
+      studio_id: STUDIO_ID,
+      invoice_id: invoiceForPayment.id,
+      amount: paymentFormData.amount,
+      method: paymentFormData.method,
+      reference: paymentFormData.reference || null,
+      notes: paymentFormData.notes || null,
+    };
+
+    try {
+      await createPaymentMutation.mutateAsync(paymentData);
+
+      // Check if invoice is fully paid and update status
+      const newPaidAmount = invoiceForPayment.paid_amount + paymentFormData.amount;
+      if (newPaidAmount >= invoiceForPayment.total_amount) {
+        await markAsPaidMutation.mutateAsync({ id: invoiceForPayment.id, paidAmount: newPaidAmount });
+        showSuccess('Paiement enregistre', `La facture ${invoiceForPayment.invoice_number} a ete entierement payee`);
+      } else {
+        showSuccess('Paiement enregistre', `Paiement de ${formatCurrency(paymentFormData.amount)} enregistre`);
+      }
+
+      setIsPaymentModalOpen(false);
+      setInvoiceForPayment(null);
+      setPaymentFormData(defaultPaymentFormData);
+    } catch (error) {
+      showError('Erreur', 'Impossible d\'enregistrer le paiement');
+    }
+  }, [paymentFormData, validatePaymentForm, invoiceForPayment, createPaymentMutation, markAsPaidMutation, showSuccess, showError]);
+
+  const handleDeleteInvoice = useCallback(async () => {
+    if (!invoiceToDelete) return;
+
+    try {
+      await deleteMutation.mutateAsync(invoiceToDelete.id);
+      showSuccess('Facture supprimee', `La facture ${invoiceToDelete.invoice_number} a ete supprimee`);
+      setIsDeleteConfirmOpen(false);
+      setInvoiceToDelete(null);
+      setIsDetailModalOpen(false);
+    } catch (error) {
+      showError('Erreur', 'Impossible de supprimer la facture');
+    }
+  }, [invoiceToDelete, deleteMutation, showSuccess, showError]);
+
+  const openDeleteConfirm = useCallback((invoice: Invoice) => {
+    setInvoiceToDelete(invoice);
+    setIsDeleteConfirmOpen(true);
   }, []);
 
   const resetFilters = useCallback(() => {
@@ -529,6 +649,11 @@ export function Finance() {
             Exporter PDF
           </DropdownItem>
           <DropdownDivider />
+          {['sent', 'overdue'].includes(invoice.status) && invoice.paid_amount < invoice.total_amount && (
+            <DropdownItem icon={<Banknote size={16} />} onClick={() => openPaymentModal(invoice)}>
+              Enregistrer paiement
+            </DropdownItem>
+          )}
           {invoice.status === 'draft' && (
             <DropdownItem icon={<Send size={16} />} onClick={() => handleStatusChange(invoice, 'sent')}>
               Marquer comme envoyee
@@ -549,6 +674,14 @@ export function Finance() {
               <DropdownDivider />
               <DropdownItem icon={<XCircle size={16} />} destructive onClick={() => handleStatusChange(invoice, 'cancelled')}>
                 Annuler
+              </DropdownItem>
+            </>
+          )}
+          {invoice.status === 'draft' && (
+            <>
+              <DropdownDivider />
+              <DropdownItem icon={<Trash2 size={16} />} destructive onClick={() => openDeleteConfirm(invoice)}>
+                Supprimer
               </DropdownItem>
             </>
           )}
@@ -1279,14 +1412,38 @@ export function Finance() {
             </ModalBody>
             <ModalFooter>
               <div className={styles.detailActions}>
-                <Button
-                  variant="secondary"
-                  icon={<Download size={16} />}
-                  onClick={() => handleExportPDF(selectedInvoice)}
-                >
-                  Exporter PDF
-                </Button>
                 <div className={styles.detailActionGroup}>
+                  <Button
+                    variant="secondary"
+                    icon={<Download size={16} />}
+                    onClick={() => handleExportPDF(selectedInvoice)}
+                  >
+                    Exporter PDF
+                  </Button>
+                  {selectedInvoice.status === 'draft' && (
+                    <Button
+                      variant="ghost"
+                      icon={<Trash2 size={16} />}
+                      onClick={() => openDeleteConfirm(selectedInvoice)}
+                      className={styles.cancelBtn}
+                    >
+                      Supprimer
+                    </Button>
+                  )}
+                </div>
+                <div className={styles.detailActionGroup}>
+                  {['sent', 'overdue'].includes(selectedInvoice.status) && selectedInvoice.paid_amount < selectedInvoice.total_amount && (
+                    <Button
+                      variant="secondary"
+                      icon={<Banknote size={16} />}
+                      onClick={() => {
+                        setIsDetailModalOpen(false);
+                        openPaymentModal(selectedInvoice);
+                      }}
+                    >
+                      Enregistrer paiement
+                    </Button>
+                  )}
                   {selectedInvoice.status === 'draft' && (
                     <Button
                       variant="primary"
@@ -1341,6 +1498,137 @@ export function Finance() {
             </ModalFooter>
           </>
         )}
+      </Modal>
+
+      {/* Payment Modal */}
+      <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)} size="md">
+        <ModalHeader
+          title="Enregistrer un paiement"
+          subtitle={invoiceForPayment ? `Facture ${invoiceForPayment.invoice_number}` : ''}
+          onClose={() => setIsPaymentModalOpen(false)}
+        />
+        <ModalBody>
+          {invoiceForPayment && (
+            <div className={styles.paymentForm}>
+              {/* Invoice Summary */}
+              <div className={styles.paymentSummary}>
+                <div className={styles.paymentSummaryRow}>
+                  <span>Total facture</span>
+                  <span>{formatCurrency(invoiceForPayment.total_amount)}</span>
+                </div>
+                <div className={styles.paymentSummaryRow}>
+                  <span>Deja paye</span>
+                  <span>{formatCurrency(invoiceForPayment.paid_amount)}</span>
+                </div>
+                <div className={`${styles.paymentSummaryRow} ${styles.paymentSummaryTotal}`}>
+                  <span>Solde restant</span>
+                  <span>{formatCurrency(invoiceForPayment.total_amount - invoiceForPayment.paid_amount)}</span>
+                </div>
+              </div>
+
+              {/* Payment Amount */}
+              <div className={styles.formSection}>
+                <Input
+                  label="Montant du paiement *"
+                  type="number"
+                  value={paymentFormData.amount}
+                  onChange={(e) => setPaymentFormData({ ...paymentFormData, amount: Number(e.target.value) })}
+                  error={paymentFormErrors.amount}
+                  min={0}
+                  max={invoiceForPayment.total_amount - invoiceForPayment.paid_amount}
+                  step={0.01}
+                  fullWidth
+                  icon={<DollarSign size={16} />}
+                />
+              </div>
+
+              {/* Payment Method */}
+              <div className={styles.formSection}>
+                <Select
+                  label="Methode de paiement *"
+                  options={paymentMethodOptions}
+                  value={paymentFormData.method}
+                  onChange={(value) => setPaymentFormData({ ...paymentFormData, method: value as PaymentMethod })}
+                  error={paymentFormErrors.method}
+                  fullWidth
+                  icon={<CreditCard size={16} />}
+                />
+              </div>
+
+              {/* Reference */}
+              <div className={styles.formSection}>
+                <Input
+                  label="Reference (optionnel)"
+                  type="text"
+                  value={paymentFormData.reference}
+                  onChange={(e) => setPaymentFormData({ ...paymentFormData, reference: e.target.value })}
+                  placeholder="Ex: CHQ-12345, VIR-67890..."
+                  fullWidth
+                />
+              </div>
+
+              {/* Notes */}
+              <div className={styles.formSection}>
+                <div className={styles.formFullWidth}>
+                  <label className={styles.formLabel}>Notes (optionnel)</label>
+                  <textarea
+                    className={styles.textarea}
+                    value={paymentFormData.notes}
+                    onChange={(e) => setPaymentFormData({ ...paymentFormData, notes: e.target.value })}
+                    rows={2}
+                    placeholder="Notes additionnelles..."
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="secondary" onClick={() => setIsPaymentModalOpen(false)}>
+            Annuler
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleCreatePayment}
+            loading={createPaymentMutation.isPending}
+            icon={<Banknote size={16} />}
+          >
+            Enregistrer le paiement
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)} size="sm">
+        <ModalHeader
+          title="Confirmer la suppression"
+          onClose={() => setIsDeleteConfirmOpen(false)}
+        />
+        <ModalBody>
+          <div className={styles.deleteConfirm}>
+            <AlertTriangle size={48} className={styles.deleteWarningIcon} />
+            <p>
+              Etes-vous sur de vouloir supprimer la facture{' '}
+              <strong>{invoiceToDelete?.invoice_number}</strong> ?
+            </p>
+            <p className={styles.deleteWarningText}>
+              Cette action est irreversible.
+            </p>
+          </div>
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="secondary" onClick={() => setIsDeleteConfirmOpen(false)}>
+            Annuler
+          </Button>
+          <Button
+            variant="primary"
+            onClick={handleDeleteInvoice}
+            loading={deleteMutation.isPending}
+            className={styles.deleteBtn}
+          >
+            Supprimer
+          </Button>
+        </ModalFooter>
       </Modal>
     </div>
   );
