@@ -10,12 +10,15 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         embed: resolve(__dirname, 'src/embed/index.html'),
+        'embed-chat': resolve(__dirname, 'src/embed-chat/index.html'),
+        'embed-packs': resolve(__dirname, 'src/embed-packs/index.html'),
       },
       output: {
         entryFileNames: (chunkInfo) => {
-          return chunkInfo.name === 'embed'
-            ? 'embed/[name].[hash].js'
-            : 'assets/[name].[hash].js'
+          if (chunkInfo.name.startsWith('embed')) {
+            return `${chunkInfo.name}/[name].[hash].js`
+          }
+          return 'assets/[name].[hash].js'
         },
       },
     },

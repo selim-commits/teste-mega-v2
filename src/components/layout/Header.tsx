@@ -15,9 +15,10 @@ import styles from './Header.module.css';
 interface HeaderProps {
   title: string;
   subtitle?: string;
+  action?: React.ReactNode;
 }
 
-export function Header({ title, subtitle }: HeaderProps) {
+export function Header({ title, subtitle, action }: HeaderProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -29,6 +30,7 @@ export function Header({ title, subtitle }: HeaderProps) {
           <h1 className={styles.title}>{title}</h1>
           {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         </div>
+        {action && <div className={styles.actions}>{action}</div>}
       </div>
 
       <div className={styles.right}>

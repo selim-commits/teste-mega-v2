@@ -13,6 +13,9 @@ import { AIConsole } from './pages/AIConsole';
 import { Team } from './pages/Team';
 import { Settings } from './pages/Settings';
 import { Bookings } from './pages/Bookings';
+import { WidgetBuilder } from './pages/WidgetBuilder';
+import { Packs } from './pages/Packs';
+import { Chat } from './pages/Chat';
 
 function App() {
   return (
@@ -28,9 +31,12 @@ function App() {
                 <Route path="/inventory" element={<Inventory />} />
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/finance" element={<Finance />} />
+                <Route path="/packs" element={<Packs />} />
+                <Route path="/chat" element={<Chat />} />
                 <Route path="/ai" element={<AIConsole />} />
                 <Route path="/team" element={<Team />} />
                 <Route path="/settings" element={<Settings />} />
+                <Route path="/widgets" element={<WidgetBuilder />} />
               </Route>
             </Routes>
           </BrowserRouter>

@@ -1,0 +1,1291 @@
+/* src/embed-packs/packs.css - Rooom OS Packs Widget Styles */
+
+/* Font imports */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+/* ========================================
+   CSS Custom Properties (Variables)
+   ======================================== */
+
+/* Light theme (default) */
+.rooom-packs-widget.rooom-light {
+  --rooom-bg-primary: #ffffff;
+  --rooom-bg-secondary: #f8f9fa;
+  --rooom-bg-tertiary: #f1f3f5;
+  --rooom-bg-elevated: #ffffff;
+  --rooom-text-primary: #1a1a1a;
+  --rooom-text-secondary: #6b7280;
+  --rooom-text-muted: #9ca3af;
+  --rooom-border-color: #e5e7eb;
+  --rooom-border-light: #f3f4f6;
+  --rooom-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --rooom-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --rooom-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --rooom-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --rooom-success: #10b981;
+  --rooom-success-bg: #ecfdf5;
+  --rooom-success-text: #065f46;
+  --rooom-error: #ef4444;
+  --rooom-error-bg: #fef2f2;
+  --rooom-warning: #f59e0b;
+  --rooom-warning-bg: #fffbeb;
+  --rooom-info: #3b82f6;
+  --rooom-info-bg: #eff6ff;
+  --rooom-overlay: rgba(0, 0, 0, 0.5);
+}
+
+/* Dark theme */
+.rooom-packs-widget.rooom-dark {
+  --rooom-bg-primary: #1a1a1a;
+  --rooom-bg-secondary: #262626;
+  --rooom-bg-tertiary: #333333;
+  --rooom-bg-elevated: #2d2d2d;
+  --rooom-text-primary: #ffffff;
+  --rooom-text-secondary: #a1a1aa;
+  --rooom-text-muted: #71717a;
+  --rooom-border-color: #3f3f46;
+  --rooom-border-light: #27272a;
+  --rooom-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --rooom-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --rooom-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --rooom-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.6), 0 10px 10px -5px rgba(0, 0, 0, 0.5);
+  --rooom-success: #34d399;
+  --rooom-success-bg: #064e3b;
+  --rooom-success-text: #6ee7b7;
+  --rooom-error: #f87171;
+  --rooom-error-bg: #7f1d1d;
+  --rooom-warning: #fbbf24;
+  --rooom-warning-bg: #78350f;
+  --rooom-info: #60a5fa;
+  --rooom-info-bg: #1e3a5f;
+  --rooom-overlay: rgba(0, 0, 0, 0.7);
+}
+
+/* ========================================
+   Base Widget Styles
+   ======================================== */
+
+#rooom-packs-root {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.rooom-packs-widget {
+  background-color: var(--rooom-bg-primary);
+  color: var(--rooom-text-primary);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--rooom-shadow-lg);
+  max-width: 100%;
+  min-height: 400px;
+}
+
+.rooom-packs-widget * {
+  box-sizing: border-box;
+}
+
+.rooom-packs-content {
+  padding: 24px;
+}
+
+/* ========================================
+   Typography
+   ======================================== */
+
+.rooom-packs-heading-display {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+}
+
+.rooom-packs-heading-1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 16px 0;
+}
+
+.rooom-packs-heading-2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 12px 0;
+}
+
+.rooom-packs-heading-3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0 0 8px 0;
+}
+
+.rooom-packs-text-sm {
+  font-size: 0.875rem;
+}
+
+.rooom-packs-text-xs {
+  font-size: 0.75rem;
+}
+
+.rooom-packs-text-lg {
+  font-size: 1.125rem;
+}
+
+.rooom-packs-text-xl {
+  font-size: 1.25rem;
+}
+
+.rooom-packs-text-2xl {
+  font-size: 1.5rem;
+}
+
+.rooom-packs-text-secondary {
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-packs-text-muted {
+  color: var(--rooom-text-muted);
+}
+
+.rooom-packs-font-medium {
+  font-weight: 500;
+}
+
+.rooom-packs-font-semibold {
+  font-weight: 600;
+}
+
+.rooom-packs-font-bold {
+  font-weight: 700;
+}
+
+/* ========================================
+   Header Styles
+   ======================================== */
+
+.rooom-packs-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--rooom-border-light);
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-packs-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.rooom-packs-studio-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rooom-packs-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.rooom-packs-logo-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background-color: var(--accent-color, #6366f1);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.rooom-packs-studio-name {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  font-style: italic;
+}
+
+/* ========================================
+   Tab Navigation
+   ======================================== */
+
+.rooom-packs-tabs {
+  display: flex;
+  gap: 4px;
+  background-color: var(--rooom-bg-tertiary);
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.rooom-packs-tab {
+  flex: 1;
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--rooom-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.rooom-packs-tab:hover:not(.rooom-packs-tab-active) {
+  color: var(--rooom-text-primary);
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-packs-tab-active {
+  color: var(--rooom-text-primary);
+  background-color: var(--rooom-bg-primary);
+  box-shadow: var(--rooom-shadow-sm);
+}
+
+/* ========================================
+   Grid Layout
+   ======================================== */
+
+.rooom-packs-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+@media (max-width: 640px) {
+  .rooom-packs-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========================================
+   Pack Card Styles
+   ======================================== */
+
+.rooom-pack-card {
+  background-color: var(--rooom-bg-primary);
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.rooom-pack-card:hover {
+  border-color: var(--accent-color, #6366f1);
+  box-shadow: var(--rooom-shadow-md);
+  transform: translateY(-2px);
+}
+
+.rooom-pack-card-featured {
+  border-color: var(--accent-color, #6366f1);
+  border-width: 2px;
+}
+
+.rooom-pack-card-popular::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent-color, #6366f1), #8b5cf6);
+  border-radius: 12px 12px 0 0;
+}
+
+.rooom-pack-badge {
+  position: absolute;
+  top: -10px;
+  right: 16px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 9999px;
+}
+
+.rooom-pack-badge-popular {
+  background-color: var(--accent-color, #6366f1);
+  color: #ffffff;
+}
+
+.rooom-pack-badge-featured {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1a1a1a;
+}
+
+.rooom-pack-badge-savings {
+  background-color: var(--rooom-success-bg);
+  color: var(--rooom-success);
+}
+
+.rooom-pack-header {
+  margin-bottom: 16px;
+}
+
+.rooom-pack-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.rooom-pack-hours {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--accent-color, #6366f1);
+  line-height: 1;
+}
+
+.rooom-pack-hours-label {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--rooom-text-secondary);
+  margin-left: 4px;
+}
+
+.rooom-pack-description {
+  font-size: 0.875rem;
+  color: var(--rooom-text-secondary);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.rooom-pack-pricing {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.rooom-pack-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.rooom-pack-price-original {
+  font-size: 1rem;
+  color: var(--rooom-text-muted);
+  text-decoration: line-through;
+}
+
+.rooom-pack-price-per-hour {
+  font-size: 0.875rem;
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-pack-savings {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background-color: var(--rooom-success-bg);
+  color: var(--rooom-success);
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.rooom-pack-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+}
+
+.rooom-pack-benefit {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 0.875rem;
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-pack-benefit-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--rooom-success);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.rooom-pack-validity {
+  font-size: 0.75rem;
+  color: var(--rooom-text-muted);
+  padding-top: 12px;
+  border-top: 1px solid var(--rooom-border-light);
+}
+
+/* ========================================
+   Subscription Card Styles
+   ======================================== */
+
+.rooom-subscription-card {
+  background-color: var(--rooom-bg-primary);
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.rooom-subscription-card:hover {
+  border-color: var(--accent-color, #6366f1);
+  box-shadow: var(--rooom-shadow-md);
+  transform: translateY(-2px);
+}
+
+.rooom-subscription-card-featured {
+  border-color: var(--accent-color, #6366f1);
+  border-width: 2px;
+  background: linear-gradient(135deg, var(--rooom-bg-primary) 0%, var(--rooom-bg-secondary) 100%);
+}
+
+.rooom-subscription-billing {
+  display: inline-block;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: var(--rooom-bg-tertiary);
+  color: var(--rooom-text-secondary);
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.rooom-subscription-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.rooom-subscription-pricing {
+  margin-bottom: 16px;
+}
+
+.rooom-subscription-price {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.rooom-subscription-price-period {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-subscription-yearly-note {
+  font-size: 0.875rem;
+  color: var(--rooom-text-muted);
+  margin-top: 4px;
+}
+
+.rooom-subscription-hours {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--rooom-bg-secondary);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.rooom-subscription-hours-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-color, #6366f1);
+}
+
+.rooom-subscription-hours-label {
+  font-size: 0.875rem;
+  color: var(--rooom-text-secondary);
+}
+
+/* ========================================
+   Gift Certificate Styles
+   ======================================== */
+
+.rooom-gift-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  margin-bottom: 24px;
+}
+
+.rooom-gift-amount-card {
+  padding: 20px;
+  text-align: center;
+  background-color: var(--rooom-bg-primary);
+  border: 2px solid var(--rooom-border-color);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rooom-gift-amount-card:hover {
+  border-color: var(--accent-color, #6366f1);
+  box-shadow: var(--rooom-shadow-md);
+}
+
+.rooom-gift-amount-card-selected {
+  border-color: var(--accent-color, #6366f1);
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-gift-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--accent-color, #6366f1);
+  margin-bottom: 4px;
+}
+
+.rooom-gift-amount-label {
+  font-size: 0.75rem;
+  color: var(--rooom-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.rooom-gift-custom-input {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background-color: var(--rooom-bg-secondary);
+  border-radius: 8px;
+}
+
+.rooom-gift-custom-input input {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 1rem;
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 6px;
+  background-color: var(--rooom-bg-primary);
+  color: var(--rooom-text-primary);
+}
+
+.rooom-gift-custom-input input:focus {
+  outline: none;
+  border-color: var(--accent-color, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* Gift Form */
+.rooom-gift-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rooom-gift-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rooom-gift-form-section-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--rooom-text-primary);
+  margin-bottom: 4px;
+}
+
+.rooom-gift-design-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.rooom-gift-design-option {
+  padding: 16px;
+  text-align: center;
+  border: 2px solid var(--rooom-border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rooom-gift-design-option:hover {
+  border-color: var(--rooom-text-muted);
+}
+
+.rooom-gift-design-option-selected {
+  border-color: var(--accent-color, #6366f1);
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-gift-design-icon {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 8px;
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-gift-design-option-selected .rooom-gift-design-icon {
+  color: var(--accent-color, #6366f1);
+}
+
+.rooom-gift-design-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* ========================================
+   Wallet Display
+   ======================================== */
+
+.rooom-wallet-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, var(--accent-color, #6366f1), #8b5cf6);
+  border-radius: 12px;
+  color: #ffffff;
+  margin-bottom: 24px;
+}
+
+.rooom-wallet-icon {
+  width: 48px;
+  height: 48px;
+  padding: 12px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+}
+
+.rooom-wallet-info {
+  flex: 1;
+}
+
+.rooom-wallet-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.rooom-wallet-balance {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.rooom-wallet-details {
+  display: flex;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.rooom-wallet-detail {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+/* ========================================
+   Login Prompt
+   ======================================== */
+
+.rooom-login-prompt {
+  text-align: center;
+  padding: 32px;
+  background-color: var(--rooom-bg-secondary);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.rooom-login-prompt-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+  color: var(--rooom-text-muted);
+}
+
+.rooom-login-prompt-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.rooom-login-prompt-text {
+  font-size: 0.875rem;
+  color: var(--rooom-text-secondary);
+  margin-bottom: 16px;
+}
+
+.rooom-login-prompt-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* ========================================
+   Purchase Modal
+   ======================================== */
+
+.rooom-packs-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: var(--rooom-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 1000;
+  animation: rooom-packs-fade-in 0.2s ease;
+}
+
+.rooom-packs-modal {
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background-color: var(--rooom-bg-primary);
+  border-radius: 16px;
+  box-shadow: var(--rooom-shadow-xl);
+  animation: rooom-packs-scale-in 0.2s ease;
+}
+
+.rooom-packs-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--rooom-border-light);
+}
+
+.rooom-packs-modal-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.rooom-packs-modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--rooom-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rooom-packs-modal-close:hover {
+  background-color: var(--rooom-bg-secondary);
+  color: var(--rooom-text-primary);
+}
+
+.rooom-packs-modal-body {
+  padding: 24px;
+}
+
+.rooom-packs-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--rooom-border-light);
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Purchase Summary */
+.rooom-purchase-summary {
+  background-color: var(--rooom-bg-secondary);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.rooom-purchase-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.rooom-purchase-item-name {
+  font-weight: 500;
+}
+
+.rooom-purchase-item-price {
+  font-weight: 600;
+}
+
+.rooom-purchase-divider {
+  height: 1px;
+  background-color: var(--rooom-border-color);
+  margin: 12px 0;
+}
+
+.rooom-purchase-total {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.rooom-purchase-total .rooom-purchase-item-price {
+  color: var(--accent-color, #6366f1);
+}
+
+/* Promo Code */
+.rooom-promo-input {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.rooom-promo-input input {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 8px;
+  background-color: var(--rooom-bg-primary);
+  color: var(--rooom-text-primary);
+  text-transform: uppercase;
+}
+
+.rooom-promo-input input:focus {
+  outline: none;
+  border-color: var(--accent-color, #6366f1);
+}
+
+.rooom-promo-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background-color: var(--rooom-success-bg);
+  color: var(--rooom-success);
+  font-size: 0.875rem;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* ========================================
+   Confirmation Screen
+   ======================================== */
+
+.rooom-packs-confirmation {
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.rooom-packs-confirmation-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  padding: 20px;
+  background-color: var(--rooom-success-bg);
+  border-radius: 50%;
+  color: var(--rooom-success);
+}
+
+.rooom-packs-confirmation-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.rooom-packs-confirmation-message {
+  font-size: 1rem;
+  color: var(--rooom-text-secondary);
+  margin-bottom: 24px;
+}
+
+.rooom-packs-confirmation-reference {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: var(--rooom-bg-secondary);
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  margin-bottom: 24px;
+}
+
+.rooom-packs-confirmation-gift-code {
+  display: block;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, var(--accent-color, #6366f1), #8b5cf6);
+  color: #ffffff;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  margin-bottom: 24px;
+}
+
+.rooom-packs-confirmation-details {
+  text-align: left;
+  padding: 20px;
+  background-color: var(--rooom-bg-secondary);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.rooom-packs-confirmation-detail {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 0.875rem;
+}
+
+.rooom-packs-confirmation-detail-label {
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-packs-confirmation-detail-value {
+  font-weight: 500;
+}
+
+/* ========================================
+   Button Styles
+   ======================================== */
+
+.rooom-packs-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rooom-packs-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rooom-packs-btn-primary {
+  background-color: var(--accent-color, #6366f1);
+  color: #ffffff;
+}
+
+.rooom-packs-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: var(--rooom-shadow-md);
+}
+
+.rooom-packs-btn-secondary {
+  background-color: var(--rooom-bg-secondary);
+  color: var(--rooom-text-primary);
+  border: 1px solid var(--rooom-border-color);
+}
+
+.rooom-packs-btn-secondary:hover:not(:disabled) {
+  background-color: var(--rooom-bg-tertiary);
+}
+
+.rooom-packs-btn-ghost {
+  background: transparent;
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-packs-btn-ghost:hover:not(:disabled) {
+  background-color: var(--rooom-bg-secondary);
+  color: var(--rooom-text-primary);
+}
+
+.rooom-packs-btn-block {
+  width: 100%;
+}
+
+.rooom-packs-btn-sm {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+}
+
+.rooom-packs-btn-lg {
+  padding: 16px 32px;
+  font-size: 1rem;
+}
+
+/* ========================================
+   Form Elements
+   ======================================== */
+
+.rooom-packs-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rooom-packs-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--rooom-text-primary);
+}
+
+.rooom-packs-label-required::after {
+  content: ' *';
+  color: var(--rooom-error);
+}
+
+.rooom-packs-input,
+.rooom-packs-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  color: var(--rooom-text-primary);
+  background-color: var(--rooom-bg-primary);
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rooom-packs-input::placeholder,
+.rooom-packs-textarea::placeholder {
+  color: var(--rooom-text-muted);
+}
+
+.rooom-packs-input:focus,
+.rooom-packs-textarea:focus {
+  outline: none;
+  border-color: var(--accent-color, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.rooom-packs-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.rooom-packs-input-error {
+  border-color: var(--rooom-error);
+}
+
+.rooom-packs-error-message {
+  font-size: 0.75rem;
+  color: var(--rooom-error);
+}
+
+/* ========================================
+   Loading & Error States
+   ======================================== */
+
+.rooom-packs-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  min-height: 300px;
+}
+
+.rooom-packs-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--rooom-border-color);
+  border-top-color: var(--accent-color, #6366f1);
+  border-radius: 50%;
+  animation: rooom-packs-spin 0.8s linear infinite;
+}
+
+.rooom-packs-loading-text {
+  margin-top: 16px;
+  color: var(--rooom-text-secondary);
+  font-size: 0.875rem;
+}
+
+.rooom-packs-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+}
+
+.rooom-packs-error-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--rooom-error);
+  margin-bottom: 16px;
+}
+
+.rooom-packs-error-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--rooom-error);
+  margin-bottom: 8px;
+}
+
+.rooom-packs-error-description {
+  font-size: 0.875rem;
+  color: var(--rooom-text-secondary);
+  margin-bottom: 20px;
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes rooom-packs-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes rooom-packs-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rooom-packs-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rooom-packs-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.rooom-packs-animate-fade-in {
+  animation: rooom-packs-fade-in 0.2s ease-out;
+}
+
+.rooom-packs-animate-slide-up {
+  animation: rooom-packs-slide-up 0.3s ease-out;
+}
+
+.rooom-packs-animate-scale-in {
+  animation: rooom-packs-scale-in 0.2s ease-out;
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.rooom-packs-flex {
+  display: flex;
+}
+
+.rooom-packs-flex-col {
+  flex-direction: column;
+}
+
+.rooom-packs-items-center {
+  align-items: center;
+}
+
+.rooom-packs-justify-between {
+  justify-content: space-between;
+}
+
+.rooom-packs-justify-center {
+  justify-content: center;
+}
+
+.rooom-packs-gap-2 {
+  gap: 8px;
+}
+
+.rooom-packs-gap-3 {
+  gap: 12px;
+}
+
+.rooom-packs-gap-4 {
+  gap: 16px;
+}
+
+.rooom-packs-mt-4 {
+  margin-top: 16px;
+}
+
+.rooom-packs-mt-6 {
+  margin-top: 24px;
+}
+
+.rooom-packs-mb-4 {
+  margin-bottom: 16px;
+}
+
+.rooom-packs-mb-6 {
+  margin-bottom: 24px;
+}
+
+.rooom-packs-text-center {
+  text-align: center;
+}
+
+.rooom-packs-hidden {
+  display: none !important;
+}
+
+/* ========================================
+   Responsive Adjustments
+   ======================================== */
+
+@media (max-width: 480px) {
+  .rooom-packs-content {
+    padding: 16px;
+  }
+
+  .rooom-packs-header {
+    padding: 12px 16px;
+  }
+
+  .rooom-packs-modal {
+    margin: 16px;
+    max-height: calc(100vh - 32px);
+  }
+
+  .rooom-pack-card,
+  .rooom-subscription-card {
+    padding: 20px;
+  }
+
+  .rooom-gift-design-options {
+    grid-template-columns: 1fr;
+  }
+
+  .rooom-wallet-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .rooom-wallet-details {
+    justify-content: center;
+  }
+}

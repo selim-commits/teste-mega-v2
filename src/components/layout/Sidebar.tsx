@@ -14,6 +14,9 @@ import {
   ChevronRight,
   Zap,
   UsersRound,
+  Gift,
+  MessageCircle,
+  Palette,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import styles from './Sidebar.module.css';
@@ -33,6 +36,9 @@ const mainNavItems: NavItem[] = [
   { icon: Users, label: 'Clients', path: '/clients' },
   { icon: UsersRound, label: 'Equipe', path: '/team' },
   { icon: BarChart3, label: 'Finance', path: '/finance' },
+  { icon: Gift, label: 'Packs', path: '/packs' },
+  { icon: MessageCircle, label: 'Chat', path: '/chat', badge: 'NEW' },
+  { icon: Palette, label: 'Widget Builder', path: '/widgets' },
   { icon: Bot, label: 'AI Console', path: '/ai', badge: 'BETA' },
 ];
 

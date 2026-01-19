@@ -1,0 +1,193 @@
+/* Custom CSS Editor Styles */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionTitle {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* Info Box */
+.infoBox {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--state-info-bg);
+  border-radius: var(--radius-md);
+}
+
+.infoIcon {
+  color: var(--state-info);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.infoText {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: var(--leading-normal);
+}
+
+/* Editor */
+.editorWrapper {
+  display: flex;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-secondary);
+  overflow: hidden;
+}
+
+.lineNumbers {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3) var(--space-2);
+  background-color: var(--bg-tertiary);
+  border-right: 1px solid var(--border-default);
+  user-select: none;
+  min-width: 40px;
+}
+
+.lineNumber {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  line-height: 1.6;
+  text-align: right;
+}
+
+.editor {
+  flex: 1;
+  padding: var(--space-3);
+  border: none;
+  background-color: transparent;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 300px;
+  outline: none;
+}
+
+.editor::placeholder {
+  color: var(--text-muted);
+}
+
+/* Suggestions */
+.suggestions {
+  position: absolute;
+  z-index: var(--z-dropdown);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  max-width: 300px;
+}
+
+.suggestionsHeader {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-muted);
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.suggestion:hover {
+  background-color: var(--bg-hover);
+}
+
+.suggestionName {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent-primary);
+}
+
+.suggestionDesc {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+/* Reference */
+.reference {
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.referenceSummary {
+  padding: var(--space-3);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background-color: var(--bg-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.referenceSummary:hover {
+  background-color: var(--bg-hover);
+}
+
+.referenceList {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2);
+  background-color: var(--bg-elevated);
+}
+
+.referenceItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.referenceItem:hover {
+  background-color: var(--bg-secondary);
+}
+
+.referenceName {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--accent-primary);
+}
+
+.referenceDesc {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}

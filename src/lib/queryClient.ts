@@ -94,4 +94,60 @@ export const queryKeys = {
       [...queryKeys.stats.all, 'revenue', studioId, period] as const,
     topClients: (studioId: string) => [...queryKeys.stats.all, 'topClients', studioId] as const,
   },
+
+  // Widget Configs
+  widgetConfigs: {
+    all: ['widgetConfigs'] as const,
+    lists: () => [...queryKeys.widgetConfigs.all, 'list'] as const,
+    details: () => [...queryKeys.widgetConfigs.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.widgetConfigs.details(), id] as const,
+    byStudio: (studioId: string) => [...queryKeys.widgetConfigs.all, 'studio', studioId] as const,
+    byType: (studioId: string, type: string) => [...queryKeys.widgetConfigs.all, 'type', studioId, type] as const,
+  },
+
+  // Pricing Products
+  pricing: {
+    all: ['pricing'] as const,
+    lists: () => [...queryKeys.pricing.all, 'list'] as const,
+    details: () => [...queryKeys.pricing.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.pricing.details(), id] as const,
+    byStudio: (studioId: string) => [...queryKeys.pricing.all, 'studio', studioId] as const,
+    active: (studioId: string) => [...queryKeys.pricing.all, 'active', studioId] as const,
+    byType: (studioId: string, type: string) => [...queryKeys.pricing.all, 'type', studioId, type] as const,
+  },
+
+  // Wallets
+  wallets: {
+    all: ['wallets'] as const,
+    details: () => [...queryKeys.wallets.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.wallets.details(), id] as const,
+    byClient: (clientId: string, studioId: string) => [...queryKeys.wallets.all, 'client', clientId, studioId] as const,
+    byStudio: (studioId: string) => [...queryKeys.wallets.all, 'studio', studioId] as const,
+    transactions: (walletId: string) => [...queryKeys.wallets.all, 'transactions', walletId] as const,
+  },
+
+  // Purchases
+  purchases: {
+    all: ['purchases'] as const,
+    details: () => [...queryKeys.purchases.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.purchases.details(), id] as const,
+    byClient: (clientId: string) => [...queryKeys.purchases.all, 'client', clientId] as const,
+    byStudio: (studioId: string) => [...queryKeys.purchases.all, 'studio', studioId] as const,
+    activeByClient: (clientId: string) => [...queryKeys.purchases.all, 'active', clientId] as const,
+  },
+
+  // Subscriptions
+  subscriptions: {
+    all: ['subscriptions'] as const,
+    detail: (id: string) => [...queryKeys.subscriptions.all, 'detail', id] as const,
+    byClient: (clientId: string) => [...queryKeys.subscriptions.all, 'client', clientId] as const,
+    active: (clientId: string) => [...queryKeys.subscriptions.all, 'active', clientId] as const,
+  },
+
+  // Gift Certificates
+  giftCertificates: {
+    all: ['giftCertificates'] as const,
+    byStudio: (studioId: string) => [...queryKeys.giftCertificates.all, 'studio', studioId] as const,
+    byCode: (studioId: string, code: string) => [...queryKeys.giftCertificates.all, 'code', studioId, code] as const,
+  },
 } as const;

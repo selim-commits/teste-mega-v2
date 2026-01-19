@@ -149,3 +149,129 @@ export {
   useToggleSpaceActive,
 } from './useSpaces';
 export type { SpaceFilters } from './useSpaces';
+
+// Pricing
+export {
+  usePricingProducts,
+  useActivePricingProducts,
+  usePricingProductsByType,
+  usePricingProduct,
+  useCreatePricingProduct,
+  useUpdatePricingProduct,
+  useDeletePricingProduct,
+  useTogglePricingProduct,
+  useUpdatePricingSortOrder,
+  pricingKeys,
+} from './usePricing';
+
+// Wallet
+export {
+  useClientWallet,
+  useGetOrCreateWallet,
+  useWallet,
+  useStudioWallets,
+  useWalletTransactions,
+  useCreditWallet,
+  useDebitWallet,
+  useRefundWallet,
+  useAdjustWallet,
+  walletKeys,
+} from './useWallet';
+
+// Purchases
+export {
+  useClientPurchases,
+  useStudioPurchases,
+  useActiveClientPurchases,
+  usePurchase,
+  usePurchaseWithProduct,
+  useCreatePurchase,
+  useUpdatePurchase,
+  useUseCredits,
+  useCancelPurchase,
+  useRefundPurchase,
+  useActiveSubscriptions,
+  useClientSubscriptions,
+  useSubscription,
+  useCreateSubscription,
+  useCancelSubscription,
+  usePauseSubscription,
+  useResumeSubscription,
+  useStudioGiftCertificates,
+  useGiftCertificateByCode,
+  useCreateGiftCertificate,
+  useRedeemGiftCertificate,
+  purchaseKeys,
+} from './usePurchases';
+
+// Widget Config
+export {
+  useWidgetConfigs,
+  useActiveWidgetConfigs,
+  useWidgetConfigsByType,
+  useWidgetConfig,
+  useCreateWidgetConfig,
+  useUpdateWidgetConfig,
+  useUpdateWidgetTheme,
+  useUpdateWidgetCustomCSS,
+  useDeleteWidgetConfig,
+  useDuplicateWidgetConfig,
+  useToggleWidgetConfig,
+  useIncrementEmbedCount,
+  useUpdateAllowedDomains,
+  useGenerateEmbedCode,
+  widgetConfigKeys,
+} from './useWidgetConfig';
+
+// Packs (additional pack-specific hooks)
+export {
+  usePacks,
+  usePacksByType,
+  useActivePacks,
+  usePack,
+  usePackStats,
+  useCreatePack,
+  useUpdatePack,
+  useDeletePack,
+  useTogglePackActive,
+  useTogglePackFeatured,
+  useUpdatePackOrder,
+  packQueryKeys,
+  purchaseQueryKeys,
+} from './usePacks';
+
+// Chat
+export {
+  // Conversation hooks
+  useConversation,
+  useConversationWithRelations,
+  useStudioConversations,
+  useActiveConversations,
+  useWaitingConversations,
+  useAssignedConversations,
+  // Message hooks
+  useMessages,
+  useSendMessage,
+  useSendMessageWithAI,
+  useMarkMessagesRead,
+  // Management hooks
+  useCreateConversation,
+  useEscalateToHuman,
+  useAssignConversation,
+  useUnassignConversation,
+  useResolveConversation,
+  useCloseConversation,
+  useReopenConversation,
+  useAddConversationTags,
+  useRemoveConversationTags,
+  useLinkConversationToClient,
+  // Stats hooks
+  useUnreadCount,
+  useConversationCounts,
+  useActiveConversationsCount,
+  useWaitingForHumanCount,
+  // Utility hooks
+  useLiveChat,
+  // Query keys
+  chatQueryKeys,
+} from './useChat';
