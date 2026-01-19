@@ -1,22 +1,38 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '../types/database'
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Missing Supabase environment variables. Please set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env.local file.'
+// Demo mode when Supabase is not configured
+export const isDemoMode = !supabaseUrl || !supabaseAnonKey
+
+let supabaseClient: SupabaseClient<Database>
+
+if (isDemoMode) {
+  console.warn('Running in demo mode - Supabase not configured')
+  // Create a mock client that won't make real API calls
+  supabaseClient = createClient<Database>(
+    'https://demo.supabase.co',
+    'demo-anon-key',
+    {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false,
+      },
+    }
   )
+} else {
+  supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+  })
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-  },
-})
+export const supabase = supabaseClient
 
 // Helper to get the current user
 export async function getCurrentUser() {
