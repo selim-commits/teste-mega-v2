@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rooom OS - Widget Demo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background-color: #f5f5f7;
+      color: #1d1d1f;
+      line-height: 1.5;
+      min-height: 100vh;
+    }
+
+    .demo-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    .demo-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .demo-header h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1E3A5F;
+      margin-bottom: 8px;
+    }
+
+    .demo-header p {
+      font-size: 1.125rem;
+      color: #6e6e73;
+    }
+
+    .demo-layout {
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+      .demo-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Config Panel */
+    .config-panel {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .config-panel h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #1E3A5F;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #1d1d1f;
+      margin-bottom: 8px;
+    }
+
+    .form-group input[type="text"],
+    .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 1rem;
+      border: 1px solid #d2d2d7;
+      border-radius: 8px;
+      background: #fafafa;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .form-group input[type="text"]:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #1E3A5F;
+      box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.1);
+    }
+
+    .form-group input[type="color"] {
+      width: 100%;
+      height: 48px;
+      padding: 4px;
+      border: 1px solid #d2d2d7;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #fafafa;
+    }
+
+    .form-group input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 4px;
+    }
+
+    .form-group input[type="color"]::-webkit-color-swatch {
+      border-radius: 4px;
+      border: none;
+    }
+
+    .color-preview {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .color-preview span {
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+      font-size: 0.875rem;
+      color: #6e6e73;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 20px;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #1E3A5F;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #15293f;
+    }
+
+    .btn-secondary {
+      background: #e8e8ed;
+      color: #1d1d1f;
+    }
+
+    .btn-secondary:hover {
+      background: #d2d2d7;
+    }
+
+    /* Code Snippet */
+    .code-section {
+      margin-top: 32px;
+    }
+
+    .code-section h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #1E3A5F;
+    }
+
+    .code-block {
+      background: #1d1d1f;
+      border-radius: 12px;
+      padding: 20px;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-block pre {
+      margin: 0;
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      color: #e8e8ed;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .code-block .keyword {
+      color: #ff79c6;
+    }
+
+    .code-block .string {
+      color: #f1fa8c;
+    }
+
+    .code-block .tag {
+      color: #8be9fd;
+    }
+
+    .code-block .attr {
+      color: #50fa7b;
+    }
+
+    .code-block .comment {
+      color: #6272a4;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 8px 14px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.1);
+      color: #e8e8ed;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .copy-btn.copied {
+      background: #50fa7b;
+      color: #1d1d1f;
+    }
+
+    /* Widget Container */
+    .widget-section {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    .widget-section h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: #1E3A5F;
+    }
+
+    .widget-container {
+      min-height: 600px;
+      border: 2px dashed #d2d2d7;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fafafa;
+      transition: all 0.3s;
+    }
+
+    .widget-container.loaded {
+      border: none;
+      background: transparent;
+    }
+
+    .widget-placeholder {
+      text-align: center;
+      color: #6e6e73;
+    }
+
+    .widget-placeholder svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .widget-placeholder p {
+      font-size: 1rem;
+    }
+
+    .widget-container iframe {
+      width: 100%;
+      height: 650px;
+      border: none;
+      border-radius: 12px;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 16px 24px;
+      background: #1d1d1f;
+      color: white;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Event Log */
+    .event-log {
+      margin-top: 24px;
+    }
+
+    .event-log h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #1E3A5F;
+    }
+
+    .event-log-content {
+      background: #f5f5f7;
+      border-radius: 8px;
+      padding: 16px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+      font-size: 0.75rem;
+    }
+
+    .event-item {
+      padding: 4px 0;
+      border-bottom: 1px solid #e8e8ed;
+    }
+
+    .event-item:last-child {
+      border-bottom: none;
+    }
+
+    .event-time {
+      color: #6e6e73;
+    }
+
+    .event-type {
+      color: #1E3A5F;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <header class="demo-header">
+      <h1>Rooom OS Widget Demo</h1>
+      <p>Configure and test the booking widget for your studio</p>
+    </header>
+
+    <div class="demo-layout">
+      <!-- Configuration Panel -->
+      <div class="config-panel">
+        <h2>Configuration</h2>
+
+        <div class="form-group">
+          <label for="studioId">Studio ID</label>
+          <input type="text" id="studioId" placeholder="e.g., studio-123" value="demo-studio">
+        </div>
+
+        <div class="form-group">
+          <label for="theme">Theme</label>
+          <select id="theme">
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="accentColor">Accent Color</label>
+          <input type="color" id="accentColor" value="#1E3A5F">
+          <div class="color-preview">
+            <span id="colorValue">#1E3A5F</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="locale">Locale</label>
+          <select id="locale">
+            <option value="fr">French (fr)</option>
+            <option value="en">English (en)</option>
+            <option value="es">Spanish (es)</option>
+            <option value="de">German (de)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="services">Services (comma-separated IDs)</label>
+          <input type="text" id="services" placeholder="e.g., service-1,service-2">
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" id="loadWidget">Load Widget</button>
+          <button class="btn btn-secondary" id="reloadWidget">Reload</button>
+        </div>
+
+        <!-- Code Snippet -->
+        <div class="code-section">
+          <h3>Embed Code</h3>
+          <div class="code-block">
+            <button class="copy-btn" id="copyCode">Copy</button>
+            <pre id="codeSnippet"></pre>
+          </div>
+        </div>
+
+        <!-- Event Log -->
+        <div class="event-log">
+          <h3>Event Log</h3>
+          <div class="event-log-content" id="eventLog">
+            <div class="event-item">
+              <span class="event-time">[--:--:--]</span>
+              <span class="event-type">Waiting for widget...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Widget Display -->
+      <div class="widget-section">
+        <h2>Widget Preview</h2>
+        <div class="widget-container" id="widgetContainer">
+          <div class="widget-placeholder">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <p>Click "Load Widget" to preview</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // DOM Elements
+    const studioIdInput = document.getElementById('studioId');
+    const themeSelect = document.getElementById('theme');
+    const accentColorInput = document.getElementById('accentColor');
+    const colorValueSpan = document.getElementById('colorValue');
+    const localeSelect = document.getElementById('locale');
+    const servicesInput = document.getElementById('services');
+    const loadWidgetBtn = document.getElementById('loadWidget');
+    const reloadWidgetBtn = document.getElementById('reloadWidget');
+    const copyCodeBtn = document.getElementById('copyCode');
+    const codeSnippet = document.getElementById('codeSnippet');
+    const widgetContainer = document.getElementById('widgetContainer');
+    const eventLog = document.getElementById('eventLog');
+    const toast = document.getElementById('toast');
+
+    let currentIframe = null;
+
+    // Get current config
+    function getConfig() {
+      return {
+        studioId: studioIdInput.value.trim(),
+        theme: themeSelect.value,
+        accentColor: accentColorInput.value,
+        locale: localeSelect.value,
+        services: servicesInput.value.trim()
+      };
+    }
+
+    // Generate embed code with syntax highlighting
+    function generateCodeSnippet() {
+      const config = getConfig();
+      const servicesAttr = config.services
+        ? `\n  <span class="attr">data-rooom-services</span>=<span class="string">"${escapeHtml(config.services)}"</span>`
+        : '';
+
+      const code = `<span class="comment">&lt;!-- Rooom OS Booking Widget --&gt;</span>
+<span class="tag">&lt;div</span>
+  <span class="attr">id</span>=<span class="string">"rooom-booking"</span>
+  <span class="attr">data-rooom-studio-id</span>=<span class="string">"${escapeHtml(config.studioId)}"</span>
+  <span class="attr">data-rooom-theme</span>=<span class="string">"${config.theme}"</span>
+  <span class="attr">data-rooom-accent-color</span>=<span class="string">"${config.accentColor}"</span>
+  <span class="attr">data-rooom-locale</span>=<span class="string">"${config.locale}"</span>${servicesAttr}
+<span class="tag">&gt;&lt;/div&gt;</span>
+
+<span class="comment">&lt;!-- Load the widget script --&gt;</span>
+<span class="tag">&lt;script</span> <span class="attr">src</span>=<span class="string">"https://embed.rooom-os.com/loader.js"</span><span class="tag">&gt;&lt;/script&gt;</span>`;
+
+      codeSnippet.innerHTML = code;
+    }
+
+    // Get plain code for copying
+    function getPlainCode() {
+      const config = getConfig();
+      const servicesAttr = config.services
+        ? `\n  data-rooom-services="${config.services}"`
+        : '';
+
+      return `<!-- Rooom OS Booking Widget -->
+<div
+  id="rooom-booking"
+  data-rooom-studio-id="${config.studioId}"
+  data-rooom-theme="${config.theme}"
+  data-rooom-accent-color="${config.accentColor}"
+  data-rooom-locale="${config.locale}"${servicesAttr}
+></div>
+
+<!-- Load the widget script -->
+<script src="https://embed.rooom-os.com/loader.js"><\/script>`;
+    }
+
+    // Escape HTML
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    // Show toast
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    // Log event
+    function logEvent(type, payload = null) {
+      const now = new Date();
+      const time = now.toLocaleTimeString('en-US', { hour12: false });
+      const item = document.createElement('div');
+      item.className = 'event-item';
+      item.innerHTML = `<span class="event-time">[${time}]</span> <span class="event-type">${type}</span>${payload ? ': ' + JSON.stringify(payload) : ''}`;
+      eventLog.insertBefore(item, eventLog.firstChild);
+    }
+
+    // Load widget
+    function loadWidget() {
+      const config = getConfig();
+
+      if (!config.studioId) {
+        showToast('Please enter a Studio ID');
+        return;
+      }
+
+      // Remove existing iframe
+      if (currentIframe) {
+        currentIframe.remove();
+        currentIframe = null;
+      }
+
+      // Clear placeholder and add loaded class
+      widgetContainer.innerHTML = '';
+      widgetContainer.classList.add('loaded');
+
+      // Build URL with params
+      const params = new URLSearchParams({
+        studioId: config.studioId,
+        theme: config.theme,
+        accentColor: config.accentColor,
+        locale: config.locale
+      });
+
+      if (config.services) {
+        params.set('services', config.services);
+      }
+
+      // Create iframe pointing to local dev server
+      currentIframe = document.createElement('iframe');
+      currentIframe.src = `/src/embed/index.html?${params.toString()}`;
+      currentIframe.setAttribute('title', 'Rooom OS Booking Widget');
+
+      widgetContainer.appendChild(currentIframe);
+      logEvent('Widget loaded', { studioId: config.studioId });
+      showToast('Widget loaded successfully');
+    }
+
+    // Copy code to clipboard
+    async function copyCode() {
+      const code = getPlainCode();
+      try {
+        await navigator.clipboard.writeText(code);
+        copyCodeBtn.textContent = 'Copied!';
+        copyCodeBtn.classList.add('copied');
+        showToast('Code copied to clipboard');
+        setTimeout(() => {
+          copyCodeBtn.textContent = 'Copy';
+          copyCodeBtn.classList.remove('copied');
+        }, 2000);
+      } catch (err) {
+        showToast('Failed to copy code');
+      }
+    }
+
+    // Handle messages from widget
+    window.addEventListener('message', (event) => {
+      // Accept messages from same origin (local dev)
+      if (event.origin !== window.location.origin) return;
+
+      const { type, payload } = event.data || {};
+      if (type && type.startsWith('ROOOM_')) {
+        logEvent(type, payload);
+
+        // Auto-resize iframe
+        if (type === 'ROOOM_RESIZE' && currentIframe && payload?.height) {
+          currentIframe.style.height = `${payload.height}px`;
+        }
+      }
+    });
+
+    // Event listeners
+    accentColorInput.addEventListener('input', (e) => {
+      colorValueSpan.textContent = e.target.value.toUpperCase();
+      generateCodeSnippet();
+    });
+
+    [studioIdInput, themeSelect, localeSelect, servicesInput].forEach(el => {
+      el.addEventListener('input', generateCodeSnippet);
+      el.addEventListener('change', generateCodeSnippet);
+    });
+
+    loadWidgetBtn.addEventListener('click', loadWidget);
+    reloadWidgetBtn.addEventListener('click', loadWidget);
+    copyCodeBtn.addEventListener('click', copyCode);
+
+    // Initialize
+    generateCodeSnippet();
+  </script>
+</body>
+</html>
