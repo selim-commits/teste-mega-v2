@@ -1,0 +1,383 @@
+/* Dashboard Page Styles */
+
+.page {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+.content {
+  padding: var(--space-6);
+}
+
+/* KPI Grid */
+.kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (max-width: 1200px) {
+  .kpiGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .kpiGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpiCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpiHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.kpiTitle {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.kpiIcon {
+  width: 36px;
+  height: 36px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+}
+
+.kpiValue {
+  font-size: var(--text-3xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: var(--tracking-tight);
+  margin-bottom: var(--space-2);
+}
+
+.kpiChange {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+}
+
+.kpiUp {
+  color: var(--accent-green);
+}
+
+.kpiDown {
+  color: var(--accent-red);
+}
+
+.kpiPeriod {
+  color: var(--text-muted);
+  margin-left: var(--space-1);
+}
+
+/* Bento Grid */
+.bentoGrid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: minmax(160px, auto);
+  gap: var(--space-4);
+}
+
+.bentoLarge {
+  grid-column: span 3;
+  grid-row: span 2;
+}
+
+.bentoMedium {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+.bentoSmall {
+  grid-column: span 1;
+  grid-row: span 1;
+}
+
+.bentoWide {
+  grid-column: span 4;
+  grid-row: span 1;
+}
+
+@media (max-width: 1200px) {
+  .bentoGrid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .bentoLarge {
+    grid-column: span 2;
+  }
+
+  .bentoWide {
+    grid-column: span 4;
+  }
+}
+
+@media (max-width: 768px) {
+  .bentoGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bentoLarge,
+  .bentoMedium,
+  .bentoWide {
+    grid-column: span 2;
+  }
+
+  .bentoSmall {
+    grid-column: span 1;
+  }
+}
+
+/* Schedule Card */
+.scheduleCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.scheduleList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+}
+
+.scheduleItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3);
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.scheduleItem:hover {
+  background-color: var(--bg-surface-hover);
+}
+
+.scheduleTime {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  min-width: 100px;
+}
+
+.scheduleDetails {
+  flex: 1;
+  min-width: 0;
+}
+
+.scheduleStudio {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.scheduleClient {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+/* AI Card */
+.aiCard {
+  background: linear-gradient(135deg, rgba(255, 68, 0, 0.1), rgba(255, 107, 53, 0.05));
+  border-color: rgba(255, 68, 0, 0.2);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.aiHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.aiIcon {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--accent-orange), #ff6b35);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-white);
+}
+
+.aiLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--tracking-widest);
+  color: var(--accent-orange);
+}
+
+.aiTitle {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.aiText {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  flex: 1;
+}
+
+.aiBtn {
+  margin-top: var(--space-4);
+  align-self: flex-start;
+}
+
+/* Quick Stats */
+.statIcon {
+  width: 32px;
+  height: 32px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-3);
+}
+
+.statValue {
+  font-size: var(--text-2xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.statLabel {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Alerts */
+.alertList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.alertItem {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+}
+
+.alertIcon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.alertIcon.warning {
+  background-color: rgba(255, 184, 0, 0.15);
+  color: var(--accent-yellow);
+}
+
+.alertIcon.error {
+  background-color: rgba(229, 57, 53, 0.15);
+  color: var(--accent-red);
+}
+
+.alertIcon.info {
+  background-color: rgba(24, 144, 204, 0.15);
+  color: var(--accent-blue);
+}
+
+.alertIcon.success {
+  background-color: rgba(0, 184, 61, 0.15);
+  color: var(--accent-green);
+}
+
+.alertContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.alertTitle {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.alertMessage {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+/* Activity */
+.activityList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.activityItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.activityIcon {
+  width: 28px;
+  height: 28px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.activityContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.activityAction {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.activityDetails {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.activityTime {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}

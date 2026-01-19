@@ -1,0 +1,21 @@
+/* App Layout Styles */
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+.main {
+  flex: 1;
+  margin-left: 260px;
+  min-height: 100vh;
+  transition: margin-left var(--duration-base) var(--ease-default);
+}
+
+/* Responsive - collapsed sidebar */
+@media (max-width: 1024px) {
+  .main {
+    margin-left: 72px;
+  }
+}

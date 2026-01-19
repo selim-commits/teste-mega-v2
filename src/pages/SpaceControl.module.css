@@ -1,0 +1,292 @@
+/* Space Control Page Styles */
+
+.page {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+.content {
+  padding: var(--space-6);
+}
+
+/* Toolbar */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.dateNav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.currentDate {
+  font-size: var(--text-lg);
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-left: var(--space-4);
+  text-transform: capitalize;
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.viewToggle {
+  display: flex;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.viewBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.viewBtn:hover {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-primary);
+}
+
+.viewBtn.active {
+  background-color: var(--bg-surface-hover);
+  color: var(--accent-orange);
+}
+
+/* Calendar */
+.calendarCard {
+  margin-bottom: var(--space-6);
+  overflow: hidden;
+}
+
+.calendar {
+  display: flex;
+  overflow-x: auto;
+}
+
+.timeColumn {
+  flex-shrink: 0;
+  width: 80px;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.cornerCell {
+  height: 60px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.timeCell {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.studioColumn {
+  flex: 1;
+  min-width: 200px;
+  border-right: 1px solid var(--border-subtle);
+}
+
+.studioColumn:last-child {
+  border-right: none;
+}
+
+.studioHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 60px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface);
+}
+
+.studioColor {
+  width: 4px;
+  height: 32px;
+  border-radius: var(--radius-full);
+}
+
+.studioInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.studioName {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.studioType {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.studioMenu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.studioMenu:hover {
+  background-color: var(--bg-surface-hover);
+  color: var(--text-secondary);
+}
+
+.slotGrid {
+  display: grid;
+  grid-template-rows: repeat(15, 50px);
+}
+
+.emptySlot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.emptySlot:hover {
+  background-color: var(--bg-surface);
+}
+
+.emptySlot .addIcon {
+  opacity: 0;
+  color: var(--text-muted);
+  transition: opacity var(--duration-fast) var(--ease-default);
+}
+
+.emptySlot:hover .addIcon {
+  opacity: 1;
+}
+
+.bookingSlot {
+  padding: var(--space-3);
+  border-left: 3px solid;
+  margin: 2px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bookingTime {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.bookingClient {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.bookingType {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+/* Studio Overview */
+.studioOverview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 1200px) {
+  .studioOverview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .studioOverview {
+    grid-template-columns: 1fr;
+  }
+}
+
+.studioCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.studioCardHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.studioCardColor {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  opacity: 0.2;
+}
+
+.studioCardName {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.studioCardType {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.studioCardStats {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.studioCardStat {
+  display: flex;
+  flex-direction: column;
+}
+
+.studioCardValue {
+  font-size: var(--text-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.studioCardLabel {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
