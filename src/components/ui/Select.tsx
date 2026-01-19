@@ -50,7 +50,9 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(
     const [selectedValue, setSelectedValue] = useState(value ?? defaultValue ?? '');
     const selectRef = useRef<HTMLDivElement>(null);
 
-    const selectedOption = options.find((opt) => opt.value === selectedValue);
+    // Ensure options is always an array
+    const safeOptions = options || [];
+    const selectedOption = safeOptions.find((opt) => opt.value === selectedValue);
 
     useEffect(() => {
       if (value !== undefined) {
@@ -70,7 +72,7 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(
     }, []);
 
     const handleSelect = (optionValue: string) => {
-      const option = options.find((opt) => opt.value === optionValue);
+      const option = safeOptions.find((opt) => opt.value === optionValue);
       if (option?.disabled) return;
 
       setSelectedValue(optionValue);
@@ -95,20 +97,20 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(
           if (!isOpen) {
             setIsOpen(true);
           } else {
-            const currentIndex = options.findIndex((opt) => opt.value === selectedValue);
-            const nextIndex = Math.min(currentIndex + 1, options.length - 1);
-            if (!options[nextIndex].disabled) {
-              setSelectedValue(options[nextIndex].value);
+            const currentIndex = safeOptions.findIndex((opt) => opt.value === selectedValue);
+            const nextIndex = Math.min(currentIndex + 1, safeOptions.length - 1);
+            if (safeOptions[nextIndex] && !safeOptions[nextIndex].disabled) {
+              setSelectedValue(safeOptions[nextIndex].value);
             }
           }
           break;
         case 'ArrowUp':
           event.preventDefault();
           if (isOpen) {
-            const currentIndex = options.findIndex((opt) => opt.value === selectedValue);
+            const currentIndex = safeOptions.findIndex((opt) => opt.value === selectedValue);
             const prevIndex = Math.max(currentIndex - 1, 0);
-            if (!options[prevIndex].disabled) {
-              setSelectedValue(options[prevIndex].value);
+            if (safeOptions[prevIndex] && !safeOptions[prevIndex].disabled) {
+              setSelectedValue(safeOptions[prevIndex].value);
             }
           }
           break;
@@ -172,7 +174,7 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(
                 transition={{ duration: 0.15, ease: 'easeOut' }}
                 role="listbox"
               >
-                {options.map((option) => (
+                {safeOptions.map((option) => (
                   <motion.li
                     key={option.value}
                     className={cn(

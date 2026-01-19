@@ -22,6 +22,7 @@ import { Button } from '../components/ui/Button';
 import { Skeleton } from '../components/ui/Skeleton';
 import { formatCurrency } from '../lib/utils';
 import { useAuthContext } from '../contexts/AuthContext';
+import { DEMO_STUDIO_ID } from '../stores/authStore';
 import {
   useDashboardStats,
   useTodayBookings,
@@ -165,8 +166,8 @@ export function Dashboard() {
   // Get user's team memberships to find their studioId
   const { data: teamMemberships, isLoading: teamLoading } = useTeamMembersByUser(user?.id || '');
 
-  // Get the first studio the user belongs to (in a real app, you might have studio selection)
-  const studioId = teamMemberships?.[0]?.studio_id || '';
+  // Get the first studio the user belongs to, fallback to demo studio
+  const studioId = teamMemberships?.[0]?.studio_id || DEMO_STUDIO_ID;
 
   // Fetch dashboard stats
   const {
