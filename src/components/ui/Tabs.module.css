@@ -1,0 +1,153 @@
+/* Tabs Component Styles */
+
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* List */
+.list {
+  display: flex;
+  gap: var(--space-1);
+  position: relative;
+}
+
+.list-default {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1);
+}
+
+.list-pills {
+  gap: var(--space-2);
+}
+
+.list-underline {
+  gap: var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  padding-bottom: 0;
+}
+
+/* Trigger */
+.trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  color: var(--text-tertiary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-default);
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.trigger:hover:not(.disabled) {
+  color: var(--text-secondary);
+}
+
+.trigger.active {
+  color: var(--text-primary);
+}
+
+.trigger.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Trigger Variants */
+.trigger-default {
+  border-radius: var(--radius-md);
+}
+
+.trigger-pills {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+}
+
+.trigger-pills:hover:not(.disabled) {
+  border-color: var(--border-strong);
+}
+
+.trigger-pills.active {
+  background-color: var(--color-white);
+  color: var(--color-black);
+  border-color: var(--color-white);
+}
+
+.trigger-underline {
+  padding-bottom: var(--space-3);
+}
+
+/* Sizes */
+.sm {
+  height: 28px;
+  padding: 0 var(--space-3);
+  font-size: var(--text-xs);
+}
+
+.md {
+  height: 36px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+}
+
+.lg {
+  height: 44px;
+  padding: 0 var(--space-5);
+  font-size: var(--text-base);
+}
+
+/* Icon */
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.sm .icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.lg .icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Indicator (for default variant) */
+.indicator {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-elevated);
+  border-radius: var(--radius-md);
+  z-index: -1;
+}
+
+/* Underline (for underline variant) */
+.underline {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--accent-orange);
+  border-radius: var(--radius-full);
+}
+
+/* Content */
+.content {
+  color: var(--text-secondary);
+}

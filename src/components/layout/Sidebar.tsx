@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Zap,
+  UsersRound,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import styles from './Sidebar.module.css';
@@ -28,6 +29,7 @@ const mainNavItems: NavItem[] = [
   { icon: Calendar, label: 'Space Control', path: '/spaces' },
   { icon: Package, label: 'Inventaire', path: '/inventory' },
   { icon: Users, label: 'Clients', path: '/clients' },
+  { icon: UsersRound, label: 'Equipe', path: '/team' },
   { icon: BarChart3, label: 'Finance', path: '/finance' },
   { icon: Bot, label: 'AI Console', path: '/ai', badge: 'BETA' },
 ];

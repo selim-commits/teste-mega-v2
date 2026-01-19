@@ -1,0 +1,105 @@
+/* Progress Component Styles */
+
+.container {
+  width: 100%;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.label {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.percentage {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.track {
+  width: 100%;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.track.sm {
+  height: 4px;
+}
+
+.track.md {
+  height: 8px;
+}
+
+.track.lg {
+  height: 12px;
+}
+
+.bar {
+  height: 100%;
+  border-radius: var(--radius-full);
+}
+
+.bar.default {
+  background-color: var(--accent-orange);
+}
+
+.bar.success {
+  background-color: var(--accent-green);
+}
+
+.bar.warning {
+  background-color: var(--accent-yellow);
+}
+
+.bar.error {
+  background-color: var(--accent-red);
+}
+
+/* Circular Progress */
+.circular {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.circleTrack {
+  fill: none;
+  stroke: var(--bg-surface);
+}
+
+.circleBar {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.circleBar.default {
+  stroke: var(--accent-orange);
+}
+
+.circleBar.success {
+  stroke: var(--accent-green);
+}
+
+.circleBar.warning {
+  stroke: var(--accent-yellow);
+}
+
+.circleBar.error {
+  stroke: var(--accent-red);
+}
+
+.circularLabel {
+  position: absolute;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}

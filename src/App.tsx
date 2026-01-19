@@ -6,6 +6,8 @@ import { Inventory } from './pages/Inventory';
 import { Clients } from './pages/Clients';
 import { Finance } from './pages/Finance';
 import { AIConsole } from './pages/AIConsole';
+import { Team } from './pages/Team';
+import { Settings } from './pages/Settings';
 
 function App() {
   return (
@@ -18,6 +20,8 @@ function App() {
           <Route path="/clients" element={<Clients />} />
           <Route path="/finance" element={<Finance />} />
           <Route path="/ai" element={<AIConsole />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>
