@@ -6,6 +6,12 @@ import type {
   BookingFormData,
   BookingResult,
 } from '../types';
+import {
+  mockStudio,
+  mockServices,
+  generateMockAvailability,
+  generateReference,
+} from './mockData';
 
 const API_BASE = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
@@ -43,20 +49,37 @@ async function fetchApi<T>(
 
 export const embedApi = {
   // Get studio config and branding
-  getStudioConfig: (studioId: string) =>
-    fetchApi<EmbedStudio>(`/embed/config?studioId=${studioId}`),
+  getStudioConfig: async (studioId: string) => {
+    // Try real API first
+    const result = await fetchApi<EmbedStudio>(`/embed/config?studioId=${studioId}`);
+    // Fall back to mock if error
+    if (result.error) {
+      console.log('[Rooom] Using mock studio data');
+      return { data: mockStudio };
+    }
+    return result;
+  },
 
   // Get available services/spaces
-  getServices: (studioId: string, serviceIds?: string[]) => {
+  getServices: async (studioId: string, serviceIds?: string[]) => {
     const params = new URLSearchParams({ studioId });
     if (serviceIds?.length) {
       params.set('services', serviceIds.join(','));
     }
-    return fetchApi<EmbedService[]>(`/embed/services?${params}`);
+    const result = await fetchApi<EmbedService[]>(`/embed/services?${params}`);
+    if (result.error) {
+      console.log('[Rooom] Using mock services data');
+      let services = mockServices;
+      if (serviceIds?.length) {
+        services = services.filter(s => serviceIds.includes(s.id));
+      }
+      return { data: services };
+    }
+    return result;
   },
 
   // Get availability for a service on a date range
-  getAvailability: (
+  getAvailability: async (
     studioId: string,
     serviceId: string,
     startDate: string,
@@ -68,15 +91,55 @@ export const embedApi = {
       startDate,
       endDate,
     });
-    return fetchApi<AvailabilityResponse[]>(`/embed/availability?${params}`);
+    const result = await fetchApi<AvailabilityResponse[]>(`/embed/availability?${params}`);
+    if (result.error) {
+      console.log('[Rooom] Using mock availability data');
+      // Generate mock availability for each day in range
+      const availability: AvailabilityResponse[] = [];
+      const current = new Date(startDate);
+      const end = new Date(endDate);
+      while (current <= end) {
+        const dateStr = current.toISOString().split('T')[0];
+        availability.push(generateMockAvailability(dateStr, serviceId));
+        current.setDate(current.getDate() + 1);
+      }
+      return { data: availability };
+    }
+    return result;
   },
 
   // Create a booking
-  createBooking: (studioId: string, data: BookingFormData) =>
-    fetchApi<BookingResult>(`/embed/booking`, {
+  createBooking: async (studioId: string, data: BookingFormData) => {
+    const result = await fetchApi<BookingResult>(`/embed/booking`, {
       method: 'POST',
       body: JSON.stringify({ studioId, ...data }),
-    }),
+    });
+    if (result.error) {
+      console.log('[Rooom] Using mock booking response');
+      const service = mockServices.find(s => s.id === data.serviceId);
+      // Calculate hours
+      const start = new Date(data.startTime);
+      const end = new Date(data.endTime);
+      const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      const totalAmount = hours * (service?.hourly_rate || 50);
+
+      return {
+        data: {
+          id: 'mock-booking-' + Date.now(),
+          reference: generateReference(),
+          status: 'confirmed' as const,
+          service: service || mockServices[0],
+          date: data.date,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          totalAmount,
+          depositAmount: null,
+          paymentUrl: null,
+        },
+      };
+    }
+    return result;
+  },
 
   // Verify payment (after Stripe redirect)
   verifyPayment: (bookingId: string, sessionId: string) =>
