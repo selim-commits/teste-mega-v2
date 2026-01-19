@@ -1,4 +1,1316 @@
-/* Placeholder - will be implemented in Task 2 */
+/* src/embed/embed.css - Rooom OS Booking Widget Styles */
+
+/* Font imports */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+
+/* ========================================
+   CSS Custom Properties (Variables)
+   ======================================== */
+
+/* Light theme (default) */
+.rooom-widget.rooom-light {
+  --rooom-bg-primary: #ffffff;
+  --rooom-bg-secondary: #f8f9fa;
+  --rooom-bg-tertiary: #f1f3f5;
+  --rooom-text-primary: #1a1a1a;
+  --rooom-text-secondary: #6b7280;
+  --rooom-text-muted: #9ca3af;
+  --rooom-border-color: #e5e7eb;
+  --rooom-border-light: #f3f4f6;
+  --rooom-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --rooom-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --rooom-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --rooom-success: #10b981;
+  --rooom-success-bg: #ecfdf5;
+  --rooom-error: #ef4444;
+  --rooom-error-bg: #fef2f2;
+  --rooom-warning: #f59e0b;
+  --rooom-warning-bg: #fffbeb;
+  --rooom-info: #3b82f6;
+  --rooom-info-bg: #eff6ff;
+}
+
+/* Dark theme */
+.rooom-widget.rooom-dark {
+  --rooom-bg-primary: #1a1a1a;
+  --rooom-bg-secondary: #262626;
+  --rooom-bg-tertiary: #333333;
+  --rooom-text-primary: #ffffff;
+  --rooom-text-secondary: #a1a1aa;
+  --rooom-text-muted: #71717a;
+  --rooom-border-color: #3f3f46;
+  --rooom-border-light: #27272a;
+  --rooom-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --rooom-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --rooom-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --rooom-success: #34d399;
+  --rooom-success-bg: #064e3b;
+  --rooom-error: #f87171;
+  --rooom-error-bg: #7f1d1d;
+  --rooom-warning: #fbbf24;
+  --rooom-warning-bg: #78350f;
+  --rooom-info: #60a5fa;
+  --rooom-info-bg: #1e3a5f;
+}
+
+/* ========================================
+   Base Widget Styles
+   ======================================== */
+
 #rooom-embed-root {
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.rooom-widget {
+  background-color: var(--rooom-bg-primary);
+  color: var(--rooom-text-primary);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--rooom-shadow-lg);
+  max-width: 100%;
+  min-height: 400px;
+}
+
+.rooom-widget * {
+  box-sizing: border-box;
+}
+
+.rooom-content {
+  padding: 24px;
+}
+
+/* ========================================
+   Typography
+   ======================================== */
+
+.rooom-heading-display {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-weight: 600;
+}
+
+.rooom-heading-1 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 16px 0;
+}
+
+.rooom-heading-2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 0 12px 0;
+}
+
+.rooom-heading-3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 0 0 8px 0;
+}
+
+.rooom-heading-4 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0 0 4px 0;
+}
+
+.rooom-text-sm {
+  font-size: 0.875rem;
+}
+
+.rooom-text-xs {
+  font-size: 0.75rem;
+}
+
+.rooom-text-lg {
+  font-size: 1.125rem;
+}
+
+.rooom-text-secondary {
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-text-muted {
+  color: var(--rooom-text-muted);
+}
+
+.rooom-text-center {
+  text-align: center;
+}
+
+.rooom-text-right {
+  text-align: right;
+}
+
+.rooom-text-accent {
+  color: var(--accent-color, #6366f1);
+}
+
+.rooom-font-medium {
+  font-weight: 500;
+}
+
+.rooom-font-semibold {
+  font-weight: 600;
+}
+
+.rooom-font-bold {
+  font-weight: 700;
+}
+
+/* ========================================
+   Button Styles
+   ======================================== */
+
+.rooom-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.rooom-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rooom-btn:focus-visible {
+  outline: 2px solid var(--accent-color, #6366f1);
+  outline-offset: 2px;
+}
+
+/* Primary button - uses accent color */
+.rooom-btn-primary {
+  background-color: var(--accent-color, #6366f1);
+  color: #ffffff;
+}
+
+.rooom-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: var(--rooom-shadow-md);
+}
+
+.rooom-btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  filter: brightness(0.95);
+}
+
+/* Secondary button */
+.rooom-btn-secondary {
+  background-color: var(--rooom-bg-secondary);
+  color: var(--rooom-text-primary);
+  border: 1px solid var(--rooom-border-color);
+}
+
+.rooom-btn-secondary:hover:not(:disabled) {
+  background-color: var(--rooom-bg-tertiary);
+  border-color: var(--rooom-text-muted);
+}
+
+/* Ghost button */
+.rooom-btn-ghost {
+  background-color: transparent;
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-btn-ghost:hover:not(:disabled) {
+  background-color: var(--rooom-bg-secondary);
+  color: var(--rooom-text-primary);
+}
+
+/* Link button */
+.rooom-btn-link {
+  background-color: transparent;
+  color: var(--accent-color, #6366f1);
+  padding: 4px 8px;
+}
+
+.rooom-btn-link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+/* Button sizes */
+.rooom-btn-sm {
+  padding: 8px 16px;
+  font-size: 0.875rem;
+}
+
+.rooom-btn-lg {
+  padding: 16px 32px;
+  font-size: 1rem;
+}
+
+.rooom-btn-block {
+  width: 100%;
+}
+
+/* Icon button */
+.rooom-btn-icon {
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.rooom-btn-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* ========================================
+   Input Styles
+   ======================================== */
+
+.rooom-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 0.9375rem;
+  font-family: inherit;
+  line-height: 1.5;
+  color: var(--rooom-text-primary);
+  background-color: var(--rooom-bg-primary);
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 8px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rooom-input::placeholder {
+  color: var(--rooom-text-muted);
+}
+
+.rooom-input:hover:not(:disabled) {
+  border-color: var(--rooom-text-muted);
+}
+
+.rooom-input:focus {
+  outline: none;
+  border-color: var(--accent-color, #6366f1);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.rooom-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-input-error {
+  border-color: var(--rooom-error);
+}
+
+.rooom-input-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+/* Input group */
+.rooom-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rooom-input-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--rooom-text-primary);
+}
+
+.rooom-input-label-required::after {
+  content: ' *';
+  color: var(--rooom-error);
+}
+
+.rooom-input-hint {
+  font-size: 0.75rem;
+  color: var(--rooom-text-muted);
+}
+
+.rooom-input-error-message {
+  font-size: 0.75rem;
+  color: var(--rooom-error);
+}
+
+/* Textarea */
+.rooom-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* Select */
+.rooom-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+/* Checkbox */
+.rooom-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.rooom-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0 0;
+  accent-color: var(--accent-color, #6366f1);
+  cursor: pointer;
+}
+
+.rooom-checkbox-label {
+  font-size: 0.875rem;
+  color: var(--rooom-text-secondary);
+  line-height: 1.5;
+}
+
+/* ========================================
+   Card Styles
+   ======================================== */
+
+.rooom-card {
+  background-color: var(--rooom-bg-primary);
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.2s ease;
+}
+
+.rooom-card-interactive {
+  cursor: pointer;
+}
+
+.rooom-card-interactive:hover {
+  border-color: var(--rooom-text-muted);
+  box-shadow: var(--rooom-shadow-md);
+  transform: translateY(-2px);
+}
+
+.rooom-card-selected {
+  border-color: var(--accent-color, #6366f1);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.rooom-card-selected:hover {
+  border-color: var(--accent-color, #6366f1);
+}
+
+.rooom-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.rooom-card-body {
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-card-footer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rooom-border-light);
+}
+
+.rooom-card-image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+
+/* ========================================
+   Grid Utilities
+   ======================================== */
+
+.rooom-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.rooom-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.rooom-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.rooom-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+/* Responsive grid */
+@media (max-width: 768px) {
+  .rooom-grid-2,
+  .rooom-grid-3,
+  .rooom-grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .rooom-grid-3,
+  .rooom-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ========================================
+   Flex Utilities
+   ======================================== */
+
+.rooom-flex {
+  display: flex;
+}
+
+.rooom-flex-col {
+  flex-direction: column;
+}
+
+.rooom-flex-row {
+  flex-direction: row;
+}
+
+.rooom-flex-wrap {
+  flex-wrap: wrap;
+}
+
+.rooom-items-start {
+  align-items: flex-start;
+}
+
+.rooom-items-center {
+  align-items: center;
+}
+
+.rooom-items-end {
+  align-items: flex-end;
+}
+
+.rooom-justify-start {
+  justify-content: flex-start;
+}
+
+.rooom-justify-center {
+  justify-content: center;
+}
+
+.rooom-justify-end {
+  justify-content: flex-end;
+}
+
+.rooom-justify-between {
+  justify-content: space-between;
+}
+
+.rooom-flex-1 {
+  flex: 1;
+}
+
+.rooom-flex-shrink-0 {
+  flex-shrink: 0;
+}
+
+/* ========================================
+   Spacing Utilities
+   ======================================== */
+
+/* Gap */
+.rooom-gap-1 { gap: 4px; }
+.rooom-gap-2 { gap: 8px; }
+.rooom-gap-3 { gap: 12px; }
+.rooom-gap-4 { gap: 16px; }
+.rooom-gap-5 { gap: 20px; }
+.rooom-gap-6 { gap: 24px; }
+.rooom-gap-8 { gap: 32px; }
+
+/* Margin */
+.rooom-m-0 { margin: 0; }
+.rooom-m-1 { margin: 4px; }
+.rooom-m-2 { margin: 8px; }
+.rooom-m-3 { margin: 12px; }
+.rooom-m-4 { margin: 16px; }
+
+.rooom-mt-0 { margin-top: 0; }
+.rooom-mt-1 { margin-top: 4px; }
+.rooom-mt-2 { margin-top: 8px; }
+.rooom-mt-3 { margin-top: 12px; }
+.rooom-mt-4 { margin-top: 16px; }
+.rooom-mt-6 { margin-top: 24px; }
+.rooom-mt-8 { margin-top: 32px; }
+
+.rooom-mb-0 { margin-bottom: 0; }
+.rooom-mb-1 { margin-bottom: 4px; }
+.rooom-mb-2 { margin-bottom: 8px; }
+.rooom-mb-3 { margin-bottom: 12px; }
+.rooom-mb-4 { margin-bottom: 16px; }
+.rooom-mb-6 { margin-bottom: 24px; }
+.rooom-mb-8 { margin-bottom: 32px; }
+
+.rooom-ml-0 { margin-left: 0; }
+.rooom-ml-1 { margin-left: 4px; }
+.rooom-ml-2 { margin-left: 8px; }
+.rooom-ml-3 { margin-left: 12px; }
+.rooom-ml-4 { margin-left: 16px; }
+
+.rooom-mr-0 { margin-right: 0; }
+.rooom-mr-1 { margin-right: 4px; }
+.rooom-mr-2 { margin-right: 8px; }
+.rooom-mr-3 { margin-right: 12px; }
+.rooom-mr-4 { margin-right: 16px; }
+
+.rooom-mx-auto { margin-left: auto; margin-right: auto; }
+.rooom-my-0 { margin-top: 0; margin-bottom: 0; }
+.rooom-my-2 { margin-top: 8px; margin-bottom: 8px; }
+.rooom-my-4 { margin-top: 16px; margin-bottom: 16px; }
+
+/* Padding */
+.rooom-p-0 { padding: 0; }
+.rooom-p-1 { padding: 4px; }
+.rooom-p-2 { padding: 8px; }
+.rooom-p-3 { padding: 12px; }
+.rooom-p-4 { padding: 16px; }
+.rooom-p-5 { padding: 20px; }
+.rooom-p-6 { padding: 24px; }
+
+.rooom-pt-0 { padding-top: 0; }
+.rooom-pt-2 { padding-top: 8px; }
+.rooom-pt-4 { padding-top: 16px; }
+
+.rooom-pb-0 { padding-bottom: 0; }
+.rooom-pb-2 { padding-bottom: 8px; }
+.rooom-pb-4 { padding-bottom: 16px; }
+
+.rooom-px-0 { padding-left: 0; padding-right: 0; }
+.rooom-px-2 { padding-left: 8px; padding-right: 8px; }
+.rooom-px-4 { padding-left: 16px; padding-right: 16px; }
+
+.rooom-py-0 { padding-top: 0; padding-bottom: 0; }
+.rooom-py-2 { padding-top: 8px; padding-bottom: 8px; }
+.rooom-py-4 { padding-top: 16px; padding-bottom: 16px; }
+
+/* ========================================
+   Widget Header
+   ======================================== */
+
+.rooom-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--rooom-border-light);
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-header-logo {
+  height: 32px;
+  width: auto;
+}
+
+.rooom-header-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.rooom-header-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Progress steps */
+.rooom-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-progress-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--rooom-text-muted);
+}
+
+.rooom-progress-step-active {
+  color: var(--accent-color, #6366f1);
+  font-weight: 500;
+}
+
+.rooom-progress-step-completed {
+  color: var(--rooom-success);
+}
+
+.rooom-progress-step-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: var(--rooom-bg-tertiary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.rooom-progress-step-active .rooom-progress-step-number {
+  background-color: var(--accent-color, #6366f1);
+  color: #ffffff;
+}
+
+.rooom-progress-step-completed .rooom-progress-step-number {
+  background-color: var(--rooom-success);
+  color: #ffffff;
+}
+
+.rooom-progress-divider {
+  flex: 1;
+  height: 2px;
+  background-color: var(--rooom-border-color);
+  max-width: 40px;
+}
+
+.rooom-progress-divider-completed {
+  background-color: var(--rooom-success);
+}
+
+/* ========================================
+   Loading & Error States
+   ======================================== */
+
+.rooom-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  min-height: 300px;
+}
+
+.rooom-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--rooom-border-color);
+  border-top-color: var(--accent-color, #6366f1);
+  border-radius: 50%;
+  animation: rooom-spin 0.8s linear infinite;
+}
+
+@keyframes rooom-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rooom-loading-text {
+  margin-top: 16px;
+  color: var(--rooom-text-secondary);
+  font-size: 0.875rem;
+}
+
+.rooom-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  min-height: 300px;
+}
+
+.rooom-error-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--rooom-error);
+  margin-bottom: 16px;
+}
+
+.rooom-error-message {
+  color: var(--rooom-error);
+  font-weight: 500;
+  margin-bottom: 16px;
+}
+
+.rooom-error-description {
+  color: var(--rooom-text-secondary);
+  font-size: 0.875rem;
+  margin-bottom: 24px;
+}
+
+/* ========================================
+   Service Cards
+   ======================================== */
+
+.rooom-service-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.rooom-service-image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background-color: var(--rooom-bg-tertiary);
+}
+
+.rooom-service-name {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.rooom-service-description {
+  font-size: 0.875rem;
+  color: var(--rooom-text-secondary);
+  margin-bottom: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rooom-service-price {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--accent-color, #6366f1);
+}
+
+.rooom-service-price-unit {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--rooom-text-muted);
+}
+
+.rooom-service-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.rooom-amenity-tag {
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  background-color: var(--rooom-bg-tertiary);
+  border-radius: 4px;
+  color: var(--rooom-text-secondary);
+}
+
+/* ========================================
+   Calendar & Time Slots
+   ======================================== */
+
+.rooom-calendar {
+  background-color: var(--rooom-bg-primary);
+}
+
+.rooom-calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  margin-bottom: 12px;
+}
+
+.rooom-calendar-title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.rooom-calendar-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.rooom-calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.rooom-calendar-weekday {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--rooom-text-muted);
+  text-align: center;
+  padding: 8px 0;
+}
+
+.rooom-calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.rooom-calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: none;
+  background: none;
+  color: var(--rooom-text-primary);
+}
+
+.rooom-calendar-day:hover:not(:disabled) {
+  background-color: var(--rooom-bg-tertiary);
+}
+
+.rooom-calendar-day-today {
+  font-weight: 600;
+  color: var(--accent-color, #6366f1);
+}
+
+.rooom-calendar-day-selected {
+  background-color: var(--accent-color, #6366f1);
+  color: #ffffff;
+}
+
+.rooom-calendar-day-selected:hover {
+  background-color: var(--accent-color, #6366f1);
+}
+
+.rooom-calendar-day-disabled {
+  color: var(--rooom-text-muted);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rooom-calendar-day-other-month {
+  color: var(--rooom-text-muted);
+  opacity: 0.3;
+}
+
+/* Time slots */
+.rooom-time-slots {
+  margin-top: 24px;
+}
+
+.rooom-time-slots-title {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--rooom-text-secondary);
+  margin-bottom: 12px;
+}
+
+.rooom-time-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+
+.rooom-time-slot {
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background-color: var(--rooom-bg-primary);
+  color: var(--rooom-text-primary);
+}
+
+.rooom-time-slot:hover:not(:disabled) {
+  border-color: var(--accent-color, #6366f1);
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-time-slot-selected {
+  background-color: var(--accent-color, #6366f1);
+  border-color: var(--accent-color, #6366f1);
+  color: #ffffff;
+}
+
+.rooom-time-slot-unavailable {
+  opacity: 0.4;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.rooom-time-slot-price {
+  font-size: 0.75rem;
+  color: var(--rooom-text-muted);
+  margin-top: 2px;
+}
+
+.rooom-time-slot-selected .rooom-time-slot-price {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ========================================
+   Booking Form
+   ======================================== */
+
+.rooom-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rooom-form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rooom-form-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.rooom-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 480px) {
+  .rooom-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rooom-form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.rooom-form-actions-stack {
+  flex-direction: column;
+}
+
+/* ========================================
+   Booking Summary
+   ======================================== */
+
+.rooom-summary {
+  background-color: var(--rooom-bg-secondary);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.rooom-summary-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.rooom-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.rooom-summary-label {
+  color: var(--rooom-text-secondary);
+  font-size: 0.875rem;
+}
+
+.rooom-summary-value {
+  font-weight: 500;
+}
+
+.rooom-summary-divider {
+  height: 1px;
+  background-color: var(--rooom-border-color);
+  margin: 12px 0;
+}
+
+.rooom-summary-total {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.rooom-summary-total .rooom-summary-value {
+  color: var(--accent-color, #6366f1);
+}
+
+/* ========================================
+   Confirmation
+   ======================================== */
+
+.rooom-confirmation {
+  text-align: center;
+  padding: 32px 24px;
+}
+
+.rooom-confirmation-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 24px;
+  color: var(--rooom-success);
+}
+
+.rooom-confirmation-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.rooom-confirmation-message {
+  color: var(--rooom-text-secondary);
+  margin-bottom: 24px;
+}
+
+.rooom-confirmation-reference {
+  display: inline-block;
+  padding: 12px 24px;
+  background-color: var(--rooom-bg-secondary);
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-bottom: 24px;
+}
+
+.rooom-confirmation-details {
+  text-align: left;
+  margin-top: 24px;
+}
+
+/* ========================================
+   Alert / Message Boxes
+   ======================================== */
+
+.rooom-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.rooom-alert-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.rooom-alert-content {
+  flex: 1;
+}
+
+.rooom-alert-title {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.rooom-alert-message {
+  font-size: 0.875rem;
+}
+
+.rooom-alert-success {
+  background-color: var(--rooom-success-bg);
+  color: var(--rooom-success);
+}
+
+.rooom-alert-error {
+  background-color: var(--rooom-error-bg);
+  color: var(--rooom-error);
+}
+
+.rooom-alert-warning {
+  background-color: var(--rooom-warning-bg);
+  color: var(--rooom-warning);
+}
+
+.rooom-alert-info {
+  background-color: var(--rooom-info-bg);
+  color: var(--rooom-info);
+}
+
+/* ========================================
+   Badge / Tag
+   ======================================== */
+
+.rooom-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+}
+
+.rooom-badge-primary {
+  background-color: var(--accent-color, #6366f1);
+  color: #ffffff;
+}
+
+.rooom-badge-secondary {
+  background-color: var(--rooom-bg-tertiary);
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-badge-success {
+  background-color: var(--rooom-success-bg);
+  color: var(--rooom-success);
+}
+
+.rooom-badge-error {
+  background-color: var(--rooom-error-bg);
+  color: var(--rooom-error);
+}
+
+/* ========================================
+   Divider
+   ======================================== */
+
+.rooom-divider {
+  height: 1px;
+  background-color: var(--rooom-border-color);
+  margin: 24px 0;
+}
+
+.rooom-divider-vertical {
+  width: 1px;
+  height: auto;
+  align-self: stretch;
+  margin: 0 16px;
+}
+
+/* ========================================
+   Visibility & Display Utilities
+   ======================================== */
+
+.rooom-hidden {
+  display: none !important;
+}
+
+.rooom-invisible {
+  visibility: hidden;
+}
+
+.rooom-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ========================================
+   Animations
+   ======================================== */
+
+@keyframes rooom-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rooom-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rooom-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.rooom-animate-fade-in {
+  animation: rooom-fade-in 0.2s ease-out;
+}
+
+.rooom-animate-slide-up {
+  animation: rooom-slide-up 0.3s ease-out;
+}
+
+.rooom-animate-scale-in {
+  animation: rooom-scale-in 0.2s ease-out;
+}
+
+/* ========================================
+   Responsive Utilities
+   ======================================== */
+
+@media (max-width: 480px) {
+  .rooom-content {
+    padding: 16px;
+  }
+
+  .rooom-header {
+    padding: 12px 16px;
+  }
+
+  .rooom-heading-1 {
+    font-size: 1.5rem;
+  }
+
+  .rooom-heading-2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* Hide on mobile */
+@media (max-width: 640px) {
+  .rooom-hide-mobile {
+    display: none !important;
+  }
+}
+
+/* Hide on desktop */
+@media (min-width: 641px) {
+  .rooom-hide-desktop {
+    display: none !important;
+  }
 }
