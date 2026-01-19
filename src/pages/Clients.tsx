@@ -22,6 +22,9 @@ import {
   Tag,
   CheckCircle,
   XCircle,
+  Calendar,
+  DollarSign,
+  Clock,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -33,6 +36,7 @@ import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Mod
 import { Table, Pagination } from '../components/ui/Table';
 import { Dropdown, DropdownItem, DropdownDivider } from '../components/ui/Dropdown';
 import { Switch } from '../components/ui/Checkbox';
+import { Progress } from '../components/ui/Progress';
 import {
   useClients,
   useClient,
@@ -42,12 +46,13 @@ import {
   useActivateClient,
   useDeactivateClient,
 } from '../hooks/useClients';
+import { useBookings } from '../hooks/useBookings';
 import { useNotifications } from '../stores/uiStore';
-import type { Client, ClientTier, ClientInsert, ClientUpdate } from '../types/database';
+import type { Client, ClientTier, ClientInsert, ClientUpdate, Booking } from '../types/database';
 import styles from './Clients.module.css';
 
-// Demo studioId - in production, this would come from useAuthStore or context
-const DEMO_STUDIO_ID = 'demo-studio-id';
+// Studio ID - configured for Rooom OS
+const DEMO_STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 interface ClientFormData {
   name: string;
@@ -92,6 +97,24 @@ const statusOptions = [
   { value: 'inactive', label: 'Inactifs' },
 ];
 
+// Tag colors for visual distinction
+const tagColors: Record<string, string> = {
+  'Photographe': 'var(--accent-blue)',
+  'Vidéaste': 'var(--accent-purple)',
+  'Entreprise': 'var(--accent-green)',
+  'Particulier': 'var(--accent-orange)',
+  'Régulier': 'var(--state-success)',
+  'Événementiel': 'var(--accent-pink)',
+  'Mode': 'var(--accent-rose)',
+  'Portrait': 'var(--accent-teal)',
+  'Produit': 'var(--accent-amber)',
+  'Immobilier': 'var(--accent-cyan)',
+};
+
+const getTagColor = (tag: string): string => {
+  return tagColors[tag] || 'var(--accent-primary)';
+};
+
 const commonTags = [
   'Photographe',
   'Vidéaste',
@@ -111,6 +134,7 @@ export function Clients() {
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState<ClientTier | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 12;
@@ -139,6 +163,32 @@ export function Clients() {
 
   const { data: selectedClient } = useClient(selectedClientId || '');
 
+  // Get client's booking history
+  const { data: clientBookings = [] } = useBookings({
+    clientId: selectedClientId || undefined,
+  });
+
+  // Calculate client stats from bookings
+  const clientStats = useMemo(() => {
+    if (!clientBookings.length) {
+      return { totalBookings: 0, totalSpent: 0, lastBooking: null as Booking | null };
+    }
+
+    const completedBookings = clientBookings.filter(
+      (b) => b.status === 'completed' || b.status === 'confirmed'
+    );
+    const totalSpent = completedBookings.reduce((sum, b) => sum + (b.total_amount || 0), 0);
+    const sortedBookings = [...clientBookings].sort(
+      (a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime()
+    );
+
+    return {
+      totalBookings: clientBookings.length,
+      totalSpent,
+      lastBooking: sortedBookings[0] || null,
+    };
+  }, [clientBookings]);
+
   // Mutations
   const createMutation = useCreateClient();
   const updateMutation = useUpdateClient();
@@ -162,8 +212,15 @@ export function Clients() {
       );
     }
 
+    // Tag filter
+    if (tagFilter.length > 0) {
+      result = result.filter((client) =>
+        tagFilter.some((tag) => client.tags?.includes(tag))
+      );
+    }
+
     return result;
-  }, [clients, searchQuery]);
+  }, [clients, searchQuery, tagFilter]);
 
   const paginatedClients = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
@@ -315,6 +372,13 @@ export function Clients() {
     setFormData((prev) => ({ ...prev, tags: prev.tags.filter((t) => t !== tag) }));
   }, []);
 
+  const handleToggleTagFilter = useCallback((tag: string) => {
+    setTagFilter((prev) =>
+      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
+    );
+    setCurrentPage(1);
+  }, []);
+
   const openEditModal = useCallback((client: Client) => {
     setSelectedClientId(client.id);
     setFormData({
@@ -390,8 +454,21 @@ export function Clients() {
       header: 'Score',
       render: (client: Client) => (
         <div className={styles.scoreCell}>
-          <Star size={14} />
-          <span>{client.score || 0}</span>
+          <div className={styles.scoreGauge}>
+            <Progress
+              value={client.score || 0}
+              max={100}
+              size="sm"
+              variant={
+                (client.score || 0) >= 80
+                  ? 'success'
+                  : (client.score || 0) >= 50
+                  ? 'warning'
+                  : 'default'
+              }
+            />
+          </div>
+          <span className={styles.scoreValue}>{client.score || 0}</span>
         </div>
       ),
     },
@@ -718,12 +795,33 @@ export function Clients() {
                   onClick={() => {
                     setTierFilter('all');
                     setStatusFilter('all');
+                    setTagFilter([]);
                     setSearchQuery('');
                     setCurrentPage(1);
                   }}
                 >
                   Réinitialiser
                 </Button>
+              </div>
+              {/* Tag Filters */}
+              <div className={styles.tagFiltersSection}>
+                <label className={styles.filterSectionLabel}>Filtrer par tags</label>
+                <div className={styles.tagFilters}>
+                  {commonTags.map((tag) => (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={`${styles.tagFilterBtn} ${tagFilter.includes(tag) ? styles.active : ''}`}
+                      onClick={() => handleToggleTagFilter(tag)}
+                      style={{
+                        '--tag-color': getTagColor(tag),
+                      } as React.CSSProperties}
+                    >
+                      <Tag size={12} />
+                      {tag}
+                    </button>
+                  ))}
+                </div>
               </div>
             </motion.div>
           )}
@@ -898,10 +996,24 @@ export function Clients() {
                         )}
 
                         <div className={styles.clientStats}>
-                          <div className={styles.clientStat}>
-                            <Star size={14} />
-                            <span className={styles.clientStatValue}>{client.score || 0}</span>
-                            <span className={styles.clientStatLabel}>Score</span>
+                          <div className={styles.clientScoreSection}>
+                            <div className={styles.clientScoreHeader}>
+                              <Star size={14} />
+                              <span className={styles.clientScoreLabel}>Score client</span>
+                              <span className={styles.clientScoreValue}>{client.score || 0}/100</span>
+                            </div>
+                            <Progress
+                              value={client.score || 0}
+                              max={100}
+                              size="sm"
+                              variant={
+                                (client.score || 0) >= 80
+                                  ? 'success'
+                                  : (client.score || 0) >= 50
+                                  ? 'warning'
+                                  : 'default'
+                              }
+                            />
                           </div>
                         </div>
                       </div>
@@ -1085,7 +1197,7 @@ export function Clients() {
 
                 <div className={styles.sidebarSection}>
                   <h4>Statistiques</h4>
-                  <div className={styles.statsRow}>
+                  <div className={styles.statsGrid}>
                     <div className={styles.statItem}>
                       <Star size={20} />
                       <div>
@@ -1093,6 +1205,53 @@ export function Clients() {
                         <span className={styles.statLabel}>Score</span>
                       </div>
                     </div>
+                    <div className={styles.statItem}>
+                      <Calendar size={20} />
+                      <div>
+                        <span className={styles.statValue}>{clientStats.totalBookings}</span>
+                        <span className={styles.statLabel}>Réservations</span>
+                      </div>
+                    </div>
+                    <div className={styles.statItem}>
+                      <DollarSign size={20} />
+                      <div>
+                        <span className={styles.statValue}>{clientStats.totalSpent.toLocaleString('fr-FR')} €</span>
+                        <span className={styles.statLabel}>Total dépensé</span>
+                      </div>
+                    </div>
+                    {clientStats.lastBooking && (
+                      <div className={styles.statItem}>
+                        <Clock size={20} />
+                        <div>
+                          <span className={styles.statValue}>
+                            {new Date(clientStats.lastBooking.start_time).toLocaleDateString('fr-FR', {
+                              day: 'numeric',
+                              month: 'short',
+                            })}
+                          </span>
+                          <span className={styles.statLabel}>Dernière visite</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  {/* Score Progress Bar */}
+                  <div className={styles.scoreProgressSection}>
+                    <div className={styles.scoreProgressHeader}>
+                      <span>Score client</span>
+                      <span>{selectedClient.score || 0}/100</span>
+                    </div>
+                    <Progress
+                      value={selectedClient.score || 0}
+                      max={100}
+                      size="md"
+                      variant={
+                        (selectedClient.score || 0) >= 80
+                          ? 'success'
+                          : (selectedClient.score || 0) >= 50
+                          ? 'warning'
+                          : 'default'
+                      }
+                    />
                   </div>
                 </div>
 
@@ -1101,8 +1260,71 @@ export function Clients() {
                     <h4>Tags</h4>
                     <div className={styles.tagsList}>
                       {selectedClient.tags.map((tag) => (
-                        <Badge key={tag} variant="info" size="sm">{tag}</Badge>
+                        <span
+                          key={tag}
+                          className={styles.coloredTag}
+                          style={{ '--tag-color': getTagColor(tag) } as React.CSSProperties}
+                        >
+                          {tag}
+                        </span>
                       ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Booking History */}
+                {clientBookings.length > 0 && (
+                  <div className={styles.sidebarSection}>
+                    <h4>Historique des réservations</h4>
+                    <div className={styles.bookingHistory}>
+                      {clientBookings.slice(0, 5).map((booking) => (
+                        <div key={booking.id} className={styles.bookingItem}>
+                          <div className={styles.bookingInfo}>
+                            <span className={styles.bookingTitle}>{booking.title}</span>
+                            <span className={styles.bookingDate}>
+                              {new Date(booking.start_time).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                              })}
+                            </span>
+                          </div>
+                          <div className={styles.bookingMeta}>
+                            <Badge
+                              variant={
+                                booking.status === 'completed'
+                                  ? 'success'
+                                  : booking.status === 'confirmed'
+                                  ? 'info'
+                                  : booking.status === 'cancelled'
+                                  ? 'error'
+                                  : 'default'
+                              }
+                              size="sm"
+                            >
+                              {booking.status === 'completed'
+                                ? 'Terminée'
+                                : booking.status === 'confirmed'
+                                ? 'Confirmée'
+                                : booking.status === 'pending'
+                                ? 'En attente'
+                                : booking.status === 'cancelled'
+                                ? 'Annulée'
+                                : booking.status === 'in_progress'
+                                ? 'En cours'
+                                : booking.status}
+                            </Badge>
+                            <span className={styles.bookingAmount}>
+                              {booking.total_amount?.toLocaleString('fr-FR')} €
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                      {clientBookings.length > 5 && (
+                        <div className={styles.moreBookings}>
+                          + {clientBookings.length - 5} autres réservations
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
