@@ -2,3 +2,4 @@
 export { WidgetHeader } from './WidgetHeader';
 export { LoadingSpinner } from './LoadingSpinner';
 export { ErrorMessage } from './ErrorMessage';
+export { BookingForm } from './BookingForm';
