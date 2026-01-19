@@ -1,11 +1,31 @@
 import { useState, useMemo, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
+import {
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameDay,
+  isSameMonth,
+  addDays,
+  addWeeks,
+  addMonths,
+  subDays,
+  subWeeks,
+  subMonths,
+  isToday,
+  parseISO,
+  differenceInMinutes,
+  setHours,
+  setMinutes,
+} from 'date-fns';
+import { fr } from 'date-fns/locale';
 import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  Filter,
-  MoreHorizontal,
   Clock,
   User,
   MapPin,
@@ -35,12 +55,11 @@ import { useActiveClients } from '../hooks/useClients';
 import type { Booking, BookingStatus, Space } from '../types/database';
 import styles from './SpaceControl.module.css';
 
-// Time slots for the calendar grid
-const TIME_SLOTS = [
-  '08:00', '09:00', '10:00', '11:00', '12:00', '13:00',
-  '14:00', '15:00', '16:00', '17:00', '18:00', '19:00',
-  '20:00', '21:00', '22:00',
-];
+// Time slots for the calendar grid (8h to 21h)
+const TIME_SLOTS = Array.from({ length: 14 }, (_, i) => {
+  const hour = i + 8;
+  return `${hour.toString().padStart(2, '0')}:00`;
+});
 
 // Status colors for badges
 const STATUS_COLORS: Record<BookingStatus, 'default' | 'success' | 'warning' | 'error' | 'info' | 'orange'> = {
@@ -64,6 +83,12 @@ const VIEW_OPTIONS = [
   { value: 'day', label: 'Jour' },
   { value: 'week', label: 'Semaine' },
   { value: 'month', label: 'Mois' },
+];
+
+// Default space colors
+const SPACE_COLORS = [
+  '#FF4400', '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B',
+  '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1',
 ];
 
 interface BookingFormData {
@@ -99,18 +124,16 @@ export function SpaceControl() {
     filters,
     setSelectedDate,
     setViewMode,
-    setFilters,
-    resetFilters,
   } = useBookingStore();
 
   // Local state
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<BookingFormData>(initialFormData);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof BookingFormData, string>>>({});
+  const [visibleSpaces, setVisibleSpaces] = useState<Set<string>>(new Set());
 
   // Calculate date range based on view mode
   const dateRange = useMemo(() => {
@@ -121,18 +144,19 @@ export function SpaceControl() {
       start.setHours(0, 0, 0, 0);
       end.setHours(23, 59, 59, 999);
     } else if (viewMode === 'week') {
-      const day = start.getDay();
-      const diff = start.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Monday start
-      start.setDate(diff);
-      start.setHours(0, 0, 0, 0);
-      end.setDate(start.getDate() + 6);
-      end.setHours(23, 59, 59, 999);
+      const weekStart = startOfWeek(start, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(start, { weekStartsOn: 1 });
+      return {
+        startDate: weekStart.toISOString(),
+        endDate: weekEnd.toISOString(),
+      };
     } else {
-      start.setDate(1);
-      start.setHours(0, 0, 0, 0);
-      end.setMonth(end.getMonth() + 1);
-      end.setDate(0);
-      end.setHours(23, 59, 59, 999);
+      const monthStart = startOfMonth(start);
+      const monthEnd = endOfMonth(start);
+      return {
+        startDate: monthStart.toISOString(),
+        endDate: monthEnd.toISOString(),
+      };
     }
 
     return {
@@ -144,19 +168,28 @@ export function SpaceControl() {
   // Get week days for weekly view
   const weekDays = useMemo(() => {
     if (viewMode !== 'week') return [];
-    const days: Date[] = [];
-    const start = new Date(selectedDate);
-    const day = start.getDay();
-    const diff = start.getDate() - day + (day === 0 ? -6 : 1);
-    start.setDate(diff);
-
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(start);
-      d.setDate(start.getDate() + i);
-      days.push(d);
-    }
-    return days;
+    const start = startOfWeek(selectedDate, { weekStartsOn: 1 });
+    return eachDayOfInterval({ start, end: addDays(start, 6) });
   }, [selectedDate, viewMode]);
+
+  // Get month days for monthly view
+  const monthDays = useMemo(() => {
+    if (viewMode !== 'month') return [];
+    const monthStart = startOfMonth(selectedDate);
+    const monthEnd = endOfMonth(selectedDate);
+    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  }, [selectedDate, viewMode]);
+
+  // Mini calendar month days
+  const miniCalendarDays = useMemo(() => {
+    const monthStart = startOfMonth(selectedDate);
+    const monthEnd = endOfMonth(selectedDate);
+    const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
+  }, [selectedDate]);
 
   // Queries
   const { data: bookings = [], isLoading: bookingsLoading, error: bookingsError } = useBookings({
@@ -170,6 +203,18 @@ export function SpaceControl() {
   const { data: spaces = [], isLoading: spacesLoading } = useActiveSpaces(studioId || '');
   const { data: clients = [], isLoading: clientsLoading } = useActiveClients(studioId || '');
 
+  // Initialize visible spaces when spaces load
+  useMemo(() => {
+    if (spaces.length > 0 && visibleSpaces.size === 0) {
+      setVisibleSpaces(new Set(spaces.map(s => s.id)));
+    }
+  }, [spaces, visibleSpaces.size]);
+
+  // Filter bookings by visible spaces
+  const filteredBookings = useMemo(() => {
+    return bookings.filter(b => visibleSpaces.has(b.space_id));
+  }, [bookings, visibleSpaces]);
+
   // Mutations
   const createBookingMutation = useCreateBooking();
   const updateBookingMutation = useUpdateBooking();
@@ -177,85 +222,47 @@ export function SpaceControl() {
   const updateStatusMutation = useUpdateBookingStatus();
 
   // Format date for display
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('fr-FR', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(date);
-  };
-
-  const formatShortDate = (date: Date) => {
-    return new Intl.DateTimeFormat('fr-FR', {
-      weekday: 'short',
-      day: 'numeric',
-    }).format(date);
-  };
+  const formatDateHeader = useCallback((date: Date) => {
+    if (viewMode === 'day') {
+      return format(date, "EEEE d MMMM yyyy", { locale: fr });
+    } else if (viewMode === 'week') {
+      const weekStart = startOfWeek(date, { weekStartsOn: 1 });
+      const weekEnd = endOfWeek(date, { weekStartsOn: 1 });
+      if (weekStart.getMonth() === weekEnd.getMonth()) {
+        return `${format(weekStart, 'd', { locale: fr })} - ${format(weekEnd, 'd MMMM yyyy', { locale: fr })}`;
+      }
+      return `${format(weekStart, 'd MMM', { locale: fr })} - ${format(weekEnd, 'd MMM yyyy', { locale: fr })}`;
+    }
+    return format(date, 'MMMM yyyy', { locale: fr });
+  }, [viewMode]);
 
   // Navigation handlers
   const goToToday = () => setSelectedDate(new Date());
 
   const goPrev = () => {
-    const newDate = new Date(selectedDate);
     if (viewMode === 'day') {
-      newDate.setDate(newDate.getDate() - 1);
+      setSelectedDate(subDays(selectedDate, 1));
     } else if (viewMode === 'week') {
-      newDate.setDate(newDate.getDate() - 7);
+      setSelectedDate(subWeeks(selectedDate, 1));
     } else {
-      newDate.setMonth(newDate.getMonth() - 1);
+      setSelectedDate(subMonths(selectedDate, 1));
     }
-    setSelectedDate(newDate);
   };
 
   const goNext = () => {
-    const newDate = new Date(selectedDate);
     if (viewMode === 'day') {
-      newDate.setDate(newDate.getDate() + 1);
+      setSelectedDate(addDays(selectedDate, 1));
     } else if (viewMode === 'week') {
-      newDate.setDate(newDate.getDate() + 7);
+      setSelectedDate(addWeeks(selectedDate, 1));
     } else {
-      newDate.setMonth(newDate.getMonth() + 1);
+      setSelectedDate(addMonths(selectedDate, 1));
     }
-    setSelectedDate(newDate);
   };
-
-  // Get bookings for a specific space and time
-  const getBookingsForSlot = useCallback((spaceId: string, date: Date, time: string) => {
-    const dateStr = date.toISOString().split('T')[0];
-    const slotStart = new Date(`${dateStr}T${time}:00`);
-    const slotEnd = new Date(slotStart);
-    slotEnd.setHours(slotEnd.getHours() + 1);
-
-    return bookings.filter((booking) => {
-      if (booking.space_id !== spaceId) return false;
-      const bookingStart = new Date(booking.start_time);
-      const bookingEnd = new Date(booking.end_time);
-      return bookingStart < slotEnd && bookingEnd > slotStart;
-    });
-  }, [bookings]);
-
-  // Check if a booking starts at this slot
-  const isBookingStart = useCallback((booking: Booking, date: Date, time: string) => {
-    const dateStr = date.toISOString().split('T')[0];
-    const bookingStart = new Date(booking.start_time);
-    const bookingDateStr = bookingStart.toISOString().split('T')[0];
-    const bookingTimeStr = bookingStart.toTimeString().slice(0, 5);
-    return bookingDateStr === dateStr && bookingTimeStr === time;
-  }, []);
-
-  // Calculate booking span (number of time slots)
-  const getBookingSpan = useCallback((booking: Booking) => {
-    const start = new Date(booking.start_time);
-    const end = new Date(booking.end_time);
-    const hours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-    return Math.ceil(hours);
-  }, []);
 
   // Get space color
-  const getSpaceColor = (space: Space) => {
-    return space.color || '#FF4400';
-  };
+  const getSpaceColor = useCallback((space: Space, index?: number) => {
+    return space.color || SPACE_COLORS[index !== undefined ? index % SPACE_COLORS.length : 0];
+  }, []);
 
   // Get client name for a booking
   const getClientName = useCallback((clientId: string) => {
@@ -263,24 +270,74 @@ export function SpaceControl() {
     return client?.name || 'Client inconnu';
   }, [clients]);
 
+  // Get bookings for a specific day
+  const getBookingsForDay = useCallback((date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return filteredBookings.filter((booking) => {
+      const bookingDate = format(parseISO(booking.start_time), 'yyyy-MM-dd');
+      return bookingDate === dateStr;
+    });
+  }, [filteredBookings]);
+
+  // Get bookings for a specific space and time slot
+  const getBookingsForSlot = useCallback((spaceId: string, date: Date, time: string) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const [hours, minutes] = time.split(':').map(Number);
+    const slotStart = setMinutes(setHours(date, hours), minutes);
+    const slotEnd = setMinutes(setHours(date, hours + 1), 0);
+
+    return filteredBookings.filter((booking) => {
+      if (booking.space_id !== spaceId) return false;
+      const bookingStart = parseISO(booking.start_time);
+      const bookingEnd = parseISO(booking.end_time);
+      const bookingDateStr = format(bookingStart, 'yyyy-MM-dd');
+      if (bookingDateStr !== dateStr) return false;
+      return bookingStart < slotEnd && bookingEnd > slotStart;
+    });
+  }, [filteredBookings]);
+
+  // Check if a booking starts at this slot
+  const isBookingStart = useCallback((booking: Booking, date: Date, time: string) => {
+    const bookingStart = parseISO(booking.start_time);
+    const bookingDateStr = format(bookingStart, 'yyyy-MM-dd');
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const bookingTimeStr = format(bookingStart, 'HH:mm');
+    return bookingDateStr === dateStr && bookingTimeStr === time;
+  }, []);
+
+  // Calculate booking height in pixels (based on duration)
+  const getBookingHeight = useCallback((booking: Booking) => {
+    const start = parseISO(booking.start_time);
+    const end = parseISO(booking.end_time);
+    const durationMinutes = differenceInMinutes(end, start);
+    return Math.max((durationMinutes / 60) * 50, 25); // 50px per hour, min 25px
+  }, []);
+
   // Handle slot click to create booking
   const handleSlotClick = (spaceId: string, date: Date, time: string) => {
-    const dateStr = date.toISOString().split('T')[0];
-    const endTime = new Date(`${dateStr}T${time}:00`);
-    endTime.setHours(endTime.getHours() + 1);
+    const dateStr = format(date, 'yyyy-MM-dd');
+    const [hours] = time.split(':').map(Number);
+    const endHour = hours + 1;
 
     setFormData({
       ...initialFormData,
       space_id: spaceId,
       start_time: `${dateStr}T${time}`,
-      end_time: `${dateStr}T${endTime.toTimeString().slice(0, 5)}`,
+      end_time: `${dateStr}T${endHour.toString().padStart(2, '0')}:00`,
     });
     setIsEditing(false);
     setShowCreateModal(true);
   };
 
+  // Handle day click in month view
+  const handleDayClick = (date: Date) => {
+    setSelectedDate(date);
+    setViewMode('day');
+  };
+
   // Handle booking click to view details
-  const handleBookingClick = (booking: Booking) => {
+  const handleBookingClick = (booking: Booking, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setSelectedBooking(booking);
     setFormData({
       title: booking.title,
@@ -295,6 +352,28 @@ export function SpaceControl() {
     setShowDetailModal(true);
   };
 
+  // Toggle space visibility
+  const toggleSpaceVisibility = (spaceId: string) => {
+    setVisibleSpaces(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(spaceId)) {
+        newSet.delete(spaceId);
+      } else {
+        newSet.add(spaceId);
+      }
+      return newSet;
+    });
+  };
+
+  // Toggle all spaces visibility
+  const toggleAllSpaces = () => {
+    if (visibleSpaces.size === spaces.length) {
+      setVisibleSpaces(new Set());
+    } else {
+      setVisibleSpaces(new Set(spaces.map(s => s.id)));
+    }
+  };
+
   // Validate form
   const validateForm = (): boolean => {
     const errors: Partial<Record<keyof BookingFormData, string>> = {};
@@ -303,19 +382,19 @@ export function SpaceControl() {
       errors.title = 'Le titre est requis';
     }
     if (!formData.space_id) {
-      errors.space_id = 'L\'espace est requis';
+      errors.space_id = "L'espace est requis";
     }
     if (!formData.client_id) {
       errors.client_id = 'Le client est requis';
     }
     if (!formData.start_time) {
-      errors.start_time = 'L\'heure de debut est requise';
+      errors.start_time = "L'heure de debut est requise";
     }
     if (!formData.end_time) {
-      errors.end_time = 'L\'heure de fin est requise';
+      errors.end_time = "L'heure de fin est requise";
     }
     if (formData.start_time && formData.end_time && formData.start_time >= formData.end_time) {
-      errors.end_time = 'L\'heure de fin doit etre apres l\'heure de debut';
+      errors.end_time = "L'heure de fin doit etre apres l'heure de debut";
     }
 
     setFormErrors(errors);
@@ -353,7 +432,7 @@ export function SpaceControl() {
           end_time: new Date(formData.end_time).toISOString(),
           status: formData.status,
           notes: formData.notes || null,
-          created_by: studioId, // TODO: Use actual user ID
+          created_by: studioId,
         });
         setShowCreateModal(false);
       }
@@ -431,390 +510,359 @@ export function SpaceControl() {
     { value: 'cancelled', label: 'Annule' },
   ];
 
-  // Filter options
-  const filterSpaceOptions = [
-    { value: '', label: 'Tous les espaces' },
-    ...spaceOptions,
-  ];
-
-  const filterStatusOptions = [
-    { value: 'all', label: 'Tous les statuts' },
-    ...statusOptions,
-  ];
-
   // Loading state
   const isLoading = bookingsLoading || spacesLoading || clientsLoading;
   const isMutating = createBookingMutation.isPending || updateBookingMutation.isPending || deleteBookingMutation.isPending;
 
-  // Calculate space stats
-  const getSpaceStats = (space: Space) => {
-    const spaceBookings = bookings.filter((b) => b.space_id === space.id && b.status !== 'cancelled');
-    const totalHours = spaceBookings.reduce((acc, b) => {
-      const start = new Date(b.start_time);
-      const end = new Date(b.end_time);
-      return acc + (end.getTime() - start.getTime()) / (1000 * 60 * 60);
-    }, 0);
-    const totalSlots = TIME_SLOTS.length * (viewMode === 'week' ? 7 : 1);
-    const occupationRate = totalSlots > 0 ? Math.round((totalHours / totalSlots) * 100) : 0;
+  // Render Day View
+  const renderDayView = () => (
+    <div className={styles.dayViewContainer}>
+      <div className={styles.timeColumn}>
+        <div className={styles.cornerCell} />
+        {TIME_SLOTS.map((time) => (
+          <div key={time} className={styles.timeCell}>
+            {time}
+          </div>
+        ))}
+      </div>
+      <div className={styles.dayViewGrid}>
+        {spaces.filter(s => visibleSpaces.has(s.id)).map((space, index) => (
+          <div key={space.id} className={styles.spaceColumn}>
+            <div className={styles.spaceHeader}>
+              <div
+                className={styles.spaceColorDot}
+                style={{ backgroundColor: getSpaceColor(space, index) }}
+              />
+              <div className={styles.spaceInfo}>
+                <span className={styles.spaceName}>{space.name}</span>
+                <span className={styles.spaceCapacity}>{space.capacity} pers.</span>
+              </div>
+            </div>
+            <div className={styles.slotGrid}>
+              {TIME_SLOTS.map((time) => {
+                const slotBookings = getBookingsForSlot(space.id, selectedDate, time);
 
-    return {
-      bookingCount: spaceBookings.length,
-      occupationRate,
-    };
-  };
+                return (
+                  <div
+                    key={`${space.id}-${time}`}
+                    className={styles.timeSlot}
+                    onClick={() => !slotBookings.length && handleSlotClick(space.id, selectedDate, time)}
+                  >
+                    {slotBookings.map((booking) => {
+                      if (!isBookingStart(booking, selectedDate, time)) return null;
+                      return (
+                        <motion.div
+                          key={booking.id}
+                          className={styles.bookingBlock}
+                          style={{
+                            height: getBookingHeight(booking),
+                            backgroundColor: `${getSpaceColor(space, index)}20`,
+                            borderLeftColor: getSpaceColor(space, index),
+                          }}
+                          initial={{ opacity: 0, scale: 0.95 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          whileHover={{ scale: 1.02 }}
+                          onClick={(e) => handleBookingClick(booking, e)}
+                        >
+                          <div className={styles.bookingTime}>
+                            {format(parseISO(booking.start_time), 'HH:mm')} - {format(parseISO(booking.end_time), 'HH:mm')}
+                          </div>
+                          <div className={styles.bookingTitle}>{booking.title}</div>
+                          <div className={styles.bookingClient}>{getClientName(booking.client_id)}</div>
+                          <Badge variant={STATUS_COLORS[booking.status]} size="sm">
+                            {STATUS_LABELS[booking.status]}
+                          </Badge>
+                        </motion.div>
+                      );
+                    })}
+                    {!slotBookings.length && (
+                      <div className={styles.emptySlotIndicator}>
+                        <Plus size={12} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  // Render Week View
+  const renderWeekView = () => (
+    <div className={styles.weekViewContainer}>
+      <div className={styles.weekHeader}>
+        <div className={styles.weekTimeHeader} />
+        {weekDays.map((day) => (
+          <div
+            key={day.toISOString()}
+            className={`${styles.weekDayHeader} ${isToday(day) ? styles.today : ''}`}
+            onClick={() => {
+              setSelectedDate(day);
+              setViewMode('day');
+            }}
+          >
+            <span className={styles.weekDayName}>{format(day, 'EEE', { locale: fr })}</span>
+            <span className={`${styles.weekDayNumber} ${isToday(day) ? styles.todayNumber : ''}`}>
+              {format(day, 'd')}
+            </span>
+          </div>
+        ))}
+      </div>
+      <div className={styles.weekBody}>
+        <div className={styles.timeColumn}>
+          {TIME_SLOTS.map((time) => (
+            <div key={time} className={styles.timeCell}>
+              {time}
+            </div>
+          ))}
+        </div>
+        <div className={styles.weekGrid}>
+          {weekDays.map((day) => (
+            <div key={day.toISOString()} className={styles.weekDayColumn}>
+              {TIME_SLOTS.map((time) => (
+                <div key={`${day.toISOString()}-${time}`} className={styles.weekTimeSlot}>
+                  {spaces.filter(s => visibleSpaces.has(s.id)).map((space, index) => {
+                    const slotBookings = getBookingsForSlot(space.id, day, time);
+                    return slotBookings.map((booking) => {
+                      if (!isBookingStart(booking, day, time)) return null;
+                      const heightHours = differenceInMinutes(parseISO(booking.end_time), parseISO(booking.start_time)) / 60;
+                      return (
+                        <motion.div
+                          key={booking.id}
+                          className={styles.weekBookingBlock}
+                          style={{
+                            height: `${heightHours * 100}%`,
+                            backgroundColor: `${getSpaceColor(space, index)}20`,
+                            borderLeftColor: getSpaceColor(space, index),
+                          }}
+                          whileHover={{ scale: 1.02, zIndex: 10 }}
+                          onClick={(e) => handleBookingClick(booking, e)}
+                        >
+                          <span className={styles.weekBookingTime}>
+                            {format(parseISO(booking.start_time), 'HH:mm')}
+                          </span>
+                          <span className={styles.weekBookingTitle}>{booking.title}</span>
+                        </motion.div>
+                      );
+                    });
+                  })}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render Month View
+  const renderMonthView = () => (
+    <div className={styles.monthViewContainer}>
+      <div className={styles.monthHeader}>
+        {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day) => (
+          <div key={day} className={styles.monthDayHeader}>
+            {day}
+          </div>
+        ))}
+      </div>
+      <div className={styles.monthGrid}>
+        {monthDays.map((day) => {
+          const dayBookings = getBookingsForDay(day);
+          const isCurrentMonth = isSameMonth(day, selectedDate);
+          return (
+            <motion.div
+              key={day.toISOString()}
+              className={`${styles.monthDay} ${!isCurrentMonth ? styles.otherMonth : ''} ${isToday(day) ? styles.today : ''}`}
+              onClick={() => handleDayClick(day)}
+              whileHover={{ backgroundColor: 'var(--bg-hover)' }}
+            >
+              <span className={`${styles.monthDayNumber} ${isToday(day) ? styles.todayNumber : ''}`}>
+                {format(day, 'd')}
+              </span>
+              <div className={styles.monthBookings}>
+                {dayBookings.slice(0, 3).map((booking) => {
+                  const space = spaces.find(s => s.id === booking.space_id);
+                  const spaceIndex = spaces.findIndex(s => s.id === booking.space_id);
+                  return (
+                    <div
+                      key={booking.id}
+                      className={styles.monthBookingItem}
+                      style={{
+                        backgroundColor: `${getSpaceColor(space!, spaceIndex)}20`,
+                        borderLeftColor: getSpaceColor(space!, spaceIndex),
+                      }}
+                      onClick={(e) => handleBookingClick(booking, e)}
+                    >
+                      <span className={styles.monthBookingTime}>
+                        {format(parseISO(booking.start_time), 'HH:mm')}
+                      </span>
+                      <span className={styles.monthBookingTitle}>{booking.title}</span>
+                    </div>
+                  );
+                })}
+                {dayBookings.length > 3 && (
+                  <div className={styles.monthMoreBookings}>
+                    +{dayBookings.length - 3} autres
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  // Render Mini Calendar
+  const renderMiniCalendar = () => (
+    <div className={styles.miniCalendar}>
+      <div className={styles.miniCalendarHeader}>
+        <Button variant="ghost" size="sm" icon={<ChevronLeft size={14} />} onClick={() => setSelectedDate(subMonths(selectedDate, 1))} />
+        <span className={styles.miniCalendarTitle}>
+          {format(selectedDate, 'MMMM yyyy', { locale: fr })}
+        </span>
+        <Button variant="ghost" size="sm" icon={<ChevronRight size={14} />} onClick={() => setSelectedDate(addMonths(selectedDate, 1))} />
+      </div>
+      <div className={styles.miniCalendarGrid}>
+        {['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((day, i) => (
+          <div key={`${day}-${i}`} className={styles.miniCalendarDayName}>{day}</div>
+        ))}
+        {miniCalendarDays.map((day) => {
+          const isCurrentMonth = isSameMonth(day, selectedDate);
+          const isSelected = isSameDay(day, selectedDate);
+          return (
+            <button
+              key={day.toISOString()}
+              className={`${styles.miniCalendarDay} ${!isCurrentMonth ? styles.otherMonth : ''} ${isSelected ? styles.selected : ''} ${isToday(day) ? styles.today : ''}`}
+              onClick={() => setSelectedDate(day)}
+            >
+              {format(day, 'd')}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
 
   return (
     <div className={styles.page}>
       <Header
         title="Space Control"
-        subtitle="Gerez vos espaces et reservations"
+        subtitle="Calendrier des reservations"
       />
 
       <div className={styles.content}>
-        {/* Toolbar */}
-        <div className={styles.toolbar}>
-          <div className={styles.dateNav}>
-            <Button variant="ghost" size="sm" icon={<ChevronLeft size={16} />} onClick={goPrev} />
-            <Button variant="secondary" size="sm" onClick={goToToday}>
-              Aujourd'hui
-            </Button>
-            <Button variant="ghost" size="sm" icon={<ChevronRight size={16} />} onClick={goNext} />
-            <span className={styles.currentDate}>{formatDate(selectedDate)}</span>
-          </div>
-
-          <div className={styles.toolbarActions}>
-            <Select
-              options={VIEW_OPTIONS}
-              value={viewMode}
-              onChange={(value) => setViewMode(value as ViewMode)}
-              size="sm"
-            />
-            <div className={styles.filterWrapper}>
+        <div className={styles.layout}>
+          {/* Sidebar */}
+          <aside className={`${styles.sidebar} ${sidebarCollapsed ? styles.collapsed : ''}`}>
+            <div className={styles.sidebarContent}>
+              {/* New Booking Button */}
               <Button
-                variant="secondary"
-                size="sm"
-                icon={<Filter size={16} />}
-                onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                variant="primary"
+                fullWidth
+                icon={<Plus size={18} />}
+                onClick={() => {
+                  setFormData(initialFormData);
+                  setIsEditing(false);
+                  setShowCreateModal(true);
+                }}
               >
-                Filtres
-                {(filters.spaceId || filters.status !== 'all') && (
-                  <span className={styles.filterBadge}>
-                    {[filters.spaceId, filters.status !== 'all' ? 1 : 0].filter(Boolean).length}
-                  </span>
-                )}
+                Nouvelle reservation
               </Button>
-              <AnimatePresence>
-                {showFilterDropdown && (
-                  <motion.div
-                    className={styles.filterDropdown}
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
+
+              {/* Mini Calendar */}
+              {renderMiniCalendar()}
+
+              {/* Space Filters */}
+              <div className={styles.spaceFilters}>
+                <div className={styles.spaceFiltersHeader}>
+                  <span className={styles.spaceFiltersTitle}>Espaces</span>
+                  <button
+                    className={styles.toggleAllBtn}
+                    onClick={toggleAllSpaces}
                   >
-                    <div className={styles.filterGroup}>
-                      <label>Espace</label>
-                      <Select
-                        options={filterSpaceOptions}
-                        value={filters.spaceId || ''}
-                        onChange={(value) => setFilters({ spaceId: value || null })}
-                        size="sm"
-                        fullWidth
-                      />
-                    </div>
-                    <div className={styles.filterGroup}>
-                      <label>Statut</label>
-                      <Select
-                        options={filterStatusOptions}
-                        value={filters.status}
-                        onChange={(value) => setFilters({ status: value as BookingStatus | 'all' })}
-                        size="sm"
-                        fullWidth
-                      />
-                    </div>
-                    <div className={styles.filterActions}>
-                      <Button variant="ghost" size="sm" onClick={resetFilters}>
-                        Reinitialiser
-                      </Button>
-                      <Button variant="primary" size="sm" onClick={() => setShowFilterDropdown(false)}>
-                        Appliquer
-                      </Button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-            <Button
-              variant="primary"
-              size="sm"
-              icon={<Plus size={16} />}
-              onClick={() => {
-                setFormData(initialFormData);
-                setIsEditing(false);
-                setShowCreateModal(true);
-              }}
-            >
-              Nouvelle reservation
-            </Button>
-          </div>
-        </div>
-
-        {/* Error state */}
-        {bookingsError && (
-          <Card padding="md" className={styles.errorCard}>
-            <AlertCircle size={20} />
-            <span>Erreur lors du chargement des reservations</span>
-          </Card>
-        )}
-
-        {/* Calendar Grid */}
-        <Card padding="none" className={styles.calendarCard}>
-          {isLoading ? (
-            <div className={styles.loadingGrid}>
-              <div className={styles.timeColumn}>
-                <div className={styles.cornerCell} />
-                {TIME_SLOTS.map((time) => (
-                  <div key={time} className={styles.timeCell}>
-                    <Skeleton width={40} height={16} />
-                  </div>
-                ))}
-              </div>
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className={styles.studioColumn}>
-                  <div className={styles.studioHeader}>
-                    <Skeleton variant="circular" width={32} height={32} />
-                    <div style={{ flex: 1 }}>
-                      <Skeleton width="60%" height={14} />
-                      <Skeleton width="40%" height={12} />
-                    </div>
-                  </div>
-                  <div className={styles.slotGrid}>
-                    {TIME_SLOTS.map((time) => (
-                      <div key={time} className={styles.emptySlot} />
-                    ))}
-                  </div>
+                    {visibleSpaces.size === spaces.length ? 'Masquer tout' : 'Afficher tout'}
+                  </button>
                 </div>
-              ))}
-            </div>
-          ) : viewMode === 'week' ? (
-            // Weekly view
-            <div className={styles.calendar}>
-              <div className={styles.timeColumn}>
-                <div className={styles.cornerCell} />
-                {TIME_SLOTS.map((time) => (
-                  <div key={time} className={styles.timeCell}>
-                    {time}
-                  </div>
-                ))}
-              </div>
-              {weekDays.map((day) => (
-                <div key={day.toISOString()} className={styles.dayColumn}>
-                  <div className={styles.dayHeader}>
-                    <span className={styles.dayName}>{formatShortDate(day)}</span>
-                  </div>
-                  {spaces.map((space) => (
-                    <div key={space.id} className={styles.spaceDay}>
-                      <div
-                        className={styles.spaceDayLabel}
-                        style={{ borderLeftColor: getSpaceColor(space) }}
-                      >
-                        {space.name}
-                      </div>
-                      <div className={styles.slotGrid}>
-                        {TIME_SLOTS.map((time) => {
-                          const slotBookings = getBookingsForSlot(space.id, day, time);
-                          const startingBooking = slotBookings.find((b) => isBookingStart(b, day, time));
-
-                          if (startingBooking) {
-                            const span = getBookingSpan(startingBooking);
-                            return (
-                              <motion.div
-                                key={`${space.id}-${day.toISOString()}-${time}`}
-                                className={styles.bookingSlot}
-                                style={{
-                                  gridRow: `span ${span}`,
-                                  backgroundColor: `${getSpaceColor(space)}15`,
-                                  borderLeftColor: getSpaceColor(space),
-                                }}
-                                whileHover={{ scale: 1.02 }}
-                                transition={{ duration: 0.15 }}
-                                onClick={() => handleBookingClick(startingBooking)}
-                              >
-                                <div className={styles.bookingTime}>
-                                  {new Date(startingBooking.start_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                                  {' - '}
-                                  {new Date(startingBooking.end_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                                </div>
-                                <div className={styles.bookingClient}>
-                                  {getClientName(startingBooking.client_id)}
-                                </div>
-                                <div className={styles.bookingType}>{startingBooking.title}</div>
-                                <Badge variant={STATUS_COLORS[startingBooking.status]} size="sm">
-                                  {STATUS_LABELS[startingBooking.status]}
-                                </Badge>
-                              </motion.div>
-                            );
-                          }
-
-                          const isOccupied = slotBookings.some((b) => !isBookingStart(b, day, time));
-                          if (isOccupied) return null;
-
-                          return (
-                            <div
-                              key={`${space.id}-${day.toISOString()}-${time}`}
-                              className={styles.emptySlot}
-                              onClick={() => handleSlotClick(space.id, day, time)}
-                            >
-                              <Plus size={12} className={styles.addIcon} />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                <div className={styles.spaceList}>
+                  {spaces.map((space, index) => (
+                    <label key={space.id} className={styles.spaceItem}>
+                      <input
+                        type="checkbox"
+                        checked={visibleSpaces.has(space.id)}
+                        onChange={() => toggleSpaceVisibility(space.id)}
+                        className={styles.spaceCheckbox}
+                        style={{ accentColor: getSpaceColor(space, index) }}
+                      />
+                      <span
+                        className={styles.spaceColorIndicator}
+                        style={{ backgroundColor: getSpaceColor(space, index) }}
+                      />
+                      <span className={styles.spaceLabel}>{space.name}</span>
+                      <span className={styles.spaceBookingCount}>
+                        {filteredBookings.filter(b => b.space_id === space.id).length}
+                      </span>
+                    </label>
                   ))}
                 </div>
-              ))}
+              </div>
             </div>
-          ) : (
-            // Day view (default)
-            <div className={styles.calendar}>
-              <div className={styles.timeColumn}>
-                <div className={styles.cornerCell} />
-                {TIME_SLOTS.map((time) => (
-                  <div key={time} className={styles.timeCell}>
-                    {time}
-                  </div>
-                ))}
+          </aside>
+
+          {/* Main Calendar */}
+          <main className={styles.mainContent}>
+            {/* Toolbar */}
+            <div className={styles.toolbar}>
+              <div className={styles.navGroup}>
+                <Button variant="ghost" size="sm" icon={<ChevronLeft size={18} />} onClick={goPrev} />
+                <Button variant="secondary" size="sm" onClick={goToToday}>
+                  Aujourd'hui
+                </Button>
+                <Button variant="ghost" size="sm" icon={<ChevronRight size={18} />} onClick={goNext} />
+                <h2 className={styles.dateTitle}>{formatDateHeader(selectedDate)}</h2>
               </div>
 
-              {spaces.map((space) => (
-                <div key={space.id} className={styles.studioColumn}>
-                  <div className={styles.studioHeader}>
-                    <div
-                      className={styles.studioColor}
-                      style={{ backgroundColor: getSpaceColor(space) }}
-                    />
-                    <div className={styles.studioInfo}>
-                      <span className={styles.studioName}>{space.name}</span>
-                      <span className={styles.studioType}>
-                        {space.capacity} pers. | {space.hourly_rate}$/h
-                      </span>
-                    </div>
-                    <button className={styles.studioMenu}>
-                      <MoreHorizontal size={14} />
+              <div className={styles.viewGroup}>
+                <div className={styles.viewToggle}>
+                  {VIEW_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      className={`${styles.viewBtn} ${viewMode === option.value ? styles.active : ''}`}
+                      onClick={() => setViewMode(option.value as ViewMode)}
+                    >
+                      {option.label}
                     </button>
-                  </div>
-
-                  <div className={styles.slotGrid}>
-                    {TIME_SLOTS.map((time) => {
-                      const slotBookings = getBookingsForSlot(space.id, selectedDate, time);
-                      const startingBooking = slotBookings.find((b) => isBookingStart(b, selectedDate, time));
-
-                      if (startingBooking) {
-                        const span = getBookingSpan(startingBooking);
-                        return (
-                          <motion.div
-                            key={`${space.id}-${time}`}
-                            className={styles.bookingSlot}
-                            style={{
-                              gridRow: `span ${span}`,
-                              backgroundColor: `${getSpaceColor(space)}15`,
-                              borderLeftColor: getSpaceColor(space),
-                            }}
-                            whileHover={{ scale: 1.02 }}
-                            transition={{ duration: 0.15 }}
-                            onClick={() => handleBookingClick(startingBooking)}
-                          >
-                            <div className={styles.bookingTime}>
-                              {new Date(startingBooking.start_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                              {' - '}
-                              {new Date(startingBooking.end_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                            </div>
-                            <div className={styles.bookingClient}>
-                              {getClientName(startingBooking.client_id)}
-                            </div>
-                            <div className={styles.bookingType}>{startingBooking.title}</div>
-                            <Badge variant={STATUS_COLORS[startingBooking.status]} size="sm">
-                              {STATUS_LABELS[startingBooking.status]}
-                            </Badge>
-                          </motion.div>
-                        );
-                      }
-
-                      const isOccupied = slotBookings.some((b) => !isBookingStart(b, selectedDate, time));
-                      if (isOccupied) return null;
-
-                      return (
-                        <div
-                          key={`${space.id}-${time}`}
-                          className={styles.emptySlot}
-                          onClick={() => handleSlotClick(space.id, selectedDate, time)}
-                        >
-                          <Plus size={12} className={styles.addIcon} />
-                        </div>
-                      );
-                    })}
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
-          )}
-        </Card>
 
-        {/* Studio Overview */}
-        <div className={styles.studioOverview}>
-          {isLoading ? (
-            [1, 2, 3, 4].map((i) => (
-              <Card key={i} padding="md" className={styles.studioCard}>
-                <div className={styles.studioCardHeader}>
-                  <Skeleton variant="rectangular" width={40} height={40} />
-                  <div>
-                    <Skeleton width={100} height={16} />
-                    <Skeleton width={60} height={14} />
-                  </div>
-                </div>
-                <div className={styles.studioCardStats}>
-                  <div className={styles.studioCardStat}>
-                    <Skeleton width={30} height={24} />
-                    <Skeleton width={80} height={12} />
-                  </div>
-                  <div className={styles.studioCardStat}>
-                    <Skeleton width={40} height={24} />
-                    <Skeleton width={60} height={12} />
-                  </div>
-                </div>
+            {/* Error state */}
+            {bookingsError && (
+              <Card padding="md" className={styles.errorCard}>
+                <AlertCircle size={20} />
+                <span>Erreur lors du chargement des reservations</span>
               </Card>
-            ))
-          ) : (
-            spaces.map((space) => {
-              const stats = getSpaceStats(space);
-              return (
-                <Card key={space.id} padding="md" hoverable className={styles.studioCard}>
-                  <div className={styles.studioCardHeader}>
-                    <div
-                      className={styles.studioCardColor}
-                      style={{ backgroundColor: getSpaceColor(space) }}
-                    />
-                    <div>
-                      <div className={styles.studioCardName}>{space.name}</div>
-                      <div className={styles.studioCardType}>
-                        {space.capacity} pers. | {space.hourly_rate}$/h
-                      </div>
-                    </div>
-                  </div>
-                  <div className={styles.studioCardStats}>
-                    <div className={styles.studioCardStat}>
-                      <span className={styles.studioCardValue}>{stats.bookingCount}</span>
-                      <span className={styles.studioCardLabel}>Reservations</span>
-                    </div>
-                    <div className={styles.studioCardStat}>
-                      <span className={styles.studioCardValue}>{stats.occupationRate}%</span>
-                      <span className={styles.studioCardLabel}>Occupation</span>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })
-          )}
+            )}
+
+            {/* Calendar Views */}
+            <Card padding="none" className={styles.calendarCard}>
+              {isLoading ? (
+                <div className={styles.loadingState}>
+                  <Skeleton width="100%" height={400} />
+                </div>
+              ) : (
+                <>
+                  {viewMode === 'day' && renderDayView()}
+                  {viewMode === 'week' && renderWeekView()}
+                  {viewMode === 'month' && renderMonthView()}
+                </>
+              )}
+            </Card>
+          </main>
         </div>
       </div>
 
@@ -849,34 +897,29 @@ export function SpaceControl() {
               error={formErrors.client_id}
               fullWidth
             />
-            <Input
-              label="Date et heure de debut"
-              type="datetime-local"
-              value={formData.start_time}
-              onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-              error={formErrors.start_time}
-              fullWidth
-            />
-            <Input
-              label="Date et heure de fin"
-              type="datetime-local"
-              value={formData.end_time}
-              onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-              error={formErrors.end_time}
-              fullWidth
-            />
+            <div className={styles.formRow}>
+              <Input
+                label="Debut"
+                type="datetime-local"
+                value={formData.start_time}
+                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                error={formErrors.start_time}
+                fullWidth
+              />
+              <Input
+                label="Fin"
+                type="datetime-local"
+                value={formData.end_time}
+                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                error={formErrors.end_time}
+                fullWidth
+              />
+            </div>
             <Select
               label="Statut"
               options={statusOptions}
               value={formData.status}
               onChange={(value) => setFormData({ ...formData, status: value as BookingStatus })}
-              fullWidth
-            />
-            <Input
-              label="Description"
-              placeholder="Description optionnelle"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               fullWidth
             />
             <Input
@@ -937,34 +980,29 @@ export function SpaceControl() {
                 error={formErrors.client_id}
                 fullWidth
               />
-              <Input
-                label="Date et heure de debut"
-                type="datetime-local"
-                value={formData.start_time}
-                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                error={formErrors.start_time}
-                fullWidth
-              />
-              <Input
-                label="Date et heure de fin"
-                type="datetime-local"
-                value={formData.end_time}
-                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                error={formErrors.end_time}
-                fullWidth
-              />
+              <div className={styles.formRow}>
+                <Input
+                  label="Debut"
+                  type="datetime-local"
+                  value={formData.start_time}
+                  onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                  error={formErrors.start_time}
+                  fullWidth
+                />
+                <Input
+                  label="Fin"
+                  type="datetime-local"
+                  value={formData.end_time}
+                  onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                  error={formErrors.end_time}
+                  fullWidth
+                />
+              </div>
               <Select
                 label="Statut"
                 options={statusOptions}
                 value={formData.status}
                 onChange={(value) => setFormData({ ...formData, status: value as BookingStatus })}
-                fullWidth
-              />
-              <Input
-                label="Description"
-                placeholder="Description optionnelle"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 fullWidth
               />
               <Input
@@ -990,15 +1028,9 @@ export function SpaceControl() {
                   <div>
                     <span className={styles.detailLabel}>Horaire</span>
                     <span className={styles.detailValue}>
-                      {new Date(selectedBooking.start_time).toLocaleDateString('fr-FR', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long',
-                      })}
+                      {format(parseISO(selectedBooking.start_time), "EEEE d MMMM yyyy", { locale: fr })}
                       <br />
-                      {new Date(selectedBooking.start_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                      {' - '}
-                      {new Date(selectedBooking.end_time).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+                      {format(parseISO(selectedBooking.start_time), 'HH:mm')} - {format(parseISO(selectedBooking.end_time), 'HH:mm')}
                     </span>
                   </div>
                 </div>
@@ -1023,13 +1055,6 @@ export function SpaceControl() {
                   </div>
                 </div>
               </div>
-
-              {selectedBooking.description && (
-                <div className={styles.detailSection}>
-                  <span className={styles.detailLabel}>Description</span>
-                  <p>{selectedBooking.description}</p>
-                </div>
-              )}
 
               {selectedBooking.notes && (
                 <div className={styles.detailSection}>
