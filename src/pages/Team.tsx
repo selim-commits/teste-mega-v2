@@ -54,7 +54,7 @@ import type { TeamMember, TeamRole, TeamMemberInsert, TeamMemberUpdate } from '.
 import styles from './Team.module.css';
 
 // Demo studioId - in production, this would come from useAuthStore or context
-const DEMO_STUDIO_ID = 'demo-studio-id';
+const DEMO_STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 interface TeamMemberFormData {
   name: string;
