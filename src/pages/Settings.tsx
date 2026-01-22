@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   Building2,
@@ -11,6 +11,7 @@ import {
   Upload,
   Link2,
   ExternalLink,
+  Loader2,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -20,6 +21,8 @@ import { Select } from '../components/ui/Select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
 import { useToast } from '../components/ui/Toast';
 import { DEMO_STUDIO_ID } from '../stores/authStore';
+import { useStudioSettings, useUpdateProfile } from '../hooks/useSettings';
+import type { StudioSettings } from '../services/settings';
 import styles from './Settings.module.css';
 
 // Settings tabs configuration
@@ -196,8 +199,34 @@ export function Settings() {
 
 function StudioProfileSection() {
   const { addToast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const [profile, setProfile] = useState<StudioProfile>(defaultStudioProfile);
+
+  // Fetch studio data from Supabase
+  const { data: studio, isLoading: isFetching } = useStudioSettings(DEMO_STUDIO_ID);
+  const updateProfile = useUpdateProfile(DEMO_STUDIO_ID);
+
+  // Sync form with fetched data
+  useEffect(() => {
+    if (studio) {
+      const settings = studio.settings as StudioSettings | null;
+      setProfile({
+        name: studio.name || defaultStudioProfile.name,
+        slug: studio.slug || defaultStudioProfile.slug,
+        description: settings?.profile?.description || defaultStudioProfile.description,
+        logoUrl: settings?.profile?.logoUrl || defaultStudioProfile.logoUrl,
+        coverUrl: settings?.profile?.coverUrl || defaultStudioProfile.coverUrl,
+        email: studio.email || defaultStudioProfile.email,
+        phone: studio.phone || defaultStudioProfile.phone,
+        website: settings?.profile?.website || defaultStudioProfile.website,
+        address: studio.address || defaultStudioProfile.address,
+        city: studio.city || defaultStudioProfile.city,
+        postalCode: studio.postal_code || defaultStudioProfile.postalCode,
+        country: studio.country || defaultStudioProfile.country,
+        timezone: studio.timezone || defaultStudioProfile.timezone,
+        currency: studio.currency || defaultStudioProfile.currency,
+      });
+    }
+  }, [studio]);
 
   const handleNameChange = (value: string) => {
     setProfile(prev => ({
@@ -208,10 +237,23 @@ function StudioProfileSection() {
   };
 
   const handleSave = async () => {
-    setIsLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updateProfile.mutateAsync({
+        name: profile.name,
+        slug: profile.slug,
+        email: profile.email,
+        phone: profile.phone,
+        address: profile.address,
+        city: profile.city,
+        postal_code: profile.postalCode,
+        country: profile.country,
+        timezone: profile.timezone,
+        currency: profile.currency,
+        description: profile.description,
+        logoUrl: profile.logoUrl,
+        coverUrl: profile.coverUrl,
+        website: profile.website,
+      });
       addToast({
         title: 'Profil mis a jour',
         description: 'Les informations du studio ont ete enregistrees.',
@@ -225,10 +267,10 @@ function StudioProfileSection() {
         variant: 'error',
         duration: 5000,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const isLoading = updateProfile.isPending || isFetching;
 
   return (
     <motion.div

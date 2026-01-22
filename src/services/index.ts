@@ -3,6 +3,8 @@ export { createBaseService } from './base';
 
 // Domain services
 export { studioService } from './studios';
+export { settingsService } from './settings';
+export type { StudioSettings } from './settings';
 export { spaceService } from './spaces';
 export type { SpaceFilters } from './spaces';
 export { bookingService } from './bookings';
@@ -81,3 +83,11 @@ export type {
   GiftCertificate,
   GiftCertificateInsert,
 } from './purchases';
+
+// AI service
+export { aiService, AI_SYSTEM_PROMPTS } from './ai';
+export type {
+  AIMessage,
+  AIStreamOptions,
+  AICompletionOptions,
+} from './ai';
