@@ -1,140 +1,202 @@
 {
   "project": "rooom-os",
-  "total_iterations": 10,
-  "current_iteration": 5,
-  "status": "in_progress",
-  "iterations": [
-    {
-      "number": 1,
-      "name": "Supabase Foundation",
-      "status": "completed",
-      "tasks": [
-        "Create Supabase project configuration",
-        "Set up environment variables",
-        "Install Supabase client library",
-        "Create auth context and hooks",
-        "Implement login/signup pages",
-        "Create auth middleware",
-        "Test authentication flow"
-      ],
-      "verification": "npm run build && User can sign up, login, logout"
+  "version": "2.0",
+  "total_phases": 5,
+  "current_phase": 1,
+  "status": "ready_to_execute",
+  "audit_date": "2026-01-22",
+
+  "startup_sequence": [
+    "cat .claude/context/STARTUP.md",
+    "cat .claude/context/RULES.md",
+    "cat .claude/context/CONTEXT.md",
+    "git status",
+    "npm run build 2>&1 | tail -20"
+  ],
+
+  "agents": {
+    "design": {
+      "file": ".claude/agents/design-agent.md",
+      "description": "UI/UX, composants, styles, design system",
+      "completion_promise": "DESIGN_COMPLETE"
     },
-    {
-      "number": 2,
-      "name": "Core Database Schema",
-      "status": "completed",
-      "tasks": [
-        "Create SQL migration files",
-        "Set up all core tables",
-        "Apply migrations",
-        "Create RLS policies"
-      ],
-      "verification": "All tables created in Supabase"
+    "feature": {
+      "file": ".claude/agents/feature-agent.md",
+      "description": "Nouvelles fonctionnalités, CRUD, pages",
+      "completion_promise": "FEATURE_COMPLETE"
     },
+    "polish": {
+      "file": ".claude/agents/polish-agent.md",
+      "description": "Amélioration, optimisation, accessibilité",
+      "completion_promise": "POLISH_COMPLETE"
+    },
+    "debug": {
+      "file": ".claude/agents/debug-agent.md",
+      "description": "Correction de bugs, erreurs TypeScript",
+      "completion_promise": "DEBUG_COMPLETE"
+    }
+  },
+
+  "design_system": {
+    "config_file": "src/styles/design-system.css",
+    "context_file": ".claude/context/CONTEXT.md",
+    "rules_file": ".claude/context/RULES.md",
+    "reference_file": ".claude/context/DESIGN-REFERENCE.md",
+    "mandatory_variables": [
+      "--text-primary", "--text-secondary", "--text-tertiary",
+      "--bg-primary", "--bg-secondary", "--bg-tertiary",
+      "--border-default", "--border-subtle", "--border-strong",
+      "--accent-primary", "--accent-primary-hover",
+      "--space-1", "--space-2", "--space-3", "--space-4", "--space-6", "--space-8",
+      "--radius-sm", "--radius-md", "--radius-lg",
+      "--shadow-sm", "--shadow-md", "--shadow-lg"
+    ]
+  },
+
+  "audit_summary": {
+    "frontend_score": "75%",
+    "backend_score": "92%",
+    "design_system_violations": 239,
+    "pages_complete": 3,
+    "pages_partial": 7,
+    "pages_stub": 1,
+    "services_complete": 14,
+    "services_partial": 2
+  },
+
+  "execution_phases": [
     {
-      "number": 3,
-      "name": "Service Layer & Types",
+      "phase": 1,
+      "name": "Design System Polish",
       "status": "pending",
+      "agent": "polish",
+      "priority": "P0",
+      "max_iterations": 30,
       "tasks": [
-        "Generate TypeScript types",
-        "Create base CRUD service pattern",
-        "Create all domain services"
+        "Fix AIConsole.module.css - 25 hardcoded colors",
+        "Fix embed-packs/packs.css - 72 px spacings",
+        "Fix embed/embed.css - 58 violations",
+        "Fix embed-chat/chat.css - 41 violations",
+        "Migrate Bookings --rooom-* to design system",
+        "Verify 0 violations remaining"
       ],
-      "verification": "npm run build passes"
+      "files": [
+        "src/pages/AIConsole.module.css",
+        "embed-packs/packs.css",
+        "embed/embed.css",
+        "embed-chat/chat.css",
+        "src/pages/Bookings.module.css"
+      ],
+      "verification": "npm run build && grep -r '#[0-9a-fA-F]' src/pages/*.css returns 0",
+      "command": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/polish-agent.md. MISSION: Corriger toutes les 239 violations du design system. Fichiers: AIConsole.module.css (25 couleurs), embed-packs/packs.css (72 espacements), embed/embed.css (58), embed-chat/chat.css (41). Remplacer hardcoded par var(--token). npm run build doit passer.' --max-iterations 30 --completion-promise 'POLISH_COMPLETE'"
     },
     {
-      "number": 4,
-      "name": "State Management & Hooks",
+      "phase": 2,
+      "name": "Settings Persistence",
       "status": "pending",
+      "agent": "feature",
+      "priority": "P0",
+      "max_iterations": 25,
       "tasks": [
-        "Install and configure Zustand",
-        "Create stores for each domain",
-        "Implement real-time subscriptions"
+        "Create settingsService.ts",
+        "Create useSettings.ts hook",
+        "Refactor Settings.tsx with React Query",
+        "Add optimistic updates",
+        "Add loading and error states"
       ],
-      "verification": "Stores working with real data"
+      "files": [
+        "src/services/settings.ts",
+        "src/hooks/useSettings.ts",
+        "src/pages/Settings.tsx"
+      ],
+      "verification": "Settings persist after refresh",
+      "command": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/feature-agent.md. MISSION: Connecter Settings.tsx à Supabase. Créer settingsService.ts et useSettings.ts. Refactorer Settings pour React Query avec optimistic updates. npm run build.' --max-iterations 25 --completion-promise 'FEATURE_COMPLETE'"
     },
     {
-      "number": 5,
-      "name": "Enhanced UI Components",
-      "status": "completed",
-      "tasks": [
-        "Create Input, Select, Checkbox components",
-        "Create Modal, Dropdown, Tabs",
-        "Create Table, Calendar, DatePicker",
-        "Create Toast, Avatar, Progress, Skeleton"
-      ],
-      "verification": "All components render correctly"
-    },
-    {
-      "number": 6,
-      "name": "Dashboard & Space Control",
+      "phase": 3,
+      "name": "AI Integration",
       "status": "pending",
+      "agent": "feature",
+      "priority": "P0",
+      "max_iterations": 30,
       "tasks": [
-        "Refactor Dashboard with real data",
-        "Implement calendar views",
-        "Add booking CRUD",
-        "Implement drag & resize"
+        "Create ai.ts service with streaming",
+        "Complete chatAIService.ts",
+        "Refactor AIConsole.tsx for real responses",
+        "Integrate YODA in Chat.tsx"
       ],
-      "verification": "Create, edit, delete bookings works"
+      "files": [
+        "src/services/ai.ts",
+        "src/services/chatAIService.ts",
+        "src/pages/AIConsole.tsx",
+        "src/pages/Chat.tsx"
+      ],
+      "verification": "AI responds with real LLM responses",
+      "command": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/feature-agent.md. MISSION: Implémenter intégration LLM. Créer ai.ts avec streaming. Compléter chatAIService.ts. Refactorer AIConsole et Chat pour vraies réponses IA. npm run build.' --max-iterations 30 --completion-promise 'FEATURE_COMPLETE'"
     },
     {
-      "number": 7,
-      "name": "Inventory & Clients",
+      "phase": 4,
+      "name": "Partial Pages Completion",
       "status": "pending",
+      "agent": "feature",
+      "priority": "P1",
+      "max_iterations": 65,
       "tasks": [
-        "Implement equipment management",
-        "Add QR codes and maintenance",
-        "Complete CRM features",
-        "Add client scoring and tags"
+        "Clients: Add activity history",
+        "Team: Implement invitation system",
+        "Inventory: Add QR code generation",
+        "Packs: Complete analytics",
+        "Bookings: Improve validation"
       ],
-      "verification": "Full CRUD for equipment and clients"
+      "sub_phases": [
+        {
+          "name": "Clients Activity History",
+          "iterations": 20,
+          "command": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/feature-agent.md. Ajouter historique activité aux Clients. Créer ClientActivityHistory.tsx, query bookings/paiements/messages, afficher timeline.' --max-iterations 20 --completion-promise 'FEATURE_COMPLETE'"
+        },
+        {
+          "name": "Team Invitations",
+          "iterations": 25,
+          "command": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/feature-agent.md. Implémenter invitations Team. Créer invitationsService.ts, InviteModal.tsx, gérer envoi et expiration.' --max-iterations 25 --completion-promise 'FEATURE_COMPLETE'"
+        },
+        {
+          "name": "Inventory QR Codes",
+          "iterations": 20,
+          "command": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/feature-agent.md. Implémenter QR codes Inventory. Installer qrcode, créer QRCodeGenerator.tsx, scan et lookup.' --max-iterations 20 --completion-promise 'FEATURE_COMPLETE'"
+        }
+      ],
+      "verification": "All partial pages at 90%+"
     },
     {
-      "number": 8,
-      "name": "Finance Module",
+      "phase": 5,
+      "name": "Final Polish",
       "status": "pending",
+      "agent": "polish",
+      "priority": "P2",
+      "max_iterations": 25,
       "tasks": [
-        "Implement quote and invoice builder",
-        "Set up Stripe integration",
-        "Add payment tracking",
-        "Create financial reports"
-      ],
-      "verification": "Quote to invoice to payment flow works"
-    },
-    {
-      "number": 9,
-      "name": "AI Console & Team",
-      "status": "pending",
-      "tasks": [
-        "Set up Claude API integration",
-        "Implement agent conversations",
-        "Create workflow builder",
-        "Complete team management"
-      ],
-      "verification": "AI agents respond, team CRUD works"
-    },
-    {
-      "number": 10,
-      "name": "Settings & Polish",
-      "status": "pending",
-      "tasks": [
-        "Implement all settings",
+        "Accessibility audit and fixes",
         "Performance optimization",
-        "Add loading and error states",
-        "Final testing"
+        "Loading states everywhere",
+        "Error states with retry",
+        "Empty states",
+        "Final design system verification"
       ],
-      "verification": "npm run build && npm run lint && Full test pass"
+      "verification": "npm run build && npm run lint && npx tsc --noEmit",
+      "command": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/polish-agent.md. MISSION: Polish final. Accessibilité, performance, états loading/error/empty, vérification design system 0 violations. Créer POLISH-REPORT.md. npm run build.' --max-iterations 25 --completion-promise 'POLISH_COMPLETE'"
     }
   ],
-  "agents": {
-    "foundation": "Setup Supabase, auth, database",
-    "services": "TypeScript types, services, hooks",
-    "ui": "UI component library",
-    "features": "Dashboard, SpaceControl, Inventory, Clients, Finance",
-    "ai": "AI Console, Claude integration",
-    "team": "Team management",
-    "settings": "Settings and configuration",
-    "polish": "Testing, optimization, final fixes"
+
+  "quick_commands": {
+    "phase1_design": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/polish-agent.md. Corriger 239 violations design system. npm run build.' --max-iterations 30 --completion-promise 'POLISH_COMPLETE'",
+    "phase2_settings": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/feature-agent.md. Connecter Settings à Supabase. npm run build.' --max-iterations 25 --completion-promise 'FEATURE_COMPLETE'",
+    "phase3_ai": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/feature-agent.md. Intégrer LLM dans AIConsole et Chat. npm run build.' --max-iterations 30 --completion-promise 'FEATURE_COMPLETE'",
+    "phase4_pages": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/feature-agent.md. Compléter pages partielles. npm run build.' --max-iterations 65 --completion-promise 'FEATURE_COMPLETE'",
+    "phase5_polish": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/polish-agent.md. Polish final. npm run build.' --max-iterations 25 --completion-promise 'POLISH_COMPLETE'",
+    "debug": "/ralph-loop 'Read .claude/context/STARTUP.md then .claude/agents/debug-agent.md. Fix build errors.' --max-iterations 15 --completion-promise 'DEBUG_COMPLETE'"
   },
-  "completion_promise": "All 10 iterations complete, npm run build passes, all features functional"
+
+  "completion_promise": "All 5 phases complete, 0 design system violations, all pages 90%+, npm run build passes",
+
+  "estimated_total_iterations": 175
 }
