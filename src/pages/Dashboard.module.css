@@ -523,3 +523,53 @@
   font-weight: 600;
   color: var(--text-primary);
 }
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+
+  .kpiValue {
+    font-size: 24px;
+  }
+
+  .scheduleItem {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .scheduleTime {
+    min-width: 70px;
+    font-size: 12px;
+  }
+
+  .aiTitle {
+    font-size: 18px;
+  }
+
+  .aiText {
+    font-size: 13px;
+  }
+
+  .statValue {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 12px;
+  }
+
+  .bentoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .bentoLarge,
+  .bentoMedium,
+  .bentoWide,
+  .bentoSmall {
+    grid-column: span 1;
+  }
+}

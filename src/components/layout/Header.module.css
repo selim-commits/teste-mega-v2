@@ -113,3 +113,71 @@
 .primaryBtn:hover {
   background-color: #333;
 }
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .header {
+    padding: 16px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .left {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .title {
+    font-size: 20px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+  }
+
+  .right {
+    width: 100%;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .helpBtn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .secondaryBtn {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+
+  .primaryBtn {
+    padding: 8px 12px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 12px;
+  }
+
+  .title {
+    font-size: 18px;
+  }
+
+  .right {
+    gap: 6px;
+  }
+
+  .secondaryBtn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .primaryBtn {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+}

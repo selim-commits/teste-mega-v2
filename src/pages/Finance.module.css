@@ -1144,3 +1144,139 @@
   font-style: italic;
   color: var(--state-success);
 }
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+
+  .kpiValue {
+    font-size: var(--text-2xl);
+  }
+
+  .kpiIcon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .invoicesHeader {
+    padding: var(--space-4);
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .invoicesTitle {
+    font-size: var(--text-lg);
+  }
+
+  .invoicesActions {
+    width: 100%;
+  }
+
+  .chart {
+    height: 180px;
+  }
+
+  .chartBars {
+    gap: var(--space-2);
+  }
+
+  .filtersPanel {
+    padding: var(--space-3);
+  }
+
+  .filterRow {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .searchBox {
+    min-width: 100%;
+  }
+
+  .quickFilters {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .quickFilterBtn {
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .paginationWrapper {
+    padding: var(--space-3);
+  }
+
+  .detailActions {
+    flex-direction: column;
+  }
+
+  .detailActionGroup {
+    width: 100%;
+  }
+
+  .paymentItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 12px;
+  }
+
+  .kpiGrid {
+    gap: var(--space-3);
+  }
+
+  .kpiValue {
+    font-size: var(--text-xl);
+  }
+
+  .mainGrid {
+    gap: var(--space-3);
+  }
+
+  .invoicesHeader {
+    padding: var(--space-3);
+  }
+
+  .tableHeader,
+  .tableRow {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+    padding: var(--space-3);
+  }
+
+  .tableRow {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .periodToggle {
+    flex-wrap: wrap;
+  }
+
+  .periodBtn {
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-2);
+  }
+
+  .expenseItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .expenseBar {
+    width: 100%;
+  }
+
+  .revenueValue {
+    font-size: var(--text-xl);
+  }
+}

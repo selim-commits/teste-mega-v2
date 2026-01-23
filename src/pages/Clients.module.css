@@ -1072,3 +1072,90 @@
   background-color: var(--bg-secondary);
   border-radius: var(--radius-md);
 }
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .searchBox {
+    max-width: 100%;
+  }
+
+  .toolbarActions {
+    justify-content: space-between;
+  }
+
+  .filters {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .clientsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .clientAvatar {
+    width: 48px;
+    height: 48px;
+    font-size: 16px;
+  }
+
+  .clientName {
+    font-size: 16px;
+  }
+
+  .clientStats {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .sidebarContent {
+    padding: 16px;
+  }
+
+  .profileAvatar {
+    width: 64px;
+    height: 64px;
+    font-size: 20px;
+  }
+
+  .statsRow {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 12px;
+  }
+
+  .clientHeader {
+    padding: 12px;
+  }
+
+  .clientContent {
+    padding: 12px;
+  }
+
+  .clientStats {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .clientStat {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 12px;
+    text-align: left;
+  }
+}

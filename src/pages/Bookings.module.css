@@ -394,3 +394,89 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
 }
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .content {
+    padding: 16px;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    flex-direction: column;
+  }
+
+  .filterCard,
+  .statsCard {
+    flex: none;
+    width: 100%;
+  }
+
+  .calendarSlotsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .calendarCard,
+  .slotsCard {
+    padding: var(--space-4);
+  }
+
+  .calendarTitle {
+    font-size: var(--text-lg);
+  }
+
+  .slotsTitle {
+    font-size: var(--text-base);
+  }
+
+  .slotsGrid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .slot {
+    padding: var(--space-2);
+  }
+
+  .slotTime {
+    font-size: var(--text-xs);
+  }
+
+  .statValue {
+    font-size: var(--text-2xl);
+  }
+
+  .timeInputs {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .content {
+    padding: 12px;
+  }
+
+  .calendarCard,
+  .slotsCard {
+    padding: var(--space-3);
+  }
+
+  .calendarDay {
+    padding: var(--space-1);
+  }
+
+  .dayNumber {
+    font-size: var(--text-xs);
+  }
+
+  .slotsGrid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+
+  .emptySlots {
+    padding: var(--space-6);
+  }
+}
