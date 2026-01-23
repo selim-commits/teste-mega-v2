@@ -30,6 +30,7 @@
 /* Mini Calendar */
 .calendar {
   padding: 0 20px 20px;
+  position: relative;
 }
 
 .calendarHeader {
@@ -39,7 +40,7 @@
   margin-bottom: 16px;
 }
 
-.calendarMonth {
+.calendarMonthBtn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -48,6 +49,104 @@
   font-weight: 400;
   color: #1a1a1a;
   text-transform: lowercase;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+
+.calendarMonthBtn:hover {
+  background-color: #f5f5f5;
+}
+
+/* Month/Year Picker */
+.monthPicker {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  z-index: 100;
+  margin-top: 4px;
+}
+
+.yearSelector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.yearLabel {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.yearNavBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background-color 0.15s;
+}
+
+.yearNavBtn:hover {
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+}
+
+.monthGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+.monthOption {
+  padding: 10px 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #1a1a1a;
+  text-transform: capitalize;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.monthOption:hover {
+  background-color: #f5f5f5;
+}
+
+.monthOptionActive {
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+.monthOptionActive:hover {
+  background-color: #333;
+}
+
+.monthOptionToday {
+  font-weight: 600;
 }
 
 .calendarNav {

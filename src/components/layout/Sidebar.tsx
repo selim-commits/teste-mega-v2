@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import styles from './Sidebar.module.css';
 
@@ -56,10 +56,23 @@ const MONTHS = [
 
 function MiniCalendar() {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
   const today = new Date();
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
+
+  // Close picker when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (pickerRef.current && !pickerRef.current.contains(event.target as Node)) {
+        setShowPicker(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Get first day of month and total days
   const firstDayOfMonth = new Date(year, month, 1).getDay();
@@ -71,6 +84,15 @@ function MiniCalendar() {
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+
+  const selectMonth = (m: number) => {
+    setCurrentDate(new Date(year, m, 1));
+    setShowPicker(false);
+  };
+
+  const selectYear = (y: number) => {
+    setCurrentDate(new Date(y, month, 1));
+  };
 
   // Generate calendar days
   const days: { day: number; isCurrentMonth: boolean; isToday: boolean; isPast: boolean }[] = [];
@@ -111,21 +133,67 @@ function MiniCalendar() {
     });
   }
 
+  // Years for picker (current year -5 to +5)
+  const years = Array.from({ length: 11 }, (_, i) => today.getFullYear() - 5 + i);
+
   return (
-    <div className={styles.calendar}>
+    <div className={styles.calendar} ref={pickerRef}>
       <div className={styles.calendarHeader}>
-        <span className={styles.calendarMonth}>
+        <button
+          className={styles.calendarMonthBtn}
+          onClick={() => setShowPicker(!showPicker)}
+        >
           {MONTHS[month]} {year}
-        </span>
+          <ChevronDown size={14} />
+        </button>
         <div className={styles.calendarNav}>
           <button onClick={prevMonth} className={styles.calendarNavBtn}>
-            <ChevronLeft size={16} />
+            <ChevronLeft size={18} />
           </button>
           <button onClick={nextMonth} className={styles.calendarNavBtn}>
-            <ChevronRight size={16} />
+            <ChevronRight size={18} />
           </button>
         </div>
       </div>
+
+      {/* Month/Year Picker Dropdown */}
+      {showPicker && (
+        <div className={styles.monthPicker}>
+          {/* Year selector */}
+          <div className={styles.yearSelector}>
+            <button
+              className={styles.yearNavBtn}
+              onClick={() => selectYear(year - 1)}
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <span className={styles.yearLabel}>{year}</span>
+            <button
+              className={styles.yearNavBtn}
+              onClick={() => selectYear(year + 1)}
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+          {/* Month grid */}
+          <div className={styles.monthGrid}>
+            {MONTHS.map((m, i) => (
+              <button
+                key={m}
+                className={cn(
+                  styles.monthOption,
+                  i === month && styles.monthOptionActive,
+                  i === today.getMonth() && year === today.getFullYear() && styles.monthOptionToday
+                )}
+                onClick={() => selectMonth(i)}
+              >
+                {m.slice(0, 3)}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className={styles.calendarGrid}>
         {DAYS.map((day) => (
           <div key={day} className={styles.calendarDayName}>
