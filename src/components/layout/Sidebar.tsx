@@ -1,37 +1,12 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Calendar,
-  CalendarCheck,
-  Users,
-  FileText,
-  BarChart3,
-  Clock,
-  ListChecks,
-  Gift,
-  Plug,
-  CalendarSync,
-  CreditCard,
-  Mail,
-  MessageSquare,
-  Bell,
-  Settings,
-  ChevronLeft,
-  ChevronRight,
-  Zap,
-  Package,
-  Bot,
-  Palette,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import styles from './Sidebar.module.css';
 
 interface NavItem {
-  icon: React.ElementType;
   label: string;
   path: string;
-  badge?: string;
 }
 
 interface NavSection {
@@ -39,91 +14,158 @@ interface NavSection {
   items: NavItem[];
 }
 
-// Menu structure inspired by Acuity Scheduling
+// Menu structure matching Acuity Scheduling
 const navSections: NavSection[] = [
   {
     label: 'Aperçu',
     items: [
-      { icon: Calendar, label: 'Calendrier', path: '/spaces' },
-      { icon: CalendarCheck, label: 'Réservations', path: '/bookings' },
-      { icon: Users, label: 'Clients', path: '/clients' },
-      { icon: FileText, label: 'Factures', path: '/finance' },
-      { icon: BarChart3, label: 'Rapports', path: '/reports' },
+      { label: 'Calendrier', path: '/spaces' },
+      { label: 'Page Rendez-vous', path: '/bookings' },
+      { label: 'Clients', path: '/clients' },
+      { label: 'Factures', path: '/finance' },
+      { label: 'Rapports', path: '/reports' },
     ],
   },
   {
     label: 'Paramètres de l\'entreprise',
     items: [
-      { icon: Clock, label: 'Disponibilité', path: '/availability' },
-      { icon: ListChecks, label: 'Types de rendez-vous', path: '/appointment-types' },
-      { icon: Package, label: 'Inventaire', path: '/inventory' },
-      { icon: Gift, label: 'Packs & Abonnements', path: '/packs' },
-      { icon: Plug, label: 'Intégrations', path: '/integrations' },
-      { icon: CalendarSync, label: 'Sync Calendriers', path: '/calendar-sync' },
-      { icon: CreditCard, label: 'Paiements', path: '/payments' },
+      { label: 'Disponibilité', path: '/availability' },
+      { label: 'Types de rendez-vous', path: '/appointment-types' },
+      { label: 'Packs, cadeaux et abonnements', path: '/packs' },
+      { label: 'Intégrations', path: '/integrations' },
+      { label: 'Synchroniser vos différents calendriers', path: '/calendar-sync' },
+      { label: 'Paramètres de paiement', path: '/payments' },
     ],
   },
   {
     label: 'Notifications',
     items: [
-      { icon: Mail, label: 'E-mails client', path: '/notifications/email' },
-      { icon: MessageSquare, label: 'Messages SMS', path: '/notifications/sms' },
-      { icon: Bell, label: 'Alertes réservations', path: '/notifications/alerts' },
-    ],
-  },
-  {
-    label: 'Outils avancés',
-    items: [
-      { icon: Palette, label: 'Widget Builder', path: '/widgets' },
-      { icon: Bot, label: 'AI Console', path: '/ai', badge: 'BETA' },
+      { label: 'E-mails client', path: '/notifications/email' },
+      { label: 'Text Messages client', path: '/notifications/sms' },
+      { label: 'Alertes relatives aux réservations', path: '/notifications/alerts' },
     ],
   },
 ];
 
-const bottomNavItems: NavItem[] = [
-  { icon: Settings, label: 'Paramètres', path: '/settings' },
+// Calendar helpers
+const DAYS = ['LUN.', 'MAR.', 'MER.', 'JEU.', 'VEN.', 'SAM.', 'DIM.'];
+const MONTHS = [
+  'janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+  'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'
 ];
 
-export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+function MiniCalendar() {
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const today = new Date();
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+
+  // Get first day of month and total days
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  // Adjust for Monday start (0 = Monday, 6 = Sunday)
+  const startDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
+
+  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+
+  // Generate calendar days
+  const days: { day: number; isCurrentMonth: boolean; isToday: boolean; isPast: boolean }[] = [];
+
+  // Previous month days
+  for (let i = startDay - 1; i >= 0; i--) {
+    days.push({
+      day: daysInPrevMonth - i,
+      isCurrentMonth: false,
+      isToday: false,
+      isPast: true,
+    });
+  }
+
+  // Current month days
+  for (let i = 1; i <= daysInMonth; i++) {
+    const isToday =
+      i === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear();
+    const isPast = new Date(year, month, i) < new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    days.push({
+      day: i,
+      isCurrentMonth: true,
+      isToday,
+      isPast: isPast && !isToday,
+    });
+  }
+
+  // Next month days to fill remaining
+  const remaining = 42 - days.length;
+  for (let i = 1; i <= remaining; i++) {
+    days.push({
+      day: i,
+      isCurrentMonth: false,
+      isToday: false,
+      isPast: false,
+    });
+  }
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: collapsed ? 72 : 260 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-      className={styles.sidebar}
-    >
+    <div className={styles.calendar}>
+      <div className={styles.calendarHeader}>
+        <span className={styles.calendarMonth}>
+          {MONTHS[month]} {year}
+        </span>
+        <div className={styles.calendarNav}>
+          <button onClick={prevMonth} className={styles.calendarNavBtn}>
+            <ChevronLeft size={16} />
+          </button>
+          <button onClick={nextMonth} className={styles.calendarNavBtn}>
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+      <div className={styles.calendarGrid}>
+        {DAYS.map((day) => (
+          <div key={day} className={styles.calendarDayName}>
+            {day}
+          </div>
+        ))}
+        {days.map((d, i) => (
+          <div
+            key={i}
+            className={cn(
+              styles.calendarDay,
+              !d.isCurrentMonth && styles.calendarDayOther,
+              d.isToday && styles.calendarDayToday,
+              d.isPast && styles.calendarDayPast
+            )}
+          >
+            {d.day}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function Sidebar() {
+  return (
+    <aside className={styles.sidebar}>
       {/* Logo */}
       <div className={styles.logo}>
-        <div className={styles.logoIcon}>
-          <Zap size={20} />
-        </div>
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.span
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.15 }}
-              className={styles.logoText}
-            >
-              ROOOM OS
-            </motion.span>
-          )}
-        </AnimatePresence>
+        <span className={styles.logoText}>acuity:scheduling</span>
       </div>
 
-      {/* Main Navigation with Sections */}
+      {/* Mini Calendar */}
+      <MiniCalendar />
+
+      {/* Main Navigation */}
       <nav className={styles.nav}>
-        {navSections.map((section, sectionIndex) => (
+        {navSections.map((section) => (
           <div key={section.label} className={styles.navSection}>
-            {!collapsed && (
-              <span className={styles.navLabel}>{section.label}</span>
-            )}
-            {collapsed && sectionIndex > 0 && (
-              <div className={styles.sectionDivider} />
-            )}
+            <span className={styles.navLabel}>{section.label}</span>
             <ul className={styles.navList}>
               {section.items.map((item) => (
                 <li key={item.path}>
@@ -133,22 +175,7 @@ export function Sidebar() {
                       cn(styles.navItem, isActive && styles.active)
                     }
                   >
-                    <item.icon size={20} className={styles.navIcon} />
-                    <AnimatePresence>
-                      {!collapsed && (
-                        <motion.span
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          exit={{ opacity: 0 }}
-                          className={styles.navText}
-                        >
-                          {item.label}
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
-                    {item.badge && !collapsed && (
-                      <span className={styles.navBadge}>{item.badge}</span>
-                    )}
+                    {item.label}
                   </NavLink>
                 </li>
               ))}
@@ -157,44 +184,16 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Bottom Section */}
-      <div className={styles.bottom}>
-        <ul className={styles.navList}>
-          {bottomNavItems.map((item) => (
-            <li key={item.path}>
-              <NavLink
-                to={item.path}
-                className={({ isActive }) =>
-                  cn(styles.navItem, isActive && styles.active)
-                }
-              >
-                <item.icon size={20} className={styles.navIcon} />
-                <AnimatePresence>
-                  {!collapsed && (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className={styles.navText}
-                    >
-                      {item.label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-
-        {/* Collapse Toggle */}
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className={styles.collapseBtn}
-          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
+      {/* User Profile at Bottom */}
+      <div className={styles.userProfile}>
+        <div className={styles.userAvatar}>
+          <span>S</span>
+        </div>
+        <div className={styles.userInfo}>
+          <span className={styles.userName}>Selim Conrad</span>
+          <span className={styles.userEmail}>selim@09h29.com</span>
+        </div>
       </div>
-    </motion.aside>
+    </aside>
   );
 }
