@@ -2,20 +2,26 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  LayoutDashboard,
   Calendar,
   CalendarCheck,
-  Package,
   Users,
+  FileText,
   BarChart3,
-  Bot,
+  Clock,
+  ListChecks,
+  Gift,
+  Plug,
+  CalendarSync,
+  CreditCard,
+  Mail,
+  MessageSquare,
+  Bell,
   Settings,
   ChevronLeft,
   ChevronRight,
   Zap,
-  UsersRound,
-  Gift,
-  MessageCircle,
+  Package,
+  Bot,
   Palette,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -28,18 +34,50 @@ interface NavItem {
   badge?: string;
 }
 
-const mainNavItems: NavItem[] = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
-  { icon: Calendar, label: 'Space Control', path: '/spaces' },
-  { icon: CalendarCheck, label: 'Réservations', path: '/bookings' },
-  { icon: Package, label: 'Inventaire', path: '/inventory' },
-  { icon: Users, label: 'Clients', path: '/clients' },
-  { icon: UsersRound, label: 'Equipe', path: '/team' },
-  { icon: BarChart3, label: 'Finance', path: '/finance' },
-  { icon: Gift, label: 'Packs', path: '/packs' },
-  { icon: MessageCircle, label: 'Chat', path: '/chat', badge: 'NEW' },
-  { icon: Palette, label: 'Widget Builder', path: '/widgets' },
-  { icon: Bot, label: 'AI Console', path: '/ai', badge: 'BETA' },
+interface NavSection {
+  label: string;
+  items: NavItem[];
+}
+
+// Menu structure inspired by Acuity Scheduling
+const navSections: NavSection[] = [
+  {
+    label: 'Aperçu',
+    items: [
+      { icon: Calendar, label: 'Calendrier', path: '/spaces' },
+      { icon: CalendarCheck, label: 'Réservations', path: '/bookings' },
+      { icon: Users, label: 'Clients', path: '/clients' },
+      { icon: FileText, label: 'Factures', path: '/finance' },
+      { icon: BarChart3, label: 'Rapports', path: '/reports' },
+    ],
+  },
+  {
+    label: 'Paramètres de l\'entreprise',
+    items: [
+      { icon: Clock, label: 'Disponibilité', path: '/availability' },
+      { icon: ListChecks, label: 'Types de rendez-vous', path: '/appointment-types' },
+      { icon: Package, label: 'Inventaire', path: '/inventory' },
+      { icon: Gift, label: 'Packs & Abonnements', path: '/packs' },
+      { icon: Plug, label: 'Intégrations', path: '/integrations' },
+      { icon: CalendarSync, label: 'Sync Calendriers', path: '/calendar-sync' },
+      { icon: CreditCard, label: 'Paiements', path: '/payments' },
+    ],
+  },
+  {
+    label: 'Notifications',
+    items: [
+      { icon: Mail, label: 'E-mails client', path: '/notifications/email' },
+      { icon: MessageSquare, label: 'Messages SMS', path: '/notifications/sms' },
+      { icon: Bell, label: 'Alertes réservations', path: '/notifications/alerts' },
+    ],
+  },
+  {
+    label: 'Outils avancés',
+    items: [
+      { icon: Palette, label: 'Widget Builder', path: '/widgets' },
+      { icon: Bot, label: 'AI Console', path: '/ai', badge: 'BETA' },
+    ],
+  },
 ];
 
 const bottomNavItems: NavItem[] = [
@@ -76,40 +114,47 @@ export function Sidebar() {
         </AnimatePresence>
       </div>
 
-      {/* Main Navigation */}
+      {/* Main Navigation with Sections */}
       <nav className={styles.nav}>
-        <div className={styles.navSection}>
-          {!collapsed && <span className={styles.navLabel}>Menu</span>}
-          <ul className={styles.navList}>
-            {mainNavItems.map((item) => (
-              <li key={item.path}>
-                <NavLink
-                  to={item.path}
-                  className={({ isActive }) =>
-                    cn(styles.navItem, isActive && styles.active)
-                  }
-                >
-                  <item.icon size={20} className={styles.navIcon} />
-                  <AnimatePresence>
-                    {!collapsed && (
-                      <motion.span
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className={styles.navText}
-                      >
-                        {item.label}
-                      </motion.span>
+        {navSections.map((section, sectionIndex) => (
+          <div key={section.label} className={styles.navSection}>
+            {!collapsed && (
+              <span className={styles.navLabel}>{section.label}</span>
+            )}
+            {collapsed && sectionIndex > 0 && (
+              <div className={styles.sectionDivider} />
+            )}
+            <ul className={styles.navList}>
+              {section.items.map((item) => (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) =>
+                      cn(styles.navItem, isActive && styles.active)
+                    }
+                  >
+                    <item.icon size={20} className={styles.navIcon} />
+                    <AnimatePresence>
+                      {!collapsed && (
+                        <motion.span
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className={styles.navText}
+                        >
+                          {item.label}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                    {item.badge && !collapsed && (
+                      <span className={styles.navBadge}>{item.badge}</span>
                     )}
-                  </AnimatePresence>
-                  {item.badge && !collapsed && (
-                    <span className={styles.navBadge}>{item.badge}</span>
-                  )}
-                </NavLink>
-              </li>
-            ))}
-          </ul>
-        </div>
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
       </nav>
 
       {/* Bottom Section */}
