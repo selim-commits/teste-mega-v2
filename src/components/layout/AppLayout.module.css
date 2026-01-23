@@ -8,5 +8,6 @@
 
 .main {
   flex: 1;
+  margin-left: 280px;
   min-height: 100vh;
 }

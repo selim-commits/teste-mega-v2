@@ -1,13 +1,16 @@
 /* Sidebar Component Styles - Acuity Design */
 
 .sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 280px;
-  min-height: 100vh;
+  height: 100vh;
   background-color: #ffffff;
   border-right: 1px solid #e5e5e5;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* Logo */
