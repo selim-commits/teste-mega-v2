@@ -1,0 +1,364 @@
+/* Calendar Page - Acuity Style */
+
+.page {
+  min-height: 100vh;
+  background-color: #fff;
+}
+
+/* Header Buttons */
+.helpBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: transparent;
+  border: 1px solid #e5e5e5;
+  border-radius: 50%;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.helpBtn:hover {
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+}
+
+.secondaryBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: #fff;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+}
+
+.secondaryBtn:hover {
+  background-color: #f5f5f5;
+}
+
+.primaryBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: #1a1a1a;
+  border: 1px solid #1a1a1a;
+  border-radius: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.5px;
+}
+
+.primaryBtn:hover {
+  background-color: #333;
+}
+
+/* Filter Bar */
+.filterBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  border-bottom: 1px solid #e5e5e5;
+  background-color: #fff;
+}
+
+.filterLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterRight {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.navBtn:hover {
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+}
+
+.todayBtn {
+  padding: 8px 16px;
+  background-color: #fff;
+  border: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1a1a1a;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s;
+  letter-spacing: 0.3px;
+}
+
+.todayBtn:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown {
+  position: relative;
+}
+
+.dropdownBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background-color: #f5f5f5;
+  border: none;
+  border-radius: 4px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #1a1a1a;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.dropdownBtn:hover {
+  background-color: #e5e5e5;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background-color: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 4px;
+  min-width: 200px;
+}
+
+.searchBox svg {
+  color: #999;
+}
+
+.searchInput {
+  border: none;
+  outline: none;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  color: #1a1a1a;
+  width: 100%;
+  background: transparent;
+}
+
+.searchInput::placeholder {
+  color: #999;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.15s;
+}
+
+.iconBtn:hover {
+  background-color: #f5f5f5;
+  color: #1a1a1a;
+}
+
+/* Calendar Container */
+.calendarContainer {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+}
+
+.calendarGrid {
+  display: flex;
+  min-width: fit-content;
+}
+
+/* Time Column */
+.timeColumn {
+  flex-shrink: 0;
+  width: 60px;
+  border-right: 1px solid #e5e5e5;
+  background-color: #fff;
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+
+.cornerCell {
+  height: 50px;
+  border-bottom: 1px solid #e5e5e5;
+  background-color: #fff;
+}
+
+.timeCell {
+  height: 60px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 4px 8px 0 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 12px;
+  color: #999;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Space Columns */
+.spaceColumn {
+  flex: 1;
+  min-width: 200px;
+  border-right: 1px solid #e5e5e5;
+}
+
+.spaceColumn:last-child {
+  border-right: none;
+}
+
+.spaceHeader {
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #1a1a1a;
+  border-bottom: 1px solid #e5e5e5;
+  background-color: #fafafa;
+}
+
+.slotsContainer {
+  position: relative;
+}
+
+.timeSlot {
+  height: 60px;
+  border-bottom: 1px solid #f0f0f0;
+  position: relative;
+  background-color: #fff;
+  transition: background-color 0.15s;
+}
+
+.timeSlot:hover {
+  background-color: #fafafa;
+}
+
+/* Booking Block */
+.booking {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  background-color: #e8f4fc;
+  border-left: 3px solid #3b82f6;
+  border-radius: 4px;
+  padding: 6px 8px;
+  cursor: pointer;
+  overflow: hidden;
+  z-index: 5;
+  transition: all 0.15s;
+}
+
+.booking:hover {
+  background-color: #d4ebfa;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bookingTime {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  color: #1a1a1a;
+  margin-bottom: 2px;
+}
+
+.bookingTitle {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #1a1a1a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Current Time Indicator */
+.currentTimeIndicator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #ef4444;
+  z-index: 20;
+}
+
+.currentTimeIndicator::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: -4px;
+  width: 10px;
+  height: 10px;
+  background-color: #ef4444;
+  border-radius: 50%;
+}
+
+/* Loading State */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+}
+
+/* Empty State */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  color: #999;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
+  gap: 8px;
+}

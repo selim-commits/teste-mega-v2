@@ -6,6 +6,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './pages/Dashboard';
 import { SpaceControl } from './pages/SpaceControl';
+import { Calendar } from './pages/Calendar';
 import { Inventory } from './pages/Inventory';
 import { Clients } from './pages/Clients';
 import { Finance } from './pages/Finance';
@@ -36,7 +37,7 @@ function App() {
               <Route element={<AppLayout />}>
                 {/* Aperçu */}
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/spaces" element={<SpaceControl />} />
+                <Route path="/spaces" element={<Calendar />} />
                 <Route path="/bookings" element={<Bookings />} />
                 <Route path="/clients" element={<Clients />} />
                 <Route path="/finance" element={<Finance />} />
