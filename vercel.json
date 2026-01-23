@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/((?!src/embed|src/embed-packs|src/embed-chat|assets).*)", "destination": "/index.html" }
+  ]
+}

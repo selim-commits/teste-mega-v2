@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import styles from './Sidebar.module.css';
 
@@ -12,6 +12,11 @@ interface NavItem {
 interface NavSection {
   label: string;
   items: NavItem[];
+}
+
+interface SidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 // Menu structure matching Acuity Scheduling
@@ -215,50 +220,70 @@ function MiniCalendar() {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ isOpen, onClose }: SidebarProps) {
+  const location = useLocation();
+
+  // Close sidebar on navigation (mobile)
+  useEffect(() => {
+    onClose();
+  }, [location.pathname]);
+
   return (
-    <aside className={styles.sidebar}>
-      {/* Logo */}
-      <div className={styles.logo}>
-        <span className={styles.logoText}>acuity:scheduling</span>
-      </div>
+    <>
+      {/* Overlay for mobile */}
+      <div
+        className={cn(styles.overlay, isOpen && styles.overlayVisible)}
+        onClick={onClose}
+      />
 
-      {/* Scrollable content: Calendar + Navigation */}
-      <nav className={styles.nav}>
-        {/* Mini Calendar */}
-        <MiniCalendar />
+      <aside className={cn(styles.sidebar, isOpen && styles.sidebarOpen)}>
+        {/* Mobile close button */}
+        <button className={styles.closeBtn} onClick={onClose}>
+          <X size={24} />
+        </button>
 
-        {navSections.map((section) => (
-          <div key={section.label} className={styles.navSection}>
-            <span className={styles.navLabel}>{section.label}</span>
-            <ul className={styles.navList}>
-              {section.items.map((item) => (
-                <li key={item.path}>
-                  <NavLink
-                    to={item.path}
-                    className={({ isActive }) =>
-                      cn(styles.navItem, isActive && styles.active)
-                    }
-                  >
-                    {item.label}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
+        {/* Logo */}
+        <div className={styles.logo}>
+          <span className={styles.logoText}>acuity:scheduling</span>
+        </div>
+
+        {/* Scrollable content: Calendar + Navigation */}
+        <nav className={styles.nav}>
+          {/* Mini Calendar */}
+          <MiniCalendar />
+
+          {navSections.map((section) => (
+            <div key={section.label} className={styles.navSection}>
+              <span className={styles.navLabel}>{section.label}</span>
+              <ul className={styles.navList}>
+                {section.items.map((item) => (
+                  <li key={item.path}>
+                    <NavLink
+                      to={item.path}
+                      className={({ isActive }) =>
+                        cn(styles.navItem, isActive && styles.active)
+                      }
+                    >
+                      {item.label}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
+        {/* User Profile at Bottom */}
+        <div className={styles.userProfile}>
+          <div className={styles.userAvatar}>
+            <span>S</span>
           </div>
-        ))}
-      </nav>
-
-      {/* User Profile at Bottom */}
-      <div className={styles.userProfile}>
-        <div className={styles.userAvatar}>
-          <span>S</span>
+          <div className={styles.userInfo}>
+            <span className={styles.userName}>Selim Conrad</span>
+            <span className={styles.userEmail}>selim@09h29.com</span>
+          </div>
         </div>
-        <div className={styles.userInfo}>
-          <span className={styles.userName}>Selim Conrad</span>
-          <span className={styles.userEmail}>selim@09h29.com</span>
-        </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }
