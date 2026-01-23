@@ -158,11 +158,11 @@ export function Sidebar() {
         <span className={styles.logoText}>acuity:scheduling</span>
       </div>
 
-      {/* Mini Calendar */}
-      <MiniCalendar />
-
-      {/* Main Navigation */}
+      {/* Scrollable content: Calendar + Navigation */}
       <nav className={styles.nav}>
+        {/* Mini Calendar */}
+        <MiniCalendar />
+
         {navSections.map((section) => (
           <div key={section.label} className={styles.navSection}>
             <span className={styles.navLabel}>{section.label}</span>
