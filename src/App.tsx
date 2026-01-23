@@ -5,7 +5,6 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import { AppLayout } from './components/layout/AppLayout';
 import { Dashboard } from './pages/Dashboard';
-import { SpaceControl } from './pages/SpaceControl';
 import { Calendar } from './pages/Calendar';
 import { Inventory } from './pages/Inventory';
 import { Clients } from './pages/Clients';

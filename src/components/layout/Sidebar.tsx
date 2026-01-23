@@ -133,9 +133,6 @@ function MiniCalendar() {
     });
   }
 
-  // Years for picker (current year -5 to +5)
-  const years = Array.from({ length: 11 }, (_, i) => today.getFullYear() - 5 + i);
-
   return (
     <div className={styles.calendar} ref={pickerRef}>
       <div className={styles.calendarHeader}>

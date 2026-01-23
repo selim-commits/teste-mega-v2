@@ -242,7 +242,7 @@ export function WidgetBuilder() {
       <Header
         title="Widget Builder"
         subtitle="Configurez et personnalisez vos widgets embarquables"
-        action={
+        actions={
           <div className={styles.headerActions}>
             <Button
               variant="ghost"
