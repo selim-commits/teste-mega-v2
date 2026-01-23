@@ -225,7 +225,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // Close sidebar on navigation (mobile)
   useEffect(() => {
-    onClose();
+    if (isOpen) {
+      onClose();
+    }
   }, [location.pathname]);
 
   return (

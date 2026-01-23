@@ -387,11 +387,13 @@
     z-index: 99;
     pointer-events: none;
     transition: background-color 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .overlayVisible {
     background-color: rgba(0, 0, 0, 0.5);
     pointer-events: auto;
+    cursor: pointer;
   }
 
   .logo {
