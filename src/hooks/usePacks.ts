@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { packService, clientPurchaseService, packStatsService } from '../services/packs';
 import type { PackFilters, ClientPurchaseFilters } from '../services/packs';
-import type { PackInsert, PackUpdate, ClientPurchaseInsert, ClientPurchaseUpdate, PricingProductType, SubscriptionStatus } from '../types/database';
+import type { Pack, PackInsert, PackUpdate, ClientPurchase, ClientPurchaseInsert, ClientPurchaseUpdate, PricingProductType, SubscriptionStatus } from '../types/database';
+import { isDemoMode } from '../lib/supabase';
+import { mockPacks, mockClientPurchases, calculateMockPackStats } from '../lib/mockData';
 
 // Query keys for packs
 export const packQueryKeys = {
@@ -30,7 +32,19 @@ export const purchaseQueryKeys = {
 export function usePacks(filters?: PackFilters) {
   return useQuery({
     queryKey: packQueryKeys.list(filters || {}),
-    queryFn: async () => {
+    queryFn: async (): Promise<Pack[]> => {
+      // Return mock data in demo mode
+      if (isDemoMode) {
+        let result = [...mockPacks] as Pack[];
+        if (filters?.type) {
+          result = result.filter(p => p.type === filters.type);
+        }
+        if (filters?.isActive === true) {
+          result = result.filter(p => p.is_active);
+        }
+        return result;
+      }
+
       if (filters?.studioId) {
         if (filters?.type) {
           return packService.getByType(filters.studioId, filters.type);
@@ -50,7 +64,12 @@ export function usePacks(filters?: PackFilters) {
 export function usePacksByType(studioId: string, type: PricingProductType) {
   return useQuery({
     queryKey: [...packQueryKeys.list({ studioId }), 'type', type],
-    queryFn: () => packService.getByType(studioId, type),
+    queryFn: (): Promise<Pack[]> => {
+      if (isDemoMode) {
+        return Promise.resolve((mockPacks as Pack[]).filter(p => p.type === type));
+      }
+      return packService.getByType(studioId, type);
+    },
     enabled: !!studioId,
   });
 }
@@ -59,7 +78,12 @@ export function usePacksByType(studioId: string, type: PricingProductType) {
 export function useActivePacks(studioId: string) {
   return useQuery({
     queryKey: [...packQueryKeys.list({ studioId }), 'active'],
-    queryFn: () => packService.getActiveByStudioId(studioId),
+    queryFn: (): Promise<Pack[]> => {
+      if (isDemoMode) {
+        return Promise.resolve((mockPacks as Pack[]).filter(p => p.is_active));
+      }
+      return packService.getActiveByStudioId(studioId);
+    },
     enabled: !!studioId,
   });
 }
@@ -68,7 +92,13 @@ export function useActivePacks(studioId: string) {
 export function usePack(id: string) {
   return useQuery({
     queryKey: packQueryKeys.detail(id),
-    queryFn: () => packService.getById(id),
+    queryFn: (): Promise<Pack | null> => {
+      if (isDemoMode) {
+        const pack = mockPacks.find(p => p.id === id);
+        return Promise.resolve(pack as Pack | null);
+      }
+      return packService.getById(id);
+    },
     enabled: !!id,
   });
 }
@@ -77,7 +107,12 @@ export function usePack(id: string) {
 export function usePackStats(studioId: string) {
   return useQuery({
     queryKey: packQueryKeys.stats(studioId),
-    queryFn: () => packStatsService.getPackStats(studioId),
+    queryFn: () => {
+      if (isDemoMode) {
+        return Promise.resolve(calculateMockPackStats());
+      }
+      return packStatsService.getPackStats(studioId);
+    },
     enabled: !!studioId,
   });
 }
@@ -170,7 +205,19 @@ export function useUpdatePackOrder() {
 export function useClientPurchases(filters?: ClientPurchaseFilters) {
   return useQuery({
     queryKey: purchaseQueryKeys.list(filters || {}),
-    queryFn: () => clientPurchaseService.getAll(filters),
+    queryFn: (): Promise<ClientPurchase[]> => {
+      if (isDemoMode) {
+        let result = [...mockClientPurchases] as ClientPurchase[];
+        if (filters?.clientId) {
+          result = result.filter(p => p.client_id === filters.clientId);
+        }
+        if (filters?.status) {
+          result = result.filter(p => p.status === filters.status);
+        }
+        return Promise.resolve(result);
+      }
+      return clientPurchaseService.getAll(filters);
+    },
     enabled: true,
   });
 }
@@ -179,7 +226,14 @@ export function useClientPurchases(filters?: ClientPurchaseFilters) {
 export function usePurchasesByClient(clientId: string) {
   return useQuery({
     queryKey: purchaseQueryKeys.byClient(clientId),
-    queryFn: () => clientPurchaseService.getByClientId(clientId),
+    queryFn: (): Promise<ClientPurchase[]> => {
+      if (isDemoMode) {
+        return Promise.resolve(
+          (mockClientPurchases as ClientPurchase[]).filter(p => p.client_id === clientId)
+        );
+      }
+      return clientPurchaseService.getByClientId(clientId);
+    },
     enabled: !!clientId,
   });
 }
@@ -188,7 +242,16 @@ export function usePurchasesByClient(clientId: string) {
 export function useActivePurchasesByClient(clientId: string) {
   return useQuery({
     queryKey: [...purchaseQueryKeys.byClient(clientId), 'active'],
-    queryFn: () => clientPurchaseService.getActiveByClientId(clientId),
+    queryFn: (): Promise<ClientPurchase[]> => {
+      if (isDemoMode) {
+        return Promise.resolve(
+          (mockClientPurchases as ClientPurchase[]).filter(
+            p => p.client_id === clientId && p.status === 'active'
+          )
+        );
+      }
+      return clientPurchaseService.getActiveByClientId(clientId);
+    },
     enabled: !!clientId,
   });
 }
@@ -197,7 +260,13 @@ export function useActivePurchasesByClient(clientId: string) {
 export function useClientPurchase(id: string) {
   return useQuery({
     queryKey: purchaseQueryKeys.detail(id),
-    queryFn: () => clientPurchaseService.getById(id),
+    queryFn: (): Promise<ClientPurchase | null> => {
+      if (isDemoMode) {
+        const purchase = mockClientPurchases.find(p => p.id === id);
+        return Promise.resolve(purchase as ClientPurchase | null);
+      }
+      return clientPurchaseService.getById(id);
+    },
     enabled: !!id,
   });
 }
@@ -206,7 +275,14 @@ export function useClientPurchase(id: string) {
 export function useActiveSubscriptions(studioId: string) {
   return useQuery({
     queryKey: [...purchaseQueryKeys.list({ studioId }), 'active'],
-    queryFn: () => clientPurchaseService.getActiveSubscriptions(studioId),
+    queryFn: (): Promise<ClientPurchase[]> => {
+      if (isDemoMode) {
+        return Promise.resolve(
+          (mockClientPurchases as ClientPurchase[]).filter(p => p.status === 'active')
+        );
+      }
+      return clientPurchaseService.getActiveSubscriptions(studioId);
+    },
     enabled: !!studioId,
   });
 }
