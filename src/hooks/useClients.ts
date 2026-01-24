@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientService } from '../services';
 import { queryKeys } from '../lib/queryClient';
-import type { ClientInsert, ClientUpdate, ClientTier } from '../types/database';
+import { isDemoMode } from '../lib/supabase';
+import { mockClients } from '../lib/mockData';
+import type { Client, ClientInsert, ClientUpdate, ClientTier } from '../types/database';
 
 export interface ClientFilters {
   studioId?: string;
@@ -38,7 +40,12 @@ export function useClients(filters?: ClientFilters) {
 export function useActiveClients(studioId: string) {
   return useQuery({
     queryKey: [...queryKeys.clients.list({ studioId }), 'active'],
-    queryFn: () => clientService.getActiveByStudioId(studioId),
+    queryFn: (): Promise<Client[]> => {
+      if (isDemoMode) {
+        return Promise.resolve((mockClients as Client[]).filter(c => c.is_active));
+      }
+      return clientService.getActiveByStudioId(studioId);
+    },
     enabled: !!studioId,
   });
 }

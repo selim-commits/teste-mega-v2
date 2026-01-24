@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '../lib/supabase';
+import { supabase, isDemoMode } from '../lib/supabase';
 import { queryKeys } from '../lib/queryClient';
+import { calculateMockDashboardStats } from '../lib/mockData';
 import type { Invoice, Booking, Space } from '../types/database';
 
 export interface DashboardStats {
@@ -45,6 +46,20 @@ export function useDashboardStats(studioId: string, startDate?: string, endDate?
   return useQuery({
     queryKey: queryKeys.stats.dashboard(studioId, startDate, endDate),
     queryFn: async (): Promise<DashboardStats> => {
+      // Return mock data in demo mode
+      if (isDemoMode) {
+        const mockStats = calculateMockDashboardStats();
+        return {
+          totalRevenue: mockStats.totalRevenue,
+          totalBookings: mockStats.totalBookings,
+          activeClients: 5,
+          pendingInvoices: 2,
+          revenueGrowth: mockStats.revenueGrowth,
+          bookingsGrowth: mockStats.bookingsGrowth,
+          clientsGrowth: mockStats.clientsGrowth,
+        };
+      }
+
       const now = new Date();
       const currentMonthStart = startDate || new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const currentMonthEnd = endDate || now.toISOString();

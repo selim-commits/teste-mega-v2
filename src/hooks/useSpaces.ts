@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { spaceService } from '../services/spaces';
-import type { SpaceInsert, SpaceUpdate } from '../types/database';
+import { isDemoMode } from '../lib/supabase';
+import { mockSpaces } from '../lib/mockData';
+import type { Space, SpaceInsert, SpaceUpdate } from '../types/database';
 
 export interface SpaceFilters {
   studioId?: string;
@@ -39,7 +41,12 @@ export function useSpaces(filters?: SpaceFilters) {
 export function useActiveSpaces(studioId: string) {
   return useQuery({
     queryKey: [...spaceQueryKeys.list({ studioId }), 'active'],
-    queryFn: () => spaceService.getActiveByStudioId(studioId),
+    queryFn: (): Promise<Space[]> => {
+      if (isDemoMode) {
+        return Promise.resolve((mockSpaces as Space[]).filter(s => s.is_active));
+      }
+      return spaceService.getActiveByStudioId(studioId);
+    },
     enabled: !!studioId,
   });
 }

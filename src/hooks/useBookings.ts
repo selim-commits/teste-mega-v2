@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookingService } from '../services';
 import { queryKeys } from '../lib/queryClient';
-import type { BookingInsert, BookingUpdate, BookingStatus } from '../types/database';
+import { isDemoMode } from '../lib/supabase';
+import { mockBookings, getMockTodayBookings } from '../lib/mockData';
+import type { Booking, BookingInsert, BookingUpdate, BookingStatus } from '../types/database';
 
 export interface BookingFilters {
   studioId?: string;
@@ -17,7 +19,22 @@ export interface BookingFilters {
 export function useBookings(filters?: BookingFilters) {
   return useQuery({
     queryKey: queryKeys.bookings.list(filters || {}),
-    queryFn: async () => {
+    queryFn: async (): Promise<Booking[]> => {
+      // Return mock data in demo mode
+      if (isDemoMode) {
+        let result = [...mockBookings] as Booking[];
+        if (filters?.startDate) {
+          result = result.filter(b => new Date(b.start_time) >= new Date(filters.startDate!));
+        }
+        if (filters?.endDate) {
+          result = result.filter(b => new Date(b.end_time) <= new Date(filters.endDate!));
+        }
+        if (filters?.status) {
+          result = result.filter(b => b.status === filters.status);
+        }
+        return result.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+      }
+
       if (filters?.studioId && filters?.startDate && filters?.endDate) {
         return bookingService.getByDateRange(filters.studioId, filters.startDate, filters.endDate);
       }
@@ -60,7 +77,16 @@ export function useBookingWithRelations(id: string) {
 export function useUpcomingBookings(studioId: string, limit: number = 10) {
   return useQuery({
     queryKey: [...queryKeys.bookings.list({ studioId }), 'upcoming', limit],
-    queryFn: () => bookingService.getUpcoming(studioId, limit),
+    queryFn: (): Promise<Booking[]> => {
+      if (isDemoMode) {
+        const now = new Date();
+        return Promise.resolve((mockBookings as Booking[])
+          .filter(b => new Date(b.start_time) >= now && b.status !== 'cancelled')
+          .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+          .slice(0, limit));
+      }
+      return bookingService.getUpcoming(studioId, limit);
+    },
     enabled: !!studioId,
   });
 }
@@ -69,7 +95,12 @@ export function useUpcomingBookings(studioId: string, limit: number = 10) {
 export function useTodayBookings(studioId: string) {
   return useQuery({
     queryKey: [...queryKeys.bookings.list({ studioId }), 'today'],
-    queryFn: () => bookingService.getToday(studioId),
+    queryFn: (): Promise<Booking[]> => {
+      if (isDemoMode) {
+        return Promise.resolve(getMockTodayBookings() as Booking[]);
+      }
+      return bookingService.getToday(studioId);
+    },
     enabled: !!studioId,
   });
 }
