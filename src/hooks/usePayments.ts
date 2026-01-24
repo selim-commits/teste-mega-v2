@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentService } from '../services/payments';
 import { queryKeys } from '../lib/queryClient';
-import type { PaymentInsert, PaymentUpdate, PaymentMethod } from '../types/database';
+import { isDemoMode } from '../lib/supabase';
+import { mockPayments } from '../lib/mockData';
+import type { Payment, PaymentInsert, PaymentUpdate, PaymentMethod } from '../types/database';
 
 export interface PaymentFilters {
   studioId?: string;
@@ -64,7 +66,15 @@ export function usePaymentWithInvoice(id: string) {
 export function useRecentPayments(studioId: string, limit: number = 10) {
   return useQuery({
     queryKey: [...queryKeys.payments.all, 'recent', studioId, limit],
-    queryFn: () => paymentService.getRecentPayments(studioId, limit),
+    queryFn: (): Promise<Payment[]> => {
+      if (isDemoMode) {
+        const sorted = [...mockPayments].sort((a, b) =>
+          new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime()
+        );
+        return Promise.resolve(sorted.slice(0, limit) as Payment[]);
+      }
+      return paymentService.getRecentPayments(studioId, limit);
+    },
     enabled: !!studioId,
   });
 }
@@ -73,7 +83,13 @@ export function useRecentPayments(studioId: string, limit: number = 10) {
 export function useTotalReceived(studioId: string, startDate?: string, endDate?: string) {
   return useQuery({
     queryKey: [...queryKeys.payments.all, 'totalReceived', studioId, startDate, endDate],
-    queryFn: () => paymentService.getTotalReceived(studioId, startDate, endDate),
+    queryFn: (): Promise<number> => {
+      if (isDemoMode) {
+        const total = mockPayments.reduce((sum, p) => sum + p.amount, 0);
+        return Promise.resolve(total);
+      }
+      return paymentService.getTotalReceived(studioId, startDate, endDate);
+    },
     enabled: !!studioId,
   });
 }

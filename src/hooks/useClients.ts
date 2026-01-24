@@ -16,7 +16,19 @@ export interface ClientFilters {
 export function useClients(filters?: ClientFilters) {
   return useQuery({
     queryKey: queryKeys.clients.list(filters || {}),
-    queryFn: async () => {
+    queryFn: async (): Promise<Client[]> => {
+      // Return mock data in demo mode
+      if (isDemoMode) {
+        let result = [...mockClients] as Client[];
+        if (filters?.tier) {
+          result = result.filter(c => c.tier === filters.tier);
+        }
+        if (filters?.isActive !== undefined) {
+          result = result.filter(c => c.is_active === filters.isActive);
+        }
+        return result;
+      }
+
       if (filters?.studioId && filters?.tier) {
         return clientService.getByTier(filters.studioId, filters.tier);
       }
