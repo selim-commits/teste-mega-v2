@@ -17,8 +17,7 @@ interface PaginationState {
 }
 
 interface ClientState {
-  // Data
-  clients: Client[];
+  // UI State
   selectedClient: Client | null;
 
   // Filters
@@ -36,10 +35,6 @@ interface ClientState {
   error: string | null;
 
   // Actions
-  setClients: (clients: Client[]) => void;
-  addClient: (client: Client) => void;
-  updateClient: (id: string, updates: Partial<Client>) => void;
-  deleteClient: (id: string) => void;
   setSelectedClient: (client: Client | null) => void;
   setFilters: (filters: Partial<ClientFilters>) => void;
   resetFilters: () => void;
@@ -50,7 +45,6 @@ interface ClientState {
   setLoading: (loading: boolean) => void;
   setSubmitting: (submitting: boolean) => void;
   setError: (error: string | null) => void;
-  clearClients: () => void;
 }
 
 const defaultFilters: ClientFilters = {
@@ -70,8 +64,7 @@ const defaultPagination: PaginationState = {
 export const useClientStore = create<ClientState>()(
   persist(
     (set) => ({
-      // Initial data
-      clients: [],
+      // Initial UI state
       selectedClient: null,
 
       // Initial filters
@@ -89,57 +82,6 @@ export const useClientStore = create<ClientState>()(
       error: null,
 
       // Actions
-      setClients: (clients) =>
-        set({
-          clients,
-          error: null,
-          pagination: {
-            ...defaultPagination,
-            totalCount: clients.length,
-            totalPages: Math.ceil(clients.length / defaultPagination.pageSize),
-          },
-        }),
-
-      addClient: (client) =>
-        set((state) => ({
-          clients: [...state.clients, client],
-          pagination: {
-            ...state.pagination,
-            totalCount: state.pagination.totalCount + 1,
-            totalPages: Math.ceil(
-              (state.pagination.totalCount + 1) / state.pagination.pageSize
-            ),
-          },
-          error: null,
-        })),
-
-      updateClient: (id, updates) =>
-        set((state) => ({
-          clients: state.clients.map((client) =>
-            client.id === id ? { ...client, ...updates } : client
-          ),
-          selectedClient:
-            state.selectedClient?.id === id
-              ? { ...state.selectedClient, ...updates }
-              : state.selectedClient,
-          error: null,
-        })),
-
-      deleteClient: (id) =>
-        set((state) => ({
-          clients: state.clients.filter((client) => client.id !== id),
-          selectedClient:
-            state.selectedClient?.id === id ? null : state.selectedClient,
-          pagination: {
-            ...state.pagination,
-            totalCount: state.pagination.totalCount - 1,
-            totalPages: Math.ceil(
-              (state.pagination.totalCount - 1) / state.pagination.pageSize
-            ),
-          },
-          error: null,
-        })),
-
       setSelectedClient: (client) => set({ selectedClient: client }),
 
       setFilters: (filters) =>
@@ -186,14 +128,6 @@ export const useClientStore = create<ClientState>()(
       setSubmitting: (isSubmitting) => set({ isSubmitting }),
 
       setError: (error) => set({ error }),
-
-      clearClients: () =>
-        set({
-          clients: [],
-          selectedClient: null,
-          pagination: defaultPagination,
-          error: null,
-        }),
     }),
     {
       name: 'client-storage',
@@ -205,26 +139,29 @@ export const useClientStore = create<ClientState>()(
   )
 );
 
-// Selectors
-export const selectFilteredClients = (state: ClientState): Client[] => {
-  let filtered = state.clients;
+// Selectors - take data as parameter, filters from store state
+export const selectFilteredClients = (
+  clients: Client[],
+  filters: ClientFilters
+): Client[] => {
+  let filtered = clients;
 
-  if (state.filters.tier !== 'all') {
-    filtered = filtered.filter((c) => c.tier === state.filters.tier);
+  if (filters.tier !== 'all') {
+    filtered = filtered.filter((c) => c.tier === filters.tier);
   }
 
-  if (state.filters.isActive !== 'all') {
-    filtered = filtered.filter((c) => c.is_active === state.filters.isActive);
+  if (filters.isActive !== 'all') {
+    filtered = filtered.filter((c) => c.is_active === filters.isActive);
   }
 
-  if (state.filters.tags.length > 0) {
+  if (filters.tags.length > 0) {
     filtered = filtered.filter((c) =>
-      state.filters.tags.some((tag) => c.tags.includes(tag))
+      filters.tags.some((tag) => c.tags.includes(tag))
     );
   }
 
-  if (state.filters.searchQuery) {
-    const query = state.filters.searchQuery.toLowerCase();
+  if (filters.searchQuery) {
+    const query = filters.searchQuery.toLowerCase();
     filtered = filtered.filter(
       (c) =>
         c.name.toLowerCase().includes(query) ||
@@ -237,21 +174,25 @@ export const selectFilteredClients = (state: ClientState): Client[] => {
   return filtered;
 };
 
-export const selectPaginatedClients = (state: ClientState): Client[] => {
-  const filtered = selectFilteredClients(state);
-  const { page, pageSize } = state.pagination;
+export const selectPaginatedClients = (
+  clients: Client[],
+  filters: ClientFilters,
+  pagination: PaginationState
+): Client[] => {
+  const filtered = selectFilteredClients(clients, filters);
+  const { page, pageSize } = pagination;
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
   return filtered.slice(start, end);
 };
 
 export const selectClientsByTier = (
-  state: ClientState,
+  clients: Client[],
   tier: ClientTier
 ): Client[] => {
-  return state.clients.filter((c) => c.tier === tier);
+  return clients.filter((c) => c.tier === tier);
 };
 
-export const selectActiveClients = (state: ClientState): Client[] => {
-  return state.clients.filter((c) => c.is_active);
+export const selectActiveClients = (clients: Client[]): Client[] => {
+  return clients.filter((c) => c.is_active);
 };

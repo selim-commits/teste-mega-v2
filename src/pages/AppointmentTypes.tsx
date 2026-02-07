@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDebounce } from '../hooks/useDebounce';
 import {
   ListChecks,
   Plus,
@@ -70,10 +71,11 @@ const mockAppointmentTypes: AppointmentType[] = [
 
 export function AppointmentTypes() {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery);
   const [appointmentTypes] = useState<AppointmentType[]>(mockAppointmentTypes);
 
   const filteredTypes = appointmentTypes.filter((type) =>
-    type.name.toLowerCase().includes(searchQuery.toLowerCase())
+    type.name.toLowerCase().includes(debouncedSearch.toLowerCase())
   );
 
   const formatDuration = (minutes: number) => {

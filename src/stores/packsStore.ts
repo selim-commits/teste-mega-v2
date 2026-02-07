@@ -19,22 +19,16 @@ interface PacksState {
   activeTab: PackTabType;
   setActiveTab: (tab: PackTabType) => void;
 
-  // Packs state
-  packs: Pack[];
-  setPacks: (packs: Pack[]) => void;
+  // Selected items (UI state)
   selectedPack: Pack | null;
   setSelectedPack: (pack: Pack | null) => void;
+  selectedPurchase: ClientPurchase | null;
+  setSelectedPurchase: (purchase: ClientPurchase | null) => void;
 
   // Pack filters
   packFilters: PacksFilters;
   setPackFilters: (filters: Partial<PacksFilters>) => void;
   resetPackFilters: () => void;
-
-  // Purchases state
-  purchases: ClientPurchase[];
-  setPurchases: (purchases: ClientPurchase[]) => void;
-  selectedPurchase: ClientPurchase | null;
-  setSelectedPurchase: (purchase: ClientPurchase | null) => void;
 
   // Purchase filters
   purchaseFilters: PurchaseFilters;
@@ -66,11 +60,11 @@ export const usePacksStore = create<PacksState>((set) => ({
   activeTab: 'packs',
   setActiveTab: (tab) => set({ activeTab: tab }),
 
-  // Packs state
-  packs: [],
-  setPacks: (packs) => set({ packs }),
+  // Selected items
   selectedPack: null,
   setSelectedPack: (pack) => set({ selectedPack: pack }),
+  selectedPurchase: null,
+  setSelectedPurchase: (purchase) => set({ selectedPurchase: purchase }),
 
   // Pack filters
   packFilters: defaultPackFilters,
@@ -80,12 +74,6 @@ export const usePacksStore = create<PacksState>((set) => ({
       pagination: { ...state.pagination, page: 1 },
     })),
   resetPackFilters: () => set({ packFilters: defaultPackFilters }),
-
-  // Purchases state
-  purchases: [],
-  setPurchases: (purchases) => set({ purchases }),
-  selectedPurchase: null,
-  setSelectedPurchase: (purchase) => set({ selectedPurchase: purchase }),
 
   // Purchase filters
   purchaseFilters: defaultPurchaseFilters,
@@ -105,10 +93,8 @@ export const usePacksStore = create<PacksState>((set) => ({
   setPageSize: (pageSize) => set((state) => ({ pagination: { ...state.pagination, pageSize, page: 1 } })),
 }));
 
-// Selector for filtered packs - returns packs directly if no filters applied
-export const selectFilteredPacks = (state: PacksState): Pack[] => {
-  const { packs, packFilters } = state;
-
+// Selector for filtered packs - takes data as parameter
+export const selectFilteredPacks = (packs: Pack[], packFilters: PacksFilters): Pack[] => {
   // If no filters applied, return the original array to maintain reference stability
   const hasSearchFilter = packFilters.searchQuery !== '';
   const hasTypeFilter = packFilters.type !== 'all';
@@ -143,10 +129,11 @@ export const selectFilteredPacks = (state: PacksState): Pack[] => {
   });
 };
 
-// Selector for filtered purchases - returns purchases directly if no filters applied
-export const selectFilteredPurchases = (state: PacksState): ClientPurchase[] => {
-  const { purchases, purchaseFilters } = state;
-
+// Selector for filtered purchases - takes data as parameter
+export const selectFilteredPurchases = (
+  purchases: ClientPurchase[],
+  purchaseFilters: PurchaseFilters
+): ClientPurchase[] => {
   // If no filters applied, return the original array to maintain reference stability
   const hasSearchFilter = purchaseFilters.searchQuery !== '';
   const hasStatusFilter = purchaseFilters.status !== 'all';

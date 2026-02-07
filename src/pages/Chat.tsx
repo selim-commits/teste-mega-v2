@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { useDebounce } from '../hooks/useDebounce';
 import {
   MessageCircle,
   Search,
@@ -56,6 +57,7 @@ export function Chat() {
   const { studioId } = useAuthStore();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery);
   const [statusFilter, setStatusFilter] = useState<ConversationStatus | 'all'>('all');
   const [newMessage, setNewMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -72,13 +74,13 @@ export function Chat() {
   const filteredConversations = useMemo(() => {
     return conversations.filter((conv) => {
       const matchesSearch =
-        searchQuery === '' ||
-        conv.visitor_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        conv.visitor_email?.toLowerCase().includes(searchQuery.toLowerCase());
+        debouncedSearch === '' ||
+        conv.visitor_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
+        conv.visitor_email?.toLowerCase().includes(debouncedSearch.toLowerCase());
       const matchesStatus = statusFilter === 'all' || conv.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-  }, [conversations, searchQuery, statusFilter]);
+  }, [conversations, debouncedSearch, statusFilter]);
 
   // Stats
   const stats = useMemo(() => {

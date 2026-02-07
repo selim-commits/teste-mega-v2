@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useDebounce } from '../hooks/useDebounce';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -71,6 +72,8 @@ export function Packs() {
   // UI State
   const [activeTab, setActiveTab] = useState<TabType>('packs');
   const [showFilters, setShowFilters] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput);
 
   // Modal states
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -160,10 +163,15 @@ export function Packs() {
     return result;
   }, [filteredPacks, activeTab]);
 
+  // Sync debounced search to store
+  useEffect(() => {
+    setPackFilters({ searchQuery: debouncedSearch });
+  }, [debouncedSearch, setPackFilters]);
+
   // Handlers
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setPackFilters({ searchQuery: e.target.value });
-  }, [setPackFilters]);
+    setSearchInput(e.target.value);
+  }, []);
 
   const handleTypeFilter = useCallback((value: string) => {
     setPackFilters({ type: value as PricingProductType | 'all' });
@@ -324,7 +332,7 @@ export function Packs() {
                 <input
                   type="text"
                   placeholder="Rechercher un pack..."
-                  value={packFilters.searchQuery}
+                  value={searchInput}
                   onChange={handleSearchChange}
                   className={styles.searchInput}
                 />

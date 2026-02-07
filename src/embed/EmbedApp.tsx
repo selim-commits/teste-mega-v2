@@ -2,6 +2,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useEmbedStore } from './store/embedStore';
 import { embedApi } from './services/embedApi';
+import { initCsrfToken } from '../lib/csrf';
 import { ServiceSelection } from './components/ServiceSelection';
 import { DateTimeSelection } from './components/DateTimeSelection';
 import { BookingForm } from './components/BookingForm';
@@ -12,6 +13,9 @@ import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorMessage } from './components/ErrorMessage';
 import type { EmbedConfig } from './types';
 import './embed.css';
+
+// Initialize CSRF token for this widget session
+initCsrfToken();
 
 interface EmbedAppProps {
   config: EmbedConfig;

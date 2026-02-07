@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useDebounce } from '../hooks/useDebounce';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   DollarSign,
@@ -89,6 +90,7 @@ export function Finance() {
   const [period, setPeriod] = useState('month');
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [showFilters, setShowFilters] = useState(false);
@@ -243,8 +245,8 @@ export function Finance() {
     let result = invoices;
 
     // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
       result = result.filter(
         (invoice) =>
           invoice.invoice_number.toLowerCase().includes(query) ||
@@ -253,7 +255,7 @@ export function Finance() {
     }
 
     return result;
-  }, [invoices, searchQuery]);
+  }, [invoices, debouncedSearch]);
 
   const paginatedInvoices = useMemo(() => {
     const start = (currentPage - 1) * pageSize;

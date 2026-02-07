@@ -2,10 +2,14 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { useChatStore } from './store/chatStore';
 import { chatApi, chatWebSocket } from './services/chatApi';
+import { initCsrfToken } from '../lib/csrf';
 import { ChatBubble } from './components/ChatBubble';
 import { ChatWindow } from './components/ChatWindow';
 import type { ChatConfig, ChatMessage } from './types';
 import './chat.css';
+
+// Initialize CSRF token for this widget session
+initCsrfToken();
 
 interface ChatAppProps {
   config: ChatConfig;

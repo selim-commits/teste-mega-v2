@@ -9,8 +9,7 @@ interface TeamFilters {
 }
 
 interface TeamState {
-  // Data
-  members: TeamMember[];
+  // UI State
   selectedMember: TeamMember | null;
 
   // Filters
@@ -22,17 +21,12 @@ interface TeamState {
   error: string | null;
 
   // Actions
-  setMembers: (members: TeamMember[]) => void;
-  addMember: (member: TeamMember) => void;
-  updateMember: (id: string, updates: Partial<TeamMember>) => void;
-  deleteMember: (id: string) => void;
   setSelectedMember: (member: TeamMember | null) => void;
   setFilters: (filters: Partial<TeamFilters>) => void;
   resetFilters: () => void;
   setLoading: (loading: boolean) => void;
   setSubmitting: (submitting: boolean) => void;
   setError: (error: string | null) => void;
-  clearMembers: () => void;
 }
 
 const defaultFilters: TeamFilters = {
@@ -44,8 +38,7 @@ const defaultFilters: TeamFilters = {
 export const useTeamStore = create<TeamState>()(
   persist(
     (set) => ({
-      // Initial data
-      members: [],
+      // Initial UI state
       selectedMember: null,
 
       // Initial filters
@@ -57,34 +50,6 @@ export const useTeamStore = create<TeamState>()(
       error: null,
 
       // Actions
-      setMembers: (members) => set({ members, error: null }),
-
-      addMember: (member) =>
-        set((state) => ({
-          members: [...state.members, member],
-          error: null,
-        })),
-
-      updateMember: (id, updates) =>
-        set((state) => ({
-          members: state.members.map((member) =>
-            member.id === id ? { ...member, ...updates } : member
-          ),
-          selectedMember:
-            state.selectedMember?.id === id
-              ? { ...state.selectedMember, ...updates }
-              : state.selectedMember,
-          error: null,
-        })),
-
-      deleteMember: (id) =>
-        set((state) => ({
-          members: state.members.filter((member) => member.id !== id),
-          selectedMember:
-            state.selectedMember?.id === id ? null : state.selectedMember,
-          error: null,
-        })),
-
       setSelectedMember: (member) => set({ selectedMember: member }),
 
       setFilters: (filters) =>
@@ -99,13 +64,6 @@ export const useTeamStore = create<TeamState>()(
       setSubmitting: (isSubmitting) => set({ isSubmitting }),
 
       setError: (error) => set({ error }),
-
-      clearMembers: () =>
-        set({
-          members: [],
-          selectedMember: null,
-          error: null,
-        }),
     }),
     {
       name: 'team-storage',
@@ -116,20 +74,23 @@ export const useTeamStore = create<TeamState>()(
   )
 );
 
-// Selectors
-export const selectFilteredMembers = (state: TeamState): TeamMember[] => {
-  let filtered = state.members;
+// Selectors - take data as parameter
+export const selectFilteredMembers = (
+  members: TeamMember[],
+  filters: TeamFilters
+): TeamMember[] => {
+  let filtered = members;
 
-  if (state.filters.role !== 'all') {
-    filtered = filtered.filter((m) => m.role === state.filters.role);
+  if (filters.role !== 'all') {
+    filtered = filtered.filter((m) => m.role === filters.role);
   }
 
-  if (state.filters.isActive !== 'all') {
-    filtered = filtered.filter((m) => m.is_active === state.filters.isActive);
+  if (filters.isActive !== 'all') {
+    filtered = filtered.filter((m) => m.is_active === filters.isActive);
   }
 
-  if (state.filters.searchQuery) {
-    const query = state.filters.searchQuery.toLowerCase();
+  if (filters.searchQuery) {
+    const query = filters.searchQuery.toLowerCase();
     filtered = filtered.filter(
       (m) =>
         m.name.toLowerCase().includes(query) ||
@@ -143,27 +104,27 @@ export const selectFilteredMembers = (state: TeamState): TeamMember[] => {
 };
 
 export const selectMembersByRole = (
-  state: TeamState,
+  members: TeamMember[],
   role: TeamRole
 ): TeamMember[] => {
-  return state.members.filter((m) => m.role === role);
+  return members.filter((m) => m.role === role);
 };
 
-export const selectActiveMembers = (state: TeamState): TeamMember[] => {
-  return state.members.filter((m) => m.is_active);
+export const selectActiveMembers = (members: TeamMember[]): TeamMember[] => {
+  return members.filter((m) => m.is_active);
 };
 
 export const selectMemberByUserId = (
-  state: TeamState,
+  members: TeamMember[],
   userId: string
 ): TeamMember | undefined => {
-  return state.members.find((m) => m.user_id === userId);
+  return members.find((m) => m.user_id === userId);
 };
 
-export const selectOwners = (state: TeamState): TeamMember[] => {
-  return state.members.filter((m) => m.role === 'owner');
+export const selectOwners = (members: TeamMember[]): TeamMember[] => {
+  return members.filter((m) => m.role === 'owner');
 };
 
-export const selectAdmins = (state: TeamState): TeamMember[] => {
-  return state.members.filter((m) => m.role === 'admin' || m.role === 'owner');
+export const selectAdmins = (members: TeamMember[]): TeamMember[] => {
+  return members.filter((m) => m.role === 'admin' || m.role === 'owner');
 };

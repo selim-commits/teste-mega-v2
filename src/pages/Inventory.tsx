@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useDebounce } from '../hooks/useDebounce';
 import {
   Search,
   Plus,
@@ -59,9 +60,12 @@ export function Inventory() {
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
   const [editFormData, setEditFormData] = useState<EquipmentFormData | null>(null);
 
-  // Store state
-  const { filters, setFilters, pagination, setPage, setEquipment } = useEquipmentStore();
-  const filteredEquipment = useEquipmentStore(selectFilteredEquipment);
+  // Local search state with debounce
+  const [searchInput, setSearchInput] = useState('');
+  const debouncedSearch = useDebounce(searchInput);
+
+  // Store state (UI only: filters, pagination)
+  const { filters, setFilters, pagination, setPage } = useEquipmentStore();
 
   // API hooks
   const { data: equipment, isLoading, refetch } = useEquipment({ studioId: STUDIO_ID });
@@ -74,12 +78,11 @@ export function Inventory() {
   const retireMutation = useRetireEquipment();
   const maintenanceMutation = useSetEquipmentForMaintenance();
 
-  // Sync API data with store
-  useEffect(() => {
-    if (equipment) {
-      setEquipment(equipment);
-    }
-  }, [equipment, setEquipment]);
+  // Filter equipment using store filters and React Query data
+  const filteredEquipment = useMemo(
+    () => selectFilteredEquipment(equipment || [], filters),
+    [equipment, filters]
+  );
 
   // Categories with counts
   const categories = useMemo(() => {
@@ -118,10 +121,15 @@ export function Inventory() {
 
   const totalPages = Math.ceil(filteredEquipment.length / pagination.pageSize);
 
+  // Sync debounced search to store
+  useEffect(() => {
+    setFilters({ searchQuery: debouncedSearch });
+  }, [debouncedSearch, setFilters]);
+
   // Handlers
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFilters({ searchQuery: e.target.value });
-  }, [setFilters]);
+    setSearchInput(e.target.value);
+  }, []);
 
   const handleStatusFilter = useCallback((value: string) => {
     setFilters({ status: value as EquipmentStatus | 'all' });
@@ -506,7 +514,7 @@ export function Inventory() {
             <input
               type="text"
               placeholder="Rechercher un \u00e9quipement..."
-              value={filters.searchQuery}
+              value={searchInput}
               onChange={handleSearchChange}
               className={styles.searchInput}
             />

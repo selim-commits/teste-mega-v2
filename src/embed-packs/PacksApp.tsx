@@ -2,6 +2,7 @@
 import { useEffect, useCallback, useRef } from 'react';
 import { usePacksStore } from './store/packsStore';
 import { packsApi } from './services/packsApi';
+import { initCsrfToken } from '../lib/csrf';
 import {
   PacksHeader,
   PacksGrid,
@@ -11,6 +12,9 @@ import {
 } from './components';
 import type { PacksConfig } from './types';
 import './packs.css';
+
+// Initialize CSRF token for this widget session
+initCsrfToken();
 
 interface PacksAppProps {
   config: PacksConfig;

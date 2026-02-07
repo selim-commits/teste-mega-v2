@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useDebounce } from '../hooks/useDebounce';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -84,6 +85,7 @@ export function Team() {
   // State
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery);
   const [roleFilter, setRoleFilter] = useState<TeamRole | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [showFilters, setShowFilters] = useState(false);
@@ -127,8 +129,8 @@ export function Team() {
     let result = teamMembers;
 
     // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
       result = result.filter(
         (member) =>
           member.name.toLowerCase().includes(query) ||
@@ -139,7 +141,7 @@ export function Team() {
     }
 
     return result;
-  }, [teamMembers, searchQuery]);
+  }, [teamMembers, debouncedSearch]);
 
   const paginatedMembers = useMemo(() => {
     const start = (currentPage - 1) * pageSize;

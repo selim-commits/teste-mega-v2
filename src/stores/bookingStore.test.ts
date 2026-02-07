@@ -27,7 +27,6 @@ const mockBooking = (overrides: Partial<Booking> = {}): Booking => ({
 
 beforeEach(() => {
   useBookingStore.setState({
-    bookings: [],
     selectedBooking: null,
     selectedDate: new Date(),
     viewMode: 'week',
@@ -38,42 +37,7 @@ beforeEach(() => {
   });
 });
 
-describe('bookingStore - CRUD', () => {
-  it('ajoute un booking', () => {
-    const booking = mockBooking();
-    useBookingStore.getState().addBooking(booking);
-    expect(useBookingStore.getState().bookings).toHaveLength(1);
-    expect(useBookingStore.getState().bookings[0].title).toBe('Test Booking');
-  });
-
-  it('met a jour un booking', () => {
-    useBookingStore.getState().addBooking(mockBooking());
-    useBookingStore.getState().updateBooking('b-1', { title: 'Updated' });
-    expect(useBookingStore.getState().bookings[0].title).toBe('Updated');
-  });
-
-  it('met a jour selectedBooking si meme id', () => {
-    const booking = mockBooking();
-    useBookingStore.setState({ bookings: [booking], selectedBooking: booking });
-    useBookingStore.getState().updateBooking('b-1', { title: 'Updated' });
-    expect(useBookingStore.getState().selectedBooking?.title).toBe('Updated');
-  });
-
-  it('supprime un booking', () => {
-    useBookingStore.getState().addBooking(mockBooking());
-    useBookingStore.getState().deleteBooking('b-1');
-    expect(useBookingStore.getState().bookings).toHaveLength(0);
-  });
-
-  it('supprime le selectedBooking si meme id', () => {
-    const booking = mockBooking();
-    useBookingStore.setState({ bookings: [booking], selectedBooking: booking });
-    useBookingStore.getState().deleteBooking('b-1');
-    expect(useBookingStore.getState().selectedBooking).toBeNull();
-  });
-});
-
-describe('bookingStore - filtres', () => {
+describe('bookingStore - UI state', () => {
   it('set et reset les filtres', () => {
     useBookingStore.getState().setFilters({ status: 'pending', spaceId: 'space-1' });
     expect(useBookingStore.getState().filters.status).toBe('pending');
@@ -83,31 +47,41 @@ describe('bookingStore - filtres', () => {
     expect(useBookingStore.getState().filters.status).toBe('all');
     expect(useBookingStore.getState().filters.spaceId).toBeNull();
   });
+
+  it('set le selectedBooking', () => {
+    const booking = mockBooking();
+    useBookingStore.getState().setSelectedBooking(booking);
+    expect(useBookingStore.getState().selectedBooking?.id).toBe('b-1');
+
+    useBookingStore.getState().setSelectedBooking(null);
+    expect(useBookingStore.getState().selectedBooking).toBeNull();
+  });
+
+  it('set le viewMode', () => {
+    useBookingStore.getState().setViewMode('day');
+    expect(useBookingStore.getState().viewMode).toBe('day');
+  });
 });
 
 describe('selectFilteredBookings', () => {
   it('filtre par status', () => {
-    useBookingStore.setState({
-      bookings: [
-        mockBooking({ id: 'b-1', status: 'confirmed' }),
-        mockBooking({ id: 'b-2', status: 'pending' }),
-        mockBooking({ id: 'b-3', status: 'confirmed' }),
-      ],
-      filters: { status: 'confirmed', spaceId: null, clientId: null, searchQuery: '' },
-    });
-    const filtered = selectFilteredBookings(useBookingStore.getState());
+    const bookings = [
+      mockBooking({ id: 'b-1', status: 'confirmed' }),
+      mockBooking({ id: 'b-2', status: 'pending' }),
+      mockBooking({ id: 'b-3', status: 'confirmed' }),
+    ];
+    const filters = { status: 'confirmed' as const, spaceId: null, clientId: null, searchQuery: '' };
+    const filtered = selectFilteredBookings(bookings, filters);
     expect(filtered).toHaveLength(2);
   });
 
   it('filtre par recherche dans title et description', () => {
-    useBookingStore.setState({
-      bookings: [
-        mockBooking({ id: 'b-1', title: 'Shooting Mode' }),
-        mockBooking({ id: 'b-2', title: 'Portrait Corporate', description: 'photos equipe' }),
-      ],
-      filters: { status: 'all', spaceId: null, clientId: null, searchQuery: 'mode' },
-    });
-    const filtered = selectFilteredBookings(useBookingStore.getState());
+    const bookings = [
+      mockBooking({ id: 'b-1', title: 'Shooting Mode' }),
+      mockBooking({ id: 'b-2', title: 'Portrait Corporate', description: 'photos equipe' }),
+    ];
+    const filters = { status: 'all' as const, spaceId: null, clientId: null, searchQuery: 'mode' };
+    const filtered = selectFilteredBookings(bookings, filters);
     expect(filtered).toHaveLength(1);
     expect(filtered[0].title).toBe('Shooting Mode');
   });
@@ -115,13 +89,11 @@ describe('selectFilteredBookings', () => {
 
 describe('selectBookingsByDate', () => {
   it('retourne les bookings dune date', () => {
-    useBookingStore.setState({
-      bookings: [
-        mockBooking({ id: 'b-1', start_time: '2024-06-15T10:00:00Z' }),
-        mockBooking({ id: 'b-2', start_time: '2024-06-16T10:00:00Z' }),
-      ],
-    });
-    const result = selectBookingsByDate(useBookingStore.getState(), new Date('2024-06-15'));
+    const bookings = [
+      mockBooking({ id: 'b-1', start_time: '2024-06-15T10:00:00Z' }),
+      mockBooking({ id: 'b-2', start_time: '2024-06-16T10:00:00Z' }),
+    ];
+    const result = selectBookingsByDate(bookings, new Date('2024-06-15'));
     expect(result).toHaveLength(1);
   });
 });

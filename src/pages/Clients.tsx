@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback } from 'react';
+import { useDebounce } from '../hooks/useDebounce';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -99,6 +100,7 @@ export function Clients() {
   // State
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery);
   const [tierFilter, setTierFilter] = useState<ClientTier | 'all'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
   const [tagFilter, setTagFilter] = useState<string[]>([]);
@@ -166,8 +168,8 @@ export function Clients() {
     let result = clients;
 
     // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
       result = result.filter(
         (client) =>
           client.name.toLowerCase().includes(query) ||
@@ -185,7 +187,7 @@ export function Clients() {
     }
 
     return result;
-  }, [clients, searchQuery, tagFilter]);
+  }, [clients, debouncedSearch, tagFilter]);
 
   const paginatedClients = useMemo(() => {
     const start = (currentPage - 1) * pageSize;

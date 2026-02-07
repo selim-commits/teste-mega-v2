@@ -18,11 +18,8 @@ interface PaginationState {
 }
 
 interface EquipmentState {
-  // Data
-  equipment: Equipment[];
+  // UI State
   selectedEquipment: Equipment | null;
-  categories: string[];
-  locations: string[];
 
   // Filters
   filters: EquipmentFilters;
@@ -36,13 +33,7 @@ interface EquipmentState {
   error: string | null;
 
   // Actions
-  setEquipment: (equipment: Equipment[]) => void;
-  addEquipment: (item: Equipment) => void;
-  updateEquipment: (id: string, updates: Partial<Equipment>) => void;
-  deleteEquipment: (id: string) => void;
   setSelectedEquipment: (item: Equipment | null) => void;
-  setCategories: (categories: string[]) => void;
-  setLocations: (locations: string[]) => void;
   setFilters: (filters: Partial<EquipmentFilters>) => void;
   resetFilters: () => void;
   setPagination: (pagination: Partial<PaginationState>) => void;
@@ -51,7 +42,6 @@ interface EquipmentState {
   setLoading: (loading: boolean) => void;
   setSubmitting: (submitting: boolean) => void;
   setError: (error: string | null) => void;
-  clearEquipment: () => void;
 }
 
 const defaultFilters: EquipmentFilters = {
@@ -71,12 +61,9 @@ const defaultPagination: PaginationState = {
 
 export const useEquipmentStore = create<EquipmentState>()(
   persist(
-    (set, get) => ({
-      // Initial data
-      equipment: [],
+    (set) => ({
+      // Initial UI state
       selectedEquipment: null,
-      categories: [],
-      locations: [],
 
       // Initial filters
       filters: defaultFilters,
@@ -90,101 +77,7 @@ export const useEquipmentStore = create<EquipmentState>()(
       error: null,
 
       // Actions
-      setEquipment: (equipment) => {
-        // Extract unique categories and locations
-        const categories = Array.from(new Set(equipment.map((e) => e.category)));
-        const locations = Array.from(
-          new Set(equipment.map((e) => e.location).filter(Boolean))
-        ) as string[];
-
-        set({
-          equipment,
-          categories,
-          locations,
-          error: null,
-          pagination: {
-            ...get().pagination,
-            totalCount: equipment.length,
-            totalPages: Math.ceil(equipment.length / get().pagination.pageSize),
-          },
-        });
-      },
-
-      addEquipment: (item) =>
-        set((state) => {
-          const newEquipment = [...state.equipment, item];
-          const categories = Array.from(new Set(newEquipment.map((e) => e.category)));
-          const locations = Array.from(
-            new Set(newEquipment.map((e) => e.location).filter(Boolean))
-          ) as string[];
-
-          return {
-            equipment: newEquipment,
-            categories,
-            locations,
-            pagination: {
-              ...state.pagination,
-              totalCount: state.pagination.totalCount + 1,
-              totalPages: Math.ceil(
-                (state.pagination.totalCount + 1) / state.pagination.pageSize
-              ),
-            },
-            error: null,
-          };
-        }),
-
-      updateEquipment: (id, updates) =>
-        set((state) => {
-          const newEquipment = state.equipment.map((item) =>
-            item.id === id ? { ...item, ...updates } : item
-          );
-          const categories = Array.from(new Set(newEquipment.map((e) => e.category)));
-          const locations = Array.from(
-            new Set(newEquipment.map((e) => e.location).filter(Boolean))
-          ) as string[];
-
-          return {
-            equipment: newEquipment,
-            categories,
-            locations,
-            selectedEquipment:
-              state.selectedEquipment?.id === id
-                ? { ...state.selectedEquipment, ...updates }
-                : state.selectedEquipment,
-            error: null,
-          };
-        }),
-
-      deleteEquipment: (id) =>
-        set((state) => {
-          const newEquipment = state.equipment.filter((item) => item.id !== id);
-          const categories = Array.from(new Set(newEquipment.map((e) => e.category)));
-          const locations = Array.from(
-            new Set(newEquipment.map((e) => e.location).filter(Boolean))
-          ) as string[];
-
-          return {
-            equipment: newEquipment,
-            categories,
-            locations,
-            selectedEquipment:
-              state.selectedEquipment?.id === id ? null : state.selectedEquipment,
-            pagination: {
-              ...state.pagination,
-              totalCount: state.pagination.totalCount - 1,
-              totalPages: Math.ceil(
-                (state.pagination.totalCount - 1) / state.pagination.pageSize
-              ),
-            },
-            error: null,
-          };
-        }),
-
       setSelectedEquipment: (item) => set({ selectedEquipment: item }),
-
-      setCategories: (categories) => set({ categories }),
-
-      setLocations: (locations) => set({ locations }),
 
       setFilters: (filters) =>
         set((state) => ({
@@ -223,16 +116,6 @@ export const useEquipmentStore = create<EquipmentState>()(
       setSubmitting: (isSubmitting) => set({ isSubmitting }),
 
       setError: (error) => set({ error }),
-
-      clearEquipment: () =>
-        set({
-          equipment: [],
-          selectedEquipment: null,
-          categories: [],
-          locations: [],
-          pagination: defaultPagination,
-          error: null,
-        }),
     }),
     {
       name: 'equipment-storage',
@@ -244,28 +127,31 @@ export const useEquipmentStore = create<EquipmentState>()(
   )
 );
 
-// Selectors
-export const selectFilteredEquipment = (state: EquipmentState): Equipment[] => {
-  let filtered = state.equipment;
+// Selectors - take data as parameter
+export const selectFilteredEquipment = (
+  equipment: Equipment[],
+  filters: EquipmentFilters
+): Equipment[] => {
+  let filtered = equipment;
 
-  if (state.filters.status !== 'all') {
-    filtered = filtered.filter((e) => e.status === state.filters.status);
+  if (filters.status !== 'all') {
+    filtered = filtered.filter((e) => e.status === filters.status);
   }
 
-  if (state.filters.category !== 'all') {
-    filtered = filtered.filter((e) => e.category === state.filters.category);
+  if (filters.category !== 'all') {
+    filtered = filtered.filter((e) => e.category === filters.category);
   }
 
-  if (state.filters.location !== 'all') {
-    filtered = filtered.filter((e) => e.location === state.filters.location);
+  if (filters.location !== 'all') {
+    filtered = filtered.filter((e) => e.location === filters.location);
   }
 
-  if (state.filters.conditionMin > 0) {
-    filtered = filtered.filter((e) => e.condition >= state.filters.conditionMin);
+  if (filters.conditionMin > 0) {
+    filtered = filtered.filter((e) => e.condition >= filters.conditionMin);
   }
 
-  if (state.filters.searchQuery) {
-    const query = state.filters.searchQuery.toLowerCase();
+  if (filters.searchQuery) {
+    const query = filters.searchQuery.toLowerCase();
     filtered = filtered.filter(
       (e) =>
         e.name.toLowerCase().includes(query) ||
@@ -279,34 +165,38 @@ export const selectFilteredEquipment = (state: EquipmentState): Equipment[] => {
   return filtered;
 };
 
-export const selectPaginatedEquipment = (state: EquipmentState): Equipment[] => {
-  const filtered = selectFilteredEquipment(state);
-  const { page, pageSize } = state.pagination;
+export const selectPaginatedEquipment = (
+  equipment: Equipment[],
+  filters: EquipmentFilters,
+  pagination: PaginationState
+): Equipment[] => {
+  const filtered = selectFilteredEquipment(equipment, filters);
+  const { page, pageSize } = pagination;
   const start = (page - 1) * pageSize;
   const end = start + pageSize;
   return filtered.slice(start, end);
 };
 
 export const selectEquipmentByStatus = (
-  state: EquipmentState,
+  equipment: Equipment[],
   status: EquipmentStatus
 ): Equipment[] => {
-  return state.equipment.filter((e) => e.status === status);
+  return equipment.filter((e) => e.status === status);
 };
 
 export const selectEquipmentByCategory = (
-  state: EquipmentState,
+  equipment: Equipment[],
   category: string
 ): Equipment[] => {
-  return state.equipment.filter((e) => e.category === category);
+  return equipment.filter((e) => e.category === category);
 };
 
-export const selectAvailableEquipment = (state: EquipmentState): Equipment[] => {
-  return state.equipment.filter((e) => e.status === 'available');
+export const selectAvailableEquipment = (equipment: Equipment[]): Equipment[] => {
+  return equipment.filter((e) => e.status === 'available');
 };
 
-export const selectEquipmentValue = (state: EquipmentState): number => {
-  return state.equipment.reduce(
+export const selectEquipmentValue = (equipment: Equipment[]): number => {
+  return equipment.reduce(
     (total, e) => total + (e.current_value || e.purchase_price || 0),
     0
   );

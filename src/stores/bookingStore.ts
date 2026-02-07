@@ -12,8 +12,7 @@ interface BookingFilters {
 }
 
 interface BookingState {
-  // Data
-  bookings: Booking[];
+  // UI State
   selectedBooking: Booking | null;
 
   // View state
@@ -29,10 +28,6 @@ interface BookingState {
   error: string | null;
 
   // Actions
-  setBookings: (bookings: Booking[]) => void;
-  addBooking: (booking: Booking) => void;
-  updateBooking: (id: string, updates: Partial<Booking>) => void;
-  deleteBooking: (id: string) => void;
   setSelectedBooking: (booking: Booking | null) => void;
   setSelectedDate: (date: Date) => void;
   setViewMode: (mode: ViewMode) => void;
@@ -41,7 +36,6 @@ interface BookingState {
   setLoading: (loading: boolean) => void;
   setSubmitting: (submitting: boolean) => void;
   setError: (error: string | null) => void;
-  clearBookings: () => void;
 }
 
 const defaultFilters: BookingFilters = {
@@ -54,8 +48,7 @@ const defaultFilters: BookingFilters = {
 export const useBookingStore = create<BookingState>()(
   persist(
     (set) => ({
-      // Initial data
-      bookings: [],
+      // Initial UI state
       selectedBooking: null,
 
       // Initial view state
@@ -71,34 +64,6 @@ export const useBookingStore = create<BookingState>()(
       error: null,
 
       // Actions
-      setBookings: (bookings) => set({ bookings, error: null }),
-
-      addBooking: (booking) =>
-        set((state) => ({
-          bookings: [...state.bookings, booking],
-          error: null,
-        })),
-
-      updateBooking: (id, updates) =>
-        set((state) => ({
-          bookings: state.bookings.map((booking) =>
-            booking.id === id ? { ...booking, ...updates } : booking
-          ),
-          selectedBooking:
-            state.selectedBooking?.id === id
-              ? { ...state.selectedBooking, ...updates }
-              : state.selectedBooking,
-          error: null,
-        })),
-
-      deleteBooking: (id) =>
-        set((state) => ({
-          bookings: state.bookings.filter((booking) => booking.id !== id),
-          selectedBooking:
-            state.selectedBooking?.id === id ? null : state.selectedBooking,
-          error: null,
-        })),
-
       setSelectedBooking: (booking) => set({ selectedBooking: booking }),
 
       setSelectedDate: (date) => set({ selectedDate: date }),
@@ -117,13 +82,6 @@ export const useBookingStore = create<BookingState>()(
       setSubmitting: (isSubmitting) => set({ isSubmitting }),
 
       setError: (error) => set({ error }),
-
-      clearBookings: () =>
-        set({
-          bookings: [],
-          selectedBooking: null,
-          error: null,
-        }),
     }),
     {
       name: 'booking-storage',
@@ -135,24 +93,27 @@ export const useBookingStore = create<BookingState>()(
   )
 );
 
-// Selectors
-export const selectFilteredBookings = (state: BookingState): Booking[] => {
-  let filtered = state.bookings;
+// Selectors - take data as parameter, filters from store state
+export const selectFilteredBookings = (
+  bookings: Booking[],
+  filters: BookingFilters
+): Booking[] => {
+  let filtered = bookings;
 
-  if (state.filters.status !== 'all') {
-    filtered = filtered.filter((b) => b.status === state.filters.status);
+  if (filters.status !== 'all') {
+    filtered = filtered.filter((b) => b.status === filters.status);
   }
 
-  if (state.filters.spaceId) {
-    filtered = filtered.filter((b) => b.space_id === state.filters.spaceId);
+  if (filters.spaceId) {
+    filtered = filtered.filter((b) => b.space_id === filters.spaceId);
   }
 
-  if (state.filters.clientId) {
-    filtered = filtered.filter((b) => b.client_id === state.filters.clientId);
+  if (filters.clientId) {
+    filtered = filtered.filter((b) => b.client_id === filters.clientId);
   }
 
-  if (state.filters.searchQuery) {
-    const query = state.filters.searchQuery.toLowerCase();
+  if (filters.searchQuery) {
+    const query = filters.searchQuery.toLowerCase();
     filtered = filtered.filter(
       (b) =>
         b.title.toLowerCase().includes(query) ||
@@ -164,9 +125,9 @@ export const selectFilteredBookings = (state: BookingState): Booking[] => {
 };
 
 export const selectBookingsByDate = (
-  state: BookingState,
+  bookings: Booking[],
   date: Date
 ): Booking[] => {
   const dateStr = date.toISOString().split('T')[0];
-  return state.bookings.filter((b) => b.start_time.startsWith(dateStr));
+  return bookings.filter((b) => b.start_time.startsWith(dateStr));
 };

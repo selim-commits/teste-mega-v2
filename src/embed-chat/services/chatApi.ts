@@ -7,6 +7,7 @@ import type {
   UserIntent,
   ApiResponse,
 } from '../types';
+import { getCsrfToken } from '../../lib/csrf';
 
 // Simulated delay for realistic feel
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -238,6 +239,17 @@ async function generateAIResponse(
   }
 
   return responses;
+}
+
+/**
+ * Returns headers including the CSRF token for API requests.
+ * Used by mock methods now and will be used by real API calls in the future.
+ */
+export function getCsrfHeaders(): Record<string, string> {
+  return {
+    'Content-Type': 'application/json',
+    'X-CSRF-Token': getCsrfToken(),
+  };
 }
 
 // Chat API service

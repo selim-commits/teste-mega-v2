@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDebounce } from '../../hooks/useDebounce';
 import { Search, Calendar, DollarSign, Package } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Table, Pagination } from '../ui/Table';
@@ -17,16 +18,17 @@ export function PurchaseHistory({
   currency = '$',
 }: PurchaseHistoryProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 15;
 
   // Filter purchases
   const filteredPurchases = purchases.filter((purchase) => {
-    if (!searchQuery) return true;
+    if (!debouncedSearch) return true;
     const purchaseWithRelations = purchase as ClientPurchaseWithRelations;
     const client = purchaseWithRelations.client;
     const product = purchaseWithRelations.product;
-    const query = searchQuery.toLowerCase();
+    const query = debouncedSearch.toLowerCase();
     return (
       client?.name?.toLowerCase().includes(query) ||
       client?.email?.toLowerCase().includes(query) ||

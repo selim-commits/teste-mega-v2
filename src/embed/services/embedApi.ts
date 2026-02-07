@@ -12,6 +12,7 @@ import {
   generateMockAvailability,
   generateReference,
 } from './mockData';
+import { getCsrfToken } from '../../lib/csrf';
 
 const API_BASE = import.meta.env.VITE_SUPABASE_URL
   ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1`
@@ -31,6 +32,7 @@ async function fetchApi<T>(
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        'X-CSRF-Token': getCsrfToken(),
         ...options?.headers,
       },
     });

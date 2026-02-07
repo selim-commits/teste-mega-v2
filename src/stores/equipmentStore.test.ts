@@ -33,10 +33,7 @@ const mockEquip = (overrides: Partial<Equipment> = {}): Equipment => ({
 
 beforeEach(() => {
   useEquipmentStore.setState({
-    equipment: [],
     selectedEquipment: null,
-    categories: [],
-    locations: [],
     filters: { status: 'all', category: 'all', location: 'all', conditionMin: 0, searchQuery: '' },
     pagination: { page: 1, pageSize: 20, totalCount: 0, totalPages: 0 },
     isLoading: false,
@@ -45,35 +42,32 @@ beforeEach(() => {
   });
 });
 
-describe('equipmentStore - setEquipment', () => {
-  it('extrait les categories et locations', () => {
-    useEquipmentStore.getState().setEquipment([
-      mockEquip({ id: 'e-1', category: 'camera', location: 'Studio A' }),
-      mockEquip({ id: 'e-2', category: 'lighting', location: 'Studio B' }),
-      mockEquip({ id: 'e-3', category: 'camera', location: 'Studio A' }),
-    ]);
-    const state = useEquipmentStore.getState();
-    expect(state.categories).toEqual(['camera', 'lighting']);
-    expect(state.locations).toEqual(['Studio A', 'Studio B']);
-    expect(state.pagination.totalCount).toBe(3);
-  });
-});
+describe('equipmentStore - UI state', () => {
+  it('set et reset les filtres', () => {
+    useEquipmentStore.getState().setFilters({ status: 'available', category: 'camera' });
+    expect(useEquipmentStore.getState().filters.status).toBe('available');
+    expect(useEquipmentStore.getState().filters.category).toBe('camera');
 
-describe('equipmentStore - CRUD', () => {
-  it('ajoute un equipement et met a jour categories', () => {
-    useEquipmentStore.getState().addEquipment(mockEquip({ category: 'camera' }));
-    useEquipmentStore.getState().addEquipment(mockEquip({ id: 'e-2', category: 'lighting' }));
-    expect(useEquipmentStore.getState().equipment).toHaveLength(2);
-    expect(useEquipmentStore.getState().categories).toContain('lighting');
+    useEquipmentStore.getState().resetFilters();
+    expect(useEquipmentStore.getState().filters.status).toBe('all');
+    expect(useEquipmentStore.getState().filters.category).toBe('all');
   });
 
-  it('supprime et met a jour les categories', () => {
-    useEquipmentStore.getState().setEquipment([
-      mockEquip({ id: 'e-1', category: 'camera' }),
-      mockEquip({ id: 'e-2', category: 'lighting' }),
-    ]);
-    useEquipmentStore.getState().deleteEquipment('e-2');
-    expect(useEquipmentStore.getState().categories).toEqual(['camera']);
+  it('setFilters reset la page a 1', () => {
+    useEquipmentStore.setState({
+      pagination: { page: 3, pageSize: 20, totalCount: 100, totalPages: 5 },
+    });
+    useEquipmentStore.getState().setFilters({ status: 'available' });
+    expect(useEquipmentStore.getState().pagination.page).toBe(1);
+  });
+
+  it('set le selectedEquipment', () => {
+    const equip = mockEquip();
+    useEquipmentStore.getState().setSelectedEquipment(equip);
+    expect(useEquipmentStore.getState().selectedEquipment?.id).toBe('e-1');
+
+    useEquipmentStore.getState().setSelectedEquipment(null);
+    expect(useEquipmentStore.getState().selectedEquipment).toBeNull();
   });
 });
 
@@ -85,61 +79,46 @@ describe('selectFilteredEquipment', () => {
   ];
 
   it('filtre par status', () => {
-    useEquipmentStore.setState({
-      equipment: items,
-      filters: { status: 'available', category: 'all', location: 'all', conditionMin: 0, searchQuery: '' },
-    });
-    expect(selectFilteredEquipment(useEquipmentStore.getState())).toHaveLength(2);
+    const filters = { status: 'available' as const, category: 'all', location: 'all', conditionMin: 0, searchQuery: '' };
+    expect(selectFilteredEquipment(items, filters)).toHaveLength(2);
   });
 
   it('filtre par condition minimum', () => {
-    useEquipmentStore.setState({
-      equipment: items,
-      filters: { status: 'all', category: 'all', location: 'all', conditionMin: 4, searchQuery: '' },
-    });
-    expect(selectFilteredEquipment(useEquipmentStore.getState())).toHaveLength(1);
+    const filters = { status: 'all' as const, category: 'all', location: 'all', conditionMin: 4, searchQuery: '' };
+    expect(selectFilteredEquipment(items, filters)).toHaveLength(1);
   });
 
   it('filtre par recherche', () => {
-    useEquipmentStore.setState({
-      equipment: items,
-      filters: { status: 'all', category: 'all', location: 'all', conditionMin: 0, searchQuery: 'canon' },
-    });
-    expect(selectFilteredEquipment(useEquipmentStore.getState())).toHaveLength(1);
+    const filters = { status: 'all' as const, category: 'all', location: 'all', conditionMin: 0, searchQuery: 'canon' };
+    expect(selectFilteredEquipment(items, filters)).toHaveLength(1);
   });
 });
 
 describe('selectAvailableEquipment', () => {
   it('retourne uniquement les equipements disponibles', () => {
-    useEquipmentStore.setState({
-      equipment: [
-        mockEquip({ id: 'e-1', status: 'available' }),
-        mockEquip({ id: 'e-2', status: 'in_use' }),
-        mockEquip({ id: 'e-3', status: 'available' }),
-      ],
-    });
-    expect(selectAvailableEquipment(useEquipmentStore.getState())).toHaveLength(2);
+    const items = [
+      mockEquip({ id: 'e-1', status: 'available' }),
+      mockEquip({ id: 'e-2', status: 'in_use' }),
+      mockEquip({ id: 'e-3', status: 'available' }),
+    ];
+    expect(selectAvailableEquipment(items)).toHaveLength(2);
   });
 });
 
 describe('selectEquipmentValue', () => {
   it('calcule la valeur totale (current_value prioritaire)', () => {
-    useEquipmentStore.setState({
-      equipment: [
-        mockEquip({ id: 'e-1', current_value: 3800, purchase_price: 4500 }),
-        mockEquip({ id: 'e-2', current_value: 1800, purchase_price: 2200 }),
-      ],
-    });
-    expect(selectEquipmentValue(useEquipmentStore.getState())).toBe(5600);
+    const items = [
+      mockEquip({ id: 'e-1', current_value: 3800, purchase_price: 4500 }),
+      mockEquip({ id: 'e-2', current_value: 1800, purchase_price: 2200 }),
+    ];
+    expect(selectEquipmentValue(items)).toBe(5600);
   });
 
   it('fallback sur purchase_price si pas de current_value', () => {
-    useEquipmentStore.setState({
-      equipment: [
-        mockEquip({ id: 'e-1', current_value: undefined as unknown as number, purchase_price: 4500 }),
-      ],
-    });
+    const items = [
+      mockEquip({ id: 'e-1', current_value: undefined as unknown as number, purchase_price: 4500 }),
+    ];
     // current_value est falsy (undefined), donc fallback sur purchase_price
-    expect(selectEquipmentValue(useEquipmentStore.getState())).toBe(4500);
+    expect(selectEquipmentValue(items)).toBe(4500);
   });
 });

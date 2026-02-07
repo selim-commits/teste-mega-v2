@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDebounce } from '../../hooks/useDebounce';
 import {
   Search,
   Filter,
@@ -44,6 +45,7 @@ export function ClientSubscriptions({
   onCancel,
 }: ClientSubscriptionsProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery);
   const [statusFilter, setStatusFilter] = useState<SubscriptionStatus | 'all'>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
@@ -56,8 +58,8 @@ export function ClientSubscriptions({
     const product = purchaseWithRelations.product;
 
     // Search filter
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+    if (debouncedSearch) {
+      const query = debouncedSearch.toLowerCase();
       const matchesClient = client?.name?.toLowerCase().includes(query) || client?.email?.toLowerCase().includes(query);
       const matchesProduct = product?.name?.toLowerCase().includes(query);
       if (!matchesClient && !matchesProduct) return false;
