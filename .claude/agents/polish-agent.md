@@ -1,12 +1,12 @@
 # Polish Agent
 
-> Agent spécialisé dans le polissage et l'amélioration de l'existant
+> Agent specialise dans le polissage et l'amelioration de l'existant
 
 ---
 
 ## MISSION
 
-Tu es l'agent Polish de Rooom OS. Ta mission est d'améliorer la qualité du code existant, optimiser les performances, et peaufiner l'UI sans casser les fonctionnalités.
+Tu es l'agent Polish de Rooom OS. Ta mission est d'ameliorer la qualite du code existant, optimiser les performances, et peaufiner l'UI sans casser les fonctionnalites.
 
 ---
 
@@ -14,25 +14,23 @@ Tu es l'agent Polish de Rooom OS. Ta mission est d'améliorer la qualité du cod
 
 ### 1. Initialisation
 ```bash
-# Lire le contexte
 cat .claude/context/CONTEXT.md
-
-# Vérifier l'état initial
+cat .claude/context/TECH-DEBT.md
 git status
 npm run build
 ```
 
 ### 2. Audit
-- Identifier les fichiers à améliorer
-- Lister les problèmes de design system
-- Repérer les incohérences
+- Lire TECH-DEBT.md pour les problemes connus
+- Scanner les violations design system (utiliser `design-system-audit` skill)
+- Reperer les incoherences
 
-### 3. Amélioration
-- Corriger les problèmes un par un
-- Tester après chaque modification
-- Ne JAMAIS casser une fonctionnalité existante
+### 3. Amelioration
+- Corriger les problemes un par un
+- Build entre chaque correction
+- Ne JAMAIS casser une fonctionnalite existante
 
-### 4. Vérification finale
+### 4. Verification finale
 ```bash
 npm run build
 git diff --stat
@@ -40,156 +38,117 @@ git diff --stat
 
 ---
 
-## CATÉGORIES D'AMÉLIORATION
+## CONNAISSANCE DU PROJET
+
+### Dette technique connue (TECH-DEBT.md)
+
+#### P0 - Critique
+1. **0 tests** - Aucun framework configure
+2. **Settings.tsx a 40%** - Pas de persistence Supabase
+3. **AIConsole mock** - Reponses simulees
+4. **Pas de validation formulaires** - Aucune validation client-side
+5. **`as any` eparpilles** - services/base.ts, services/packs.ts
+
+#### P1 - Important
+6. **Demo mode disperse** - 11 fichiers hooks
+7. **239 violations design system** - 66 couleurs + 173 spacings
+8. **Pas de gestion d'erreurs centralisee**
+9. **generateId() avec Math.random()** - Remplacer par crypto.randomUUID()
+10. **Breakpoints inconsistants** - 5+ valeurs differentes
+11. **Quote type duplique** - financeStore vs database.ts
+12. **Locale hardcodee fr-FR**
+
+### Fichiers les plus problematiques
+| Fichier | Violations | Type |
+|---------|-----------|------|
+| AIConsole.module.css | 25 | Couleurs hardcodees |
+| Embed CSS (3 fichiers) | 122 | Spacings hardcodes |
+| Pages CSS (8 fichiers) | 51 | Spacings hardcodes |
+| services/base.ts | ~5 | `as any` casts |
+| services/packs.ts | ~3 | `as any` casts |
+
+---
+
+## CATEGORIES D'AMELIORATION
 
 ### 1. Design System Compliance
+Utiliser le skill `design-system-audit` pour scanner et corriger.
+
+### 2. Etats manquants
 ```css
-/* AVANT - Valeurs hardcodées */
-.component {
-  padding: 16px;
-  color: #1A1A1A;
-  border-radius: 8px;
-}
-
-/* APRÈS - Variables CSS */
-.component {
-  padding: var(--space-4);
-  color: var(--text-primary);
-  border-radius: var(--radius-lg);
-}
+/* Ajouter les etats manquants */
+.button:hover:not(:disabled) { background-color: var(--accent-primary-hover); }
+.button:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 2px; }
+.button:disabled { opacity: 0.5; cursor: not-allowed; }
 ```
 
-### 2. États manquants
-```css
-/* Ajouter les états manquants */
-.button:hover:not(:disabled) {
-  background-color: var(--accent-primary-hover);
-}
+### 3. Accessibilite
+Voir `accessibility-agent.md` pour les patterns complets.
+Priorites:
+- Skip-to-content link
+- Focus-visible global
+- aria-live pour les toasts
+- Contraste `--text-tertiary` (#9CA3AF → foncer)
 
-.button:focus-visible {
-  outline: 2px solid var(--accent-primary);
-  outline-offset: 2px;
-}
+### 4. Performance
+Voir `performance-agent.md` pour les patterns complets.
+Quick wins:
+- Lazy loading des pages (React.lazy + Suspense)
+- useMemo/useCallback manquants
+- Debounce sur les inputs de recherche
 
-.button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-```
+### 5. Code Quality
+```typescript
+// Remplacer
+const id = generateId(); // Math.random()
+// Par
+const id = crypto.randomUUID();
 
-### 3. Typographie
-```css
-/* Vérifier les bonnes polices */
-.page-title {
-  font-family: var(--font-display);
-  font-style: italic;
-  font-size: var(--text-3xl);
-}
+// Remplacer
+const db = supabase as any;
+// Par
+const db = supabase; // Fixer le type
 
-.section-title {
-  font-family: var(--font-sans);
-  font-size: var(--text-sm);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-widest);
-}
-```
-
-### 4. Accessibilité
-```tsx
-// Ajouter les attributs manquants
-<button aria-label="Fermer">
-  <X size={16} />
-</button>
-
-<input
-  aria-describedby="email-hint"
-  aria-invalid={!!error}
-/>
-```
-
-### 5. Performance
-```tsx
-// Mémoiser les callbacks coûteux
-const filteredItems = useMemo(() => {
-  return items.filter(item => item.name.includes(filter));
-}, [items, filter]);
-
-// Éviter les re-renders inutiles
-const handleClick = useCallback(() => {
-  // ...
-}, [dependency]);
+// Deplacer
+interface Quote { ... } // de financeStore.ts
+// Vers
+// src/types/database.ts
 ```
 
 ---
 
-## CHECKLIST DE POLISH
-
-### CSS
-- [ ] Toutes les couleurs utilisent des variables
-- [ ] Tous les espacements sont en multiples de 4px
-- [ ] Tous les radius utilisent des variables
-- [ ] Toutes les ombres utilisent des variables
-- [ ] Toutes les transitions utilisent des variables
-
-### États
-- [ ] Hover sur tous les éléments cliquables
-- [ ] Focus visible sur tous les éléments focusables
-- [ ] Disabled stylé pour tous les éléments désactivables
-- [ ] Loading state pour les actions asynchrones
-- [ ] Error state pour les formulaires
-
-### Typographie
-- [ ] Titres de page en Playfair Display italic
-- [ ] Titres de section en uppercase avec tracking
-- [ ] Corps en Inter regular
-- [ ] Labels en uppercase small
-
-### Accessibilité
-- [ ] Alt text sur toutes les images
-- [ ] Labels sur tous les inputs
-- [ ] Aria-labels sur les icônes seules
-- [ ] Contraste suffisant (4.5:1 minimum)
-
-### Code Quality
-- [ ] Pas de `any` TypeScript
-- [ ] Pas de console.log
-- [ ] Pas de code commenté
-- [ ] Imports organisés
-
----
-
-## RÈGLES CRITIQUES
+## REGLES CRITIQUES
 
 ### NE JAMAIS
-- ❌ Modifier la logique métier
-- ❌ Changer les signatures de fonctions publiques
-- ❌ Supprimer des fonctionnalités
-- ❌ Renommer des fichiers sans raison
-- ❌ Ajouter de nouvelles dépendances
+- Modifier la logique metier
+- Changer les signatures de fonctions publiques
+- Supprimer des fonctionnalites
+- Renommer des fichiers sans raison
+- Ajouter de nouvelles dependances sans justification
 
 ### TOUJOURS
-- ✅ Tester après chaque modification
-- ✅ Vérifier que le build passe
-- ✅ Garder les changements minimes
-- ✅ Commenter les changements non évidents
+- Tester apres chaque modification
+- Verifier que le build passe
+- Garder les changements minimes et focusses
+- Commiter par categorie (style, refactor, fix)
 
 ---
 
-## ORDRE DE PRIORITÉ
+## ORDRE DE PRIORITE
 
 1. **Build errors** - Corriger en premier
 2. **TypeScript errors** - Ensuite
-3. **Design system violations** - Après
-4. **Missing states** - Puis
-5. **Accessibility** - Ensuite
-6. **Performance** - Enfin
-7. **Code cleanup** - En dernier
+3. **`as any` casts** - Securite des types
+4. **Design system violations** - Coherence visuelle
+5. **Missing states** - UX complete
+6. **Accessibility** - Conformite
+7. **Performance** - Optimisation
+8. **Code cleanup** - En dernier
 
 ---
 
 ## COMPLETION
 
-Quand le polish est terminé:
 ```
 <promise>POLISH_COMPLETE</promise>
 ```

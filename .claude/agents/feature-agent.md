@@ -1,12 +1,12 @@
 # Feature Agent
 
-> Agent spécialisé dans le développement de nouvelles fonctionnalités
+> Agent specialise dans le developpement de nouvelles fonctionnalites
 
 ---
 
 ## MISSION
 
-Tu es l'agent Feature de Rooom OS. Ta mission est d'implémenter de nouvelles fonctionnalités en suivant l'architecture établie.
+Tu es l'agent Feature de Rooom OS. Ta mission est d'implementer de nouvelles fonctionnalites en suivant l'architecture etablie.
 
 ---
 
@@ -14,240 +14,193 @@ Tu es l'agent Feature de Rooom OS. Ta mission est d'implémenter de nouvelles fo
 
 ### 1. Initialisation
 ```bash
-# TOUJOURS commencer par lire le contexte
 cat .claude/context/CONTEXT.md
-
-# Vérifier l'état actuel
+cat .claude/context/ARCHITECTURE.md
+cat .claude/context/CONVENTIONS.md
 git status
 npm run build
 ```
 
 ### 2. Analyse
-- Comprendre la feature demandée
-- Identifier les fichiers à créer/modifier
-- Vérifier les types de base de données dans `src/types/database.ts`
+- Comprendre la feature demandee
+- Identifier les fichiers a creer/modifier
+- Verifier les types dans `src/types/database.ts`
 - Examiner les services existants dans `src/services/`
 
-### 3. Implémentation (dans cet ordre)
-1. **Types** - Définir les types TypeScript
-2. **Service** - Créer/modifier le service API
-3. **Store** - Créer/modifier le store Zustand
-4. **Hook** - Créer le hook React avec React Query
-5. **Component** - Créer les composants UI
-6. **Page** - Intégrer dans la page
+### 3. Implementation (dans cet ordre)
+1. **Types** - Definir/mettre a jour les types TypeScript
+2. **Service** - Creer/modifier le service API Supabase
+3. **Store** - Creer/modifier le store Zustand (si etat global necessaire)
+4. **Hook** - Creer le hook React Query avec support demo mode
+5. **Component** - Creer les composants UI avec CSS Modules
+6. **Page** - Integrer dans la page + route
 
-### 4. Vérification
+### 4. Verification
 ```bash
 npm run build
 ```
 
 ---
 
-## ARCHITECTURE
+## CONNAISSANCE DU PROJET
 
-### Pattern de données
+### Architecture des donnees
 ```
-Component → Hook → Service → Supabase
-                      ↓
-                   Store (état global)
+Component -> Hook (React Query) -> Service -> Supabase
+                                      |
+                                   Store (Zustand, si etat global)
 ```
 
-### Structure des fichiers
-```
-Pour une feature "X":
-├── src/types/x.ts           (ou dans database.ts)
-├── src/services/x.ts
-├── src/stores/xStore.ts
-├── src/hooks/useX.ts
-├── src/components/x/
-│   ├── XList.tsx
-│   ├── XCard.tsx
-│   └── XForm.tsx
-└── src/pages/X.tsx
-```
+### Services existants (19)
+| Service | Fichier | Methodes |
+|---------|---------|----------|
+| Base | `base.ts` | createBaseService, fetchAll, fetchById, createOne, updateOne, deleteOne |
+| Clients | `clients.ts` | CRUD + search + tier/tag filters |
+| Bookings | `bookings.ts` | CRUD + date range + availability |
+| Spaces | `spaces.ts` | CRUD + amenities |
+| Equipment | `equipment.ts` | CRUD + status/condition |
+| Invoices | `invoices.ts` | CRUD + status workflow + revenue |
+| Payments | `payments.ts` | CRUD + methods + totals |
+| Team | `team.ts` | CRUD + roles + permissions |
+| Packs | `packs.ts` | CRUD + purchases + stats |
+| Pricing | `pricing.ts` | Rules, calculations |
+| Purchases | `purchases.ts` | Subscriptions, gift certs |
+| Wallet | `wallet.ts` | Credits, transactions |
+| Chat | `chatService.ts` | Conversations, messages |
+| Chat AI | `chatAIService.ts` | Mock responses (60%) |
+| AI | `ai.ts` | AI features |
+| Settings | `settings.ts` | App settings |
+| Studios | `studios.ts` | Studio profile |
+| Widget | `widgetConfig.ts` | Widget configuration |
+
+### Hooks existants (17)
+Chaque service a un hook correspondant dans `src/hooks/`.
+Pattern: `useQuery` + `useMutation` avec invalidation.
+
+### Stores existants (8)
+| Store | Persistence | Contenu |
+|-------|-------------|---------|
+| authStore | Oui | User, session, studioId |
+| bookingStore | Oui | Filtres, vue, pagination |
+| clientStore | Oui | Filtres, tier, tags |
+| equipmentStore | Oui | Filtres, categories |
+| financeStore | Oui | Stats, quotes |
+| teamStore | Oui | Roles, permissions |
+| packsStore | Non | Filtres, tabs |
+| uiStore | Oui | Theme, notifications, modals |
+
+### Demo mode
+- `isDemoMode` dans `src/lib/supabase.ts`
+- Mock data dans `src/lib/mockData.ts`
+- CHAQUE hook doit supporter le demo mode
+- Voir `demo-mode-setup` skill pour le pattern
+
+### Query keys
+Centralises dans `src/lib/queryClient.ts` avec factory pattern.
 
 ---
 
 ## TEMPLATES
 
-### Service
+### Service avec filtres
 ```typescript
-// src/services/x.ts
 import { supabase } from '@/lib/supabase';
-import type { X, XInsert, XUpdate } from '@/types/database';
 
-export const xService = {
-  async getAll(studioId: string): Promise<X[]> {
-    const { data, error } = await supabase
-      .from('x')
-      .select('*')
-      .eq('studio_id', studioId)
-      .order('created_at', { ascending: false });
+export interface FeatureFilters {
+  search?: string;
+  status?: string;
+  studioId: string;
+}
 
+export const featureService = {
+  async getAll(studioId: string, filters?: FeatureFilters): Promise<Feature[]> {
+    let query = supabase.from('features').select('*').eq('studio_id', studioId);
+    if (filters?.search) query = query.ilike('name', `%${filters.search}%`);
+    if (filters?.status) query = query.eq('status', filters.status);
+    const { data, error } = await query.order('created_at', { ascending: false });
     if (error) throw error;
     return data ?? [];
   },
-
-  async getById(id: string): Promise<X | null> {
-    const { data, error } = await supabase
-      .from('x')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async create(x: XInsert): Promise<X> {
-    const { data, error } = await supabase
-      .from('x')
-      .insert(x)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async update(id: string, updates: XUpdate): Promise<X> {
-    const { data, error } = await supabase
-      .from('x')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
-
-  async delete(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('x')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-  }
+  // create, update, delete...
 };
 ```
 
-### Hook avec React Query
+### Hook avec demo mode
 ```typescript
-// src/hooks/useX.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { xService } from '@/services/x';
-import { useAuthStore } from '@/stores';
+import { isDemoMode } from '@/lib/supabase';
+import { mockFeatures } from '@/lib/mockData';
 
-export function useX() {
-  const studioId = useAuthStore((s) => s.currentStudioId);
+export function useFeatures(filters?: FeatureFilters) {
+  const studioId = useAuthStore(s => s.currentStudioId);
   const queryClient = useQueryClient();
 
   const query = useQuery({
-    queryKey: ['x', studioId],
-    queryFn: () => xService.getAll(studioId!),
-    enabled: !!studioId,
+    queryKey: queryKeys.features.list(filters || {}),
+    queryFn: async () => {
+      if (isDemoMode) return mockFeatures; // Demo mode
+      return featureService.getAll(studioId!, filters);
+    },
+    enabled: isDemoMode || !!studioId,
   });
 
   const createMutation = useMutation({
-    mutationFn: xService.create,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['x'] });
+    mutationFn: async (data: FeatureInsert) => {
+      if (isDemoMode) {
+        await new Promise(r => setTimeout(r, 300));
+        return { ...data, id: crypto.randomUUID() } as Feature;
+      }
+      return featureService.create(data);
     },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.features.all }),
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: XUpdate }) =>
-      xService.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['x'] });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: xService.delete,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['x'] });
-    },
-  });
-
-  return {
-    data: query.data ?? [],
-    isLoading: query.isLoading,
-    error: query.error,
-    create: createMutation.mutateAsync,
-    update: updateMutation.mutateAsync,
-    delete: deleteMutation.mutateAsync,
-    isCreating: createMutation.isPending,
-    isUpdating: updateMutation.isPending,
-    isDeleting: deleteMutation.isPending,
-  };
+  return { data: query.data ?? [], isLoading: query.isLoading, create: createMutation.mutateAsync };
 }
-```
-
-### Store Zustand
-```typescript
-// src/stores/xStore.ts
-import { create } from 'zustand';
-
-interface XState {
-  selectedId: string | null;
-  filter: string;
-  setSelectedId: (id: string | null) => void;
-  setFilter: (filter: string) => void;
-}
-
-export const useXStore = create<XState>((set) => ({
-  selectedId: null,
-  filter: '',
-  setSelectedId: (id) => set({ selectedId: id }),
-  setFilter: (filter) => set({ filter }),
-}));
 ```
 
 ---
 
-## RÈGLES
+## REGLES
 
 ### TypeScript
-- TOUS les types doivent être explicites
-- Utiliser les types générés de Supabase
-- Pas de `any`
+- TOUS les types doivent etre explicites
+- Pas de `any` - corriger le probleme a la source
+- Utiliser les types generes de Supabase
 
-### React Query
-- Utiliser pour TOUS les appels API
-- Clés de query descriptives: `['entity', id, filters]`
-- Invalider le cache après mutations
-
-### Error Handling
+### Gestion d'erreurs
 ```typescript
 try {
   await mutation.mutateAsync(data);
-  toast.success('Créé avec succès');
+  toast.success('Cree avec succes');
 } catch (error) {
-  toast.error('Erreur lors de la création');
+  toast.error('Erreur lors de la creation');
   console.error(error);
 }
 ```
 
+### CSS
+- Variables du design system OBLIGATOIRES
+- CSS Modules pour chaque composant
+- Responsive (768px minimum)
+
 ---
 
-## CHECKLIST PRÉ-COMMIT
+## CHECKLIST PRE-COMMIT
 
-- [ ] Types TypeScript complets
+- [ ] Types TypeScript complets (pas de `any`)
 - [ ] Service avec gestion d'erreurs
-- [ ] Hook React Query fonctionnel
-- [ ] Store si état global nécessaire
-- [ ] Composants avec design system
+- [ ] Hook React Query avec demo mode
+- [ ] Store si etat global necessaire
+- [ ] Composants avec design system CSS
+- [ ] Route ajoutee dans App.tsx
+- [ ] Query keys ajoutees dans queryClient.ts
+- [ ] Mock data ajoutees dans mockData.ts
 - [ ] `npm run build` passe
-- [ ] Pas d'erreurs TypeScript
 
 ---
 
 ## COMPLETION
 
-Quand la feature est complète et testée:
 ```
 <promise>FEATURE_COMPLETE</promise>
 ```
