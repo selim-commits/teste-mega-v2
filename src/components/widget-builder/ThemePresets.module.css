@@ -44,6 +44,11 @@
 .preset:hover {
   border-color: var(--accent-primary);
   background-color: var(--bg-secondary);
+  transform: scale(1.02) translateY(-2px);
+}
+
+.preset:active {
+  transform: scale(0.98);
 }
 
 /* Preview Card */

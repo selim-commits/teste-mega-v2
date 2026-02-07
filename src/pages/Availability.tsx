@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   Clock,
   Calendar,
@@ -42,10 +41,7 @@ export function Availability() {
       <div className={styles.content}>
         {/* Stats */}
         <div className={styles.statsGrid}>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
+          <div className={styles.animateIn}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-blue)15' }}>
                 <Clock size={20} color="var(--accent-blue)" />
@@ -55,12 +51,8 @@ export function Availability() {
                 <span className={styles.statLabel}>Heures/semaine</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.05 }}
-          >
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '50ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-green)15' }}>
                 <Calendar size={20} color="var(--accent-green)" />
@@ -70,7 +62,7 @@ export function Availability() {
                 <span className={styles.statLabel}>Jours ouverts</span>
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* Weekly Schedule */}
@@ -84,12 +76,10 @@ export function Availability() {
 
           <div className={styles.scheduleGrid}>
             {schedule.map((day, index) => (
-              <motion.div
+              <div
                 key={day.day}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={styles.scheduleRow}
+                className={`${styles.scheduleRow} ${styles.animateInLeft}`}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <span className={styles.scheduleDay}>{day.day}</span>
                 <Switch
@@ -135,7 +125,7 @@ export function Availability() {
                 ) : (
                   <span className={styles.scheduleClosed}>Ferme</span>
                 )}
-              </motion.div>
+              </div>
             ))}
           </div>
         </Card>

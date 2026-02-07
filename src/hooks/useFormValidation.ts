@@ -6,7 +6,7 @@ interface UseFormValidationOptions<T> {
   onSubmit: (data: T) => void | Promise<void>;
 }
 
-interface UseFormValidationReturn<T> {
+interface UseFormValidationReturn<_T> {
   errors: Partial<Record<string, string>>;
   touched: Record<string, boolean>;
   isValid: boolean;

@@ -1,5 +1,14 @@
 /* Packs & Subscriptions Page Styles - Premium Design */
 
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animateIn {
+  animation: fadeInUp var(--duration-normal) var(--ease-out) both;
+}
+
 .page {
   min-height: 100vh;
   background-color: var(--bg-secondary);

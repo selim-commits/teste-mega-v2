@@ -1,5 +1,4 @@
 import { forwardRef, type InputHTMLAttributes } from 'react';
-import { motion } from 'framer-motion';
 import { Check, Minus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import styles from './Checkbox.module.css';
@@ -38,7 +37,7 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
             disabled={disabled}
             {...props}
           />
-          <motion.div
+          <div
             className={cn(
               styles.checkbox,
               styles[size],
@@ -46,19 +45,13 @@ export const Checkbox = forwardRef<HTMLInputElement, CheckboxProps>(
               indeterminate && styles.indeterminate,
               error && styles.error
             )}
-            whileTap={{ scale: 0.9 }}
           >
             {(checked || indeterminate) && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.1 }}
-                className={styles.icon}
-              >
+              <span className={styles.icon}>
                 {indeterminate ? <Minus size={12} /> : <Check size={12} />}
-              </motion.span>
+              </span>
             )}
-          </motion.div>
+          </div>
         </div>
         {(label || description) && (
           <div className={styles.content}>
@@ -93,15 +86,13 @@ export const Switch = forwardRef<HTMLInputElement, SwitchProps>(
             disabled={disabled}
             {...props}
           />
-          <motion.div
+          <div
             className={cn(styles.switch, styles[`switch-${size}`], checked && styles.switchChecked)}
           >
-            <motion.div
-              className={styles.switchThumb}
-              animate={{ x: checked ? '100%' : '0%' }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            <div
+              className={cn(styles.switchThumb, checked && styles.switchThumbChecked)}
             />
-          </motion.div>
+          </div>
         </div>
         {(label || description) && (
           <div className={styles.content}>
@@ -134,19 +125,13 @@ export const Radio = forwardRef<HTMLInputElement, RadioProps>(
             disabled={disabled}
             {...props}
           />
-          <motion.div
+          <div
             className={cn(styles.radio, styles[size], checked && styles.checked)}
-            whileTap={{ scale: 0.9 }}
           >
             {checked && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.1 }}
-                className={styles.radioDot}
-              />
+              <span className={styles.radioDot} />
             )}
-          </motion.div>
+          </div>
         </div>
         {label && <span className={styles.label}>{label}</span>}
       </label>

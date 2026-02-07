@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   CalendarSync as CalendarSyncIcon,
   Check,
@@ -80,7 +79,7 @@ export function CalendarSync() {
       <div className={styles.content}>
         {/* Stats */}
         <div className={styles.statsGrid}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className={styles.animateIn}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-green)15' }}>
                 <Check size={20} color="var(--accent-green)" />
@@ -90,8 +89,8 @@ export function CalendarSync() {
                 <span className={styles.statLabel}>Calendriers connectes</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '50ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-blue)15' }}>
                 <RefreshCw size={20} color="var(--accent-blue)" />
@@ -101,7 +100,7 @@ export function CalendarSync() {
                 <span className={styles.statLabel}>Sync bidirectionnelle</span>
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* Connected Calendars */}
@@ -116,11 +115,9 @@ export function CalendarSync() {
           {calendars.length > 0 ? (
             <div className={styles.list}>
               {calendars.map((calendar) => (
-                <motion.div
+                <div
                   key={calendar.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className={styles.listItem}
+                  className={`${styles.listItem} ${styles.animateInLeft}`}
                 >
                   <div className={styles.listItemInfo}>
                     <div className={styles.listItemIcon} style={{ fontSize: '20px' }}>
@@ -171,7 +168,7 @@ export function CalendarSync() {
                       <Button variant="ghost" size="sm" icon={<Trash2 size={14} />} />
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           ) : (

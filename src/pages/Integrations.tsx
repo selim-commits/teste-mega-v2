@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   Plug,
   Check,
@@ -115,7 +114,7 @@ export function Integrations() {
       <div className={styles.content}>
         {/* Stats */}
         <div className={styles.statsGrid}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className={styles.animateIn}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-green)15' }}>
                 <Check size={20} color="var(--accent-green)" />
@@ -125,8 +124,8 @@ export function Integrations() {
                 <span className={styles.statLabel}>Connectees</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '50ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-blue)15' }}>
                 <Plug size={20} color="var(--accent-blue)" />
@@ -136,7 +135,7 @@ export function Integrations() {
                 <span className={styles.statLabel}>Disponibles</span>
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* Category Tabs */}
@@ -155,11 +154,10 @@ export function Integrations() {
         {/* Integrations Grid */}
         <div className={styles.grid}>
           {filteredIntegrations.map((integration, index) => (
-            <motion.div
+            <div
               key={integration.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              className={styles.animateIn}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <Card padding="none" hoverable className={styles.card}>
                 <div className={styles.cardHeader}>
@@ -211,7 +209,7 @@ export function Integrations() {
                   )}
                 </div>
               </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
 

@@ -56,9 +56,8 @@ export function useCreatePricingProduct() {
 
   return useMutation({
     mutationFn: (product: PricingProductInsert) => pricingService.create(product),
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       queryClient.invalidateQueries({ queryKey: pricingKeys.all });
-      queryClient.invalidateQueries({ queryKey: pricingKeys.byStudio(data.studio_id) });
     },
   });
 }
@@ -70,7 +69,7 @@ export function useUpdatePricingProduct() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: PricingProductUpdate }) =>
       pricingService.update(id, data),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: pricingKeys.all });
       queryClient.invalidateQueries({ queryKey: pricingKeys.detail(variables.id) });
     },
@@ -95,7 +94,7 @@ export function useTogglePricingProduct() {
 
   return useMutation({
     mutationFn: (id: string) => pricingService.toggleActive(id),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: pricingKeys.all });
       queryClient.invalidateQueries({ queryKey: pricingKeys.detail(variables) });
     },

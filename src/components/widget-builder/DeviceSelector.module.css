@@ -24,12 +24,17 @@
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: color var(--duration-fast) var(--ease-default);
+  transition: all var(--duration-fast) var(--ease-out);
   z-index: 1;
 }
 
 .button:hover {
   color: var(--text-primary);
+  transform: scale(1.02);
+}
+
+.button:active {
+  transform: scale(0.98);
 }
 
 .buttonActive {

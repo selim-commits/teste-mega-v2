@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   Bell,
   BellRing,
@@ -101,7 +100,7 @@ export function AlertNotifications() {
       <div className={styles.content}>
         {/* Stats */}
         <div className={styles.statsGrid}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className={styles.animateIn}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-blue)15' }}>
                 <BellRing size={20} color="var(--accent-blue)" />
@@ -111,8 +110,8 @@ export function AlertNotifications() {
                 <span className={styles.statLabel}>Alertes actives</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '50ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-green)15' }}>
                 <Bell size={20} color="var(--accent-green)" />
@@ -122,7 +121,7 @@ export function AlertNotifications() {
                 <span className={styles.statLabel}>Recues aujourd'hui</span>
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* Quick Settings */}
@@ -181,12 +180,10 @@ export function AlertNotifications() {
 
           <div className={styles.list}>
             {alerts.map((alert, index) => (
-              <motion.div
+              <div
                 key={alert.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                style={{
+                className={styles.animateInLeft}
+                style={{ animationDelay: `${index * 50}ms`,
                   display: 'grid',
                   gridTemplateColumns: '1fr 80px 80px 80px',
                   gap: 'var(--space-4)',
@@ -226,7 +223,7 @@ export function AlertNotifications() {
                     onChange={() => toggleChannel(alert.id, 'sms')}
                   />
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </Card>

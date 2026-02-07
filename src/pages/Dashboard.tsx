@@ -1,5 +1,4 @@
 import { useMemo } from 'react';
-import { motion } from 'framer-motion';
 import {
   Calendar,
   Package,
@@ -35,29 +34,6 @@ import {
 import { useTeamMembersByUser } from '../hooks/useTeam';
 import type { Booking, Equipment } from '../types/database';
 import styles from './Dashboard.module.css';
-
-// Animation variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.05,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.4,
-      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
-    },
-  },
-};
 
 // Helper function to format booking time
 function formatBookingTime(startTime: string, endTime: string): string {
@@ -394,15 +370,10 @@ export function Dashboard() {
         subtitle="Vue d'ensemble de votre activite"
       />
 
-      <motion.div
-        className={styles.content}
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
+      <div className={styles.content}>
         {/* KPI Cards */}
         <div className={styles.kpiGrid}>
-          <motion.div variants={itemVariants}>
+          <div className={styles.animateIn}>
             {statsLoading ? (
               <KPICardSkeleton />
             ) : (
@@ -414,8 +385,8 @@ export function Dashboard() {
                 trend={stats?.revenueGrowth && stats.revenueGrowth >= 0 ? 'up' : 'down'}
               />
             )}
-          </motion.div>
-          <motion.div variants={itemVariants}>
+          </div>
+          <div className={styles.animateIn}>
             {statsLoading ? (
               <KPICardSkeleton />
             ) : (
@@ -427,8 +398,8 @@ export function Dashboard() {
                 trend={stats?.bookingsGrowth && stats.bookingsGrowth >= 0 ? 'up' : 'down'}
               />
             )}
-          </motion.div>
-          <motion.div variants={itemVariants}>
+          </div>
+          <div className={styles.animateIn}>
             {spacesLoading || bookingsLoading ? (
               <KPICardSkeleton />
             ) : (
@@ -440,8 +411,8 @@ export function Dashboard() {
                 trend={occupancyRate >= 50 ? 'up' : 'down'}
               />
             )}
-          </motion.div>
-          <motion.div variants={itemVariants}>
+          </div>
+          <div className={styles.animateIn}>
             {clientsLoading ? (
               <KPICardSkeleton />
             ) : (
@@ -453,13 +424,13 @@ export function Dashboard() {
                 trend={stats?.clientsGrowth && stats.clientsGrowth >= 0 ? 'up' : 'down'}
               />
             )}
-          </motion.div>
+          </div>
         </div>
 
         {/* Bento Grid */}
         <div className={styles.bentoGrid}>
           {/* Today + Tomorrow Schedule - Large */}
-          <motion.div variants={itemVariants} className={styles.bentoLarge}>
+          <div className={`${styles.animateIn} ${styles.bentoLarge}`}>
             <Card padding="lg" className={styles.scheduleCard}>
               <CardHeader
                 title="Prochaines reservations"
@@ -498,10 +469,10 @@ export function Dashboard() {
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
           {/* 7-Day Bookings Chart */}
-          <motion.div variants={itemVariants} className={styles.bentoMedium}>
+          <div className={`${styles.animateIn} ${styles.bentoMedium}`}>
             <Card padding="lg">
               <CardHeader
                 title="Reservations"
@@ -538,10 +509,10 @@ export function Dashboard() {
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
           {/* Quick Stats */}
-          <motion.div variants={itemVariants} className={styles.bentoSmall}>
+          <div className={`${styles.animateIn} ${styles.bentoSmall}`}>
             <Card padding="md">
               {recentBookingsLoading ? (
                 <>
@@ -559,9 +530,9 @@ export function Dashboard() {
                 </>
               )}
             </Card>
-          </motion.div>
+          </div>
 
-          <motion.div variants={itemVariants} className={styles.bentoSmall}>
+          <div className={`${styles.animateIn} ${styles.bentoSmall}`}>
             <Card padding="md">
               {equipmentLoading ? (
                 <>
@@ -579,10 +550,10 @@ export function Dashboard() {
                 </>
               )}
             </Card>
-          </motion.div>
+          </div>
 
           {/* AI Insights - Small */}
-          <motion.div variants={itemVariants} className={styles.bentoMedium}>
+          <div className={`${styles.animateIn} ${styles.bentoMedium}`}>
             <Card padding="lg" variant="glass" className={styles.aiCard}>
               <div className={styles.aiHeader}>
                 <div className={styles.aiIcon}>
@@ -600,10 +571,10 @@ export function Dashboard() {
                 Appliquer la suggestion
               </Button>
             </Card>
-          </motion.div>
+          </div>
 
           {/* Alerts */}
-          <motion.div variants={itemVariants} className={styles.bentoMedium}>
+          <div className={`${styles.animateIn} ${styles.bentoMedium}`}>
             <Card padding="lg">
               <CardHeader
                 title="Alertes"
@@ -634,10 +605,10 @@ export function Dashboard() {
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
 
           {/* Recent Activity */}
-          <motion.div variants={itemVariants} className={styles.bentoWide}>
+          <div className={`${styles.animateIn} ${styles.bentoWide}`}>
             <Card padding="lg">
               <CardHeader
                 title="Activite recente"
@@ -674,9 +645,9 @@ export function Dashboard() {
                 )}
               </CardContent>
             </Card>
-          </motion.div>
+          </div>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }

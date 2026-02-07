@@ -319,7 +319,7 @@ export function useSendMessageWithAI() {
 
       return { userMessage, aiResponse, aiMessage };
     },
-    onSuccess: (result, variables) => {
+    onSuccess: (_result, variables) => {
       // Invalidate to get fresh data
       queryClient.invalidateQueries({
         queryKey: chatQueryKeys.conversationWithMessages(variables.conversationId),

@@ -1,5 +1,4 @@
 import { forwardRef, useId, useState, type InputHTMLAttributes, type ReactNode } from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import styles from './Input.module.css';
 
@@ -47,7 +46,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label className={styles.label} htmlFor={inputId}>{label}</label>
         )}
-        <motion.div
+        <div
           className={cn(
             styles.inputWrapper,
             styles[variant],
@@ -56,14 +55,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             error && styles.error,
             disabled && styles.disabled
           )}
-          animate={{
-            borderColor: error
-              ? 'var(--accent-red)'
-              : isFocused
-              ? 'var(--border-strong)'
-              : 'var(--border-default)',
-          }}
-          transition={{ duration: 0.15 }}
         >
           {icon && <span className={styles.icon} aria-hidden="true">{icon}</span>}
           <input
@@ -85,7 +76,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {...props}
           />
           {iconRight && <span className={styles.iconRight} aria-hidden="true">{iconRight}</span>}
-        </motion.div>
+        </div>
         {hasMessage && (
           <span id={messageId} className={cn(styles.message, error && styles.errorMessage)}>
             {error || hint}

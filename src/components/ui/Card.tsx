@@ -1,9 +1,8 @@
 import { type ReactNode, type HTMLAttributes } from 'react';
-import { motion, type HTMLMotionProps } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import styles from './Card.module.css';
 
-interface CardProps extends HTMLMotionProps<'div'> {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
   variant?: 'default' | 'elevated' | 'outlined' | 'glass';
   padding?: 'none' | 'sm' | 'md' | 'lg';
   hoverable?: boolean;
@@ -19,8 +18,7 @@ export function Card({
   ...props
 }: CardProps) {
   return (
-    <motion.div
-      whileHover={hoverable ? { y: -4, transition: { duration: 0.2 } } : undefined}
+    <div
       className={cn(
         styles.card,
         styles[variant],
@@ -31,7 +29,7 @@ export function Card({
       {...props}
     >
       {children}
-    </motion.div>
+    </div>
   );
 }
 

@@ -40,10 +40,19 @@
 }
 
 /* Config List */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .configList {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+.animateIn {
+  animation: fadeInUp var(--duration-normal) var(--ease-out) forwards;
 }
 
 .configItem {

@@ -1,5 +1,4 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import { Save, Download, RotateCcw } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -300,58 +299,42 @@ export function WidgetBuilder() {
 
                 <div className={styles.configTabContent}>
                   <TabsContent value="appearance">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <div className={styles.animateIn}>
                       <ThemePresets onSelect={handleThemePresetSelect} />
                       <AppearanceEditor
                         appearance={appearance}
                         onChange={handleAppearanceChange}
                       />
-                    </motion.div>
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="content">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <div className={styles.animateIn}>
                       <ContentEditor
                         content={content}
                         onChange={handleContentChange}
                         widgetType={widgetType}
                       />
-                    </motion.div>
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="behavior">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <div className={styles.animateIn}>
                       <BehaviorEditor
                         behavior={behavior}
                         onChange={handleBehaviorChange}
                         widgetType={widgetType}
                       />
-                    </motion.div>
+                    </div>
                   </TabsContent>
 
                   <TabsContent value="css">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
+                    <div className={styles.animateIn}>
                       <CustomCSSEditor
                         value={customCSS}
                         onChange={setCustomCSS}
                       />
-                    </motion.div>
+                    </div>
                   </TabsContent>
                 </div>
               </Tabs>

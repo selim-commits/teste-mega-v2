@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   BarChart3,
   TrendingUp,
@@ -90,11 +89,10 @@ export function Reports() {
         {/* Stats Grid */}
         <div className={styles.statsGrid}>
           {stats.map((stat, index) => (
-            <motion.div
+            <div
               key={stat.label}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              className={styles.animateIn}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <Card padding="md" className={styles.statCard}>
                 <div
@@ -121,7 +119,7 @@ export function Reports() {
                   </span>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
 

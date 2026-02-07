@@ -9,6 +9,11 @@
   overflow: hidden;
   background-color: var(--bg-secondary);
   border: 2px solid var(--bg-primary);
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.avatar:hover {
+  transform: scale(1.05);
 }
 
 /* Variants */

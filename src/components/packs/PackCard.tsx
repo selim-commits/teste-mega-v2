@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import {
   MoreVertical,
   Edit2,
@@ -67,10 +66,9 @@ export function PackCard({
   const TypeIcon = typeIcons[pack.type] || Package;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.03 }}
+    <div
+      className={styles.animateIn}
+      style={{ animationDelay: `${index * 30}ms` }}
     >
       <Card
         padding="none"
@@ -186,6 +184,6 @@ export function PackCard({
           </div>
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 }

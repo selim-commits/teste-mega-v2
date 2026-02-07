@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   CreditCard,
   DollarSign,
@@ -65,7 +64,7 @@ export function Payments() {
       <div className={styles.content}>
         {/* Stats */}
         <div className={styles.statsGrid}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className={styles.animateIn}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-green)15' }}>
                 <DollarSign size={20} color="var(--accent-green)" />
@@ -75,8 +74,8 @@ export function Payments() {
                 <span className={styles.statLabel}>Ce mois</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '50ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-blue)15' }}>
                 <TrendingUp size={20} color="var(--accent-blue)" />
@@ -86,8 +85,8 @@ export function Payments() {
                 <span className={styles.statLabel}>vs mois dernier</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '100ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-orange)15' }}>
                 <AlertCircle size={20} color="var(--accent-orange)" />
@@ -97,8 +96,8 @@ export function Payments() {
                 <span className={styles.statLabel}>En attente</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '150ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-purple)15' }}>
                 <CreditCard size={20} color="var(--accent-purple)" />
@@ -108,7 +107,7 @@ export function Payments() {
                 <span className={styles.statLabel}>Methodes actives</span>
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* Payment Methods */}

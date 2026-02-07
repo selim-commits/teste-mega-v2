@@ -10,9 +10,17 @@
   letter-spacing: var(--tracking-normal);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-default);
+  transition: all var(--duration-fast) var(--ease-out);
   white-space: nowrap;
   user-select: none;
+}
+
+.button:hover:not(:disabled) {
+  transform: scale(1.02);
+}
+
+.button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .button:disabled {

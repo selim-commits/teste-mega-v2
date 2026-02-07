@@ -244,7 +244,7 @@ async function generateAIResponse(
 export const chatApi = {
   // Initialize conversation
   async initConversation(
-    studioId: string,
+    _studioId: string,
     studioName: string
   ): Promise<ApiResponse<{ conversationId: string; messages: ChatMessage[] }>> {
     await delay(500);
@@ -280,7 +280,7 @@ export const chatApi = {
 
   // Send message
   async sendMessage(
-    conversationId: string,
+    _conversationId: string,
     message: string,
     studioName: string,
     onTypingStart?: () => void,
@@ -367,7 +367,7 @@ export const chatApi = {
 
   // Upload attachment
   async uploadAttachment(
-    conversationId: string,
+    _conversationId: string,
     file: File,
     onProgress?: (progress: number) => void
   ): Promise<ApiResponse<{ url: string }>> {

@@ -95,7 +95,7 @@ export function useUpdatePurchase() {
   return useMutation({
     mutationFn: ({ id, data }: { id: string; data: ClientPurchaseUpdate }) =>
       purchaseService.update(id, data),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: purchaseKeys.all });
       queryClient.invalidateQueries({ queryKey: purchaseKeys.detail(variables.id) });
     },
@@ -123,7 +123,7 @@ export function useCancelPurchase() {
 
   return useMutation({
     mutationFn: (id: string) => purchaseService.cancel(id),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: purchaseKeys.all });
       queryClient.invalidateQueries({ queryKey: purchaseKeys.detail(variables) });
     },
@@ -136,7 +136,7 @@ export function useRefundPurchase() {
 
   return useMutation({
     mutationFn: (id: string) => purchaseService.cancel(id),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: purchaseKeys.all });
       queryClient.invalidateQueries({ queryKey: purchaseKeys.detail(variables) });
     },
@@ -207,7 +207,7 @@ export function usePauseSubscription() {
 
   return useMutation({
     mutationFn: (id: string) => purchaseService.pauseSubscription(id),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: purchaseKeys.subscriptions.all });
       queryClient.invalidateQueries({ queryKey: purchaseKeys.subscriptions.detail(variables) });
     },
@@ -220,7 +220,7 @@ export function useResumeSubscription() {
 
   return useMutation({
     mutationFn: (id: string) => purchaseService.resumeSubscription(id),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: purchaseKeys.subscriptions.all });
       queryClient.invalidateQueries({ queryKey: purchaseKeys.subscriptions.detail(variables) });
     },

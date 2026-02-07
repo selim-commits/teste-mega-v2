@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Calendar, MessageCircle, Package } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import type { WidgetType } from '../../pages/WidgetBuilder';
@@ -41,13 +40,11 @@ export function WidgetTypeSelector({ value, onChange }: WidgetTypeSelectorProps)
       <h3 className={styles.title}>Type de widget</h3>
       <div className={styles.options}>
         {widgetTypes.map(({ type, label, description, icon: Icon }) => (
-          <motion.button
+          <button
             key={type}
             type="button"
             className={cn(styles.option, value === type && styles.optionActive)}
             onClick={() => onChange(type)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
           >
             <div className={cn(styles.iconWrapper, value === type && styles.iconWrapperActive)}>
               <Icon size={20} />
@@ -57,18 +54,13 @@ export function WidgetTypeSelector({ value, onChange }: WidgetTypeSelectorProps)
               <span className={styles.optionDescription}>{description}</span>
             </div>
             {value === type && (
-              <motion.div
-                className={styles.checkmark}
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: 'spring', duration: 0.3 }}
-              >
+              <div className={styles.checkmark}>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>
-              </motion.div>
+              </div>
             )}
-          </motion.button>
+          </button>
         ))}
       </div>
     </div>

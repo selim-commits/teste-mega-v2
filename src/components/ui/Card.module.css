@@ -47,11 +47,13 @@
 /* Hoverable */
 .hoverable {
   cursor: pointer;
+  transition: all var(--duration-normal) var(--ease-out);
 }
 
 .hoverable:hover {
   border-color: var(--border-strong);
   background-color: var(--bg-secondary);
+  transform: translateY(-4px);
 }
 
 /* Header */

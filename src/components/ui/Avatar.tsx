@@ -1,5 +1,4 @@
 import { memo, useState, type ImgHTMLAttributes } from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import styles from './Avatar.module.css';
 
@@ -56,10 +55,8 @@ export const Avatar = memo(function Avatar({
   const backgroundColor = name ? getColorFromName(name) : 'var(--bg-elevated)';
 
   return (
-    <motion.div
+    <div
       className={cn(styles.avatar, styles[size], styles[variant], className)}
-      whileHover={{ scale: 1.05 }}
-      transition={{ duration: 0.15 }}
     >
       {showImage ? (
         <img
@@ -80,7 +77,7 @@ export const Avatar = memo(function Avatar({
       {showStatus && status && (
         <span className={cn(styles.status, styles[`status-${status}`])} />
       )}
-    </motion.div>
+    </div>
   );
 });
 

@@ -163,7 +163,7 @@ export function useToggleWidgetConfig() {
 
   return useMutation({
     mutationFn: (id: string) => widgetConfigService.toggleActive(id),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: widgetConfigKeys.all });
       queryClient.invalidateQueries({ queryKey: widgetConfigKeys.detail(variables) });
     },
@@ -192,7 +192,7 @@ export function useUpdateAllowedDomains() {
   return useMutation({
     mutationFn: ({ id, domains }: { id: string; domains: string[] }) =>
       widgetConfigService.updateAllowedDomains(id, domains),
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: widgetConfigKeys.all });
       queryClient.invalidateQueries({ queryKey: widgetConfigKeys.detail(variables.id) });
     },

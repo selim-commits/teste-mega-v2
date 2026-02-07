@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import type { WidgetAppearance } from '../../pages/WidgetBuilder';
 import styles from './ThemePresets.module.css';
 
@@ -84,13 +83,11 @@ export function ThemePresets({ onSelect }: ThemePresetsProps) {
       <h4 className={styles.title}>Themes rapides</h4>
       <div className={styles.presets}>
         {presets.map((preset) => (
-          <motion.button
+          <button
             key={preset.id}
             type="button"
             className={styles.preset}
             onClick={() => onSelect(preset.appearance)}
-            whileHover={{ scale: 1.02, y: -2 }}
-            whileTap={{ scale: 0.98 }}
           >
             <div
               className={styles.previewCard}
@@ -122,7 +119,7 @@ export function ThemePresets({ onSelect }: ThemePresetsProps) {
               />
             </div>
             <span className={styles.presetName}>{preset.name}</span>
-          </motion.button>
+          </button>
         ))}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase, isDemoMode, withDemoMode } from '../lib/supabase';
+import { supabase, withDemoMode } from '../lib/supabase';
 import { queryKeys } from '../lib/queryClient';
 import { calculateMockDashboardStats } from '../lib/mockData';
 import type { Invoice, Booking, Space } from '../types/database';

@@ -1,12 +1,11 @@
-import { forwardRef, type ReactNode } from 'react';
-import { motion, type HTMLMotionProps } from 'framer-motion';
+import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '../../lib/utils';
 import styles from './Button.module.css';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'success';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
-interface ButtonProps extends Omit<HTMLMotionProps<'button'>, 'size'> {
+interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size'> {
   variant?: ButtonVariant;
   size?: ButtonSize;
   icon?: ReactNode;
@@ -33,11 +32,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     return (
-      <motion.button
+      <button
         ref={ref}
-        whileHover={{ scale: disabled || loading ? 1 : 1.02 }}
-        whileTap={{ scale: disabled || loading ? 1 : 0.98 }}
-        transition={{ duration: 0.15, ease: 'easeOut' }}
         disabled={disabled || loading}
         className={cn(
           styles.button,
@@ -61,7 +57,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         {icon && !loading && <span className={styles.icon}>{icon}</span>}
         {children && <span className={styles.label}>{children}</span>}
         {iconRight && <span className={styles.iconRight}>{iconRight}</span>}
-      </motion.button>
+      </button>
     );
   }
 );

@@ -1,5 +1,4 @@
 import type { ReactNode, KeyboardEvent } from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import styles from './Table.module.css';
 
@@ -79,9 +78,9 @@ export function Table<T extends { id: string }>({
         </thead>
         <tbody className={styles.tbody}>
           {data.map((item, index) => (
-            <motion.tr
+            <tr
               key={item.id}
-              className={cn(styles.tr, onRowClick && styles.clickable)}
+              className={cn(styles.tr, styles.animateIn, onRowClick && styles.clickable)}
               onClick={() => onRowClick?.(item)}
               tabIndex={onRowClick ? 0 : undefined}
               role={onRowClick ? "button" : undefined}
@@ -91,9 +90,7 @@ export function Table<T extends { id: string }>({
                   onRowClick(item);
                 }
               } : undefined}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.02 }}
+              style={{ animationDelay: `${index * 20}ms` }}
             >
               {columns.map((col) => (
                 <td
@@ -104,7 +101,7 @@ export function Table<T extends { id: string }>({
                   {col.render ? col.render(item) : getValue(item, String(col.key))}
                 </td>
               ))}
-            </motion.tr>
+            </tr>
           ))}
         </tbody>
       </table>

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   MessageSquare,
   Send,
@@ -75,7 +74,7 @@ export function SMSNotifications() {
       <div className={styles.content}>
         {/* Stats */}
         <div className={styles.statsGrid}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className={styles.animateIn}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-green)15' }}>
                 <MessageSquare size={20} color="var(--accent-green)" />
@@ -85,8 +84,8 @@ export function SMSNotifications() {
                 <span className={styles.statLabel}>Templates actifs</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '50ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-blue)15' }}>
                 <Send size={20} color="var(--accent-blue)" />
@@ -96,8 +95,8 @@ export function SMSNotifications() {
                 <span className={styles.statLabel}>Envoyes ce mois</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '100ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-purple)15' }}>
                 <Smartphone size={20} color="var(--accent-purple)" />
@@ -107,7 +106,7 @@ export function SMSNotifications() {
                 <span className={styles.statLabel}>Taux de livraison</span>
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* SMS Provider */}
@@ -171,13 +170,10 @@ export function SMSNotifications() {
 
             <div className={styles.list}>
               {templates.map((template, index) => (
-                <motion.div
+                <div
                   key={template.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  className={styles.listItem}
-                  style={{ flexDirection: 'column', alignItems: 'stretch', gap: 'var(--space-3)' }}
+                  className={`${styles.listItem} ${styles.animateInLeft}`}
+                  style={{ flexDirection: 'column', alignItems: 'stretch', gap: 'var(--space-3)', animationDelay: `${index * 50}ms` }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div className={styles.listItemInfo}>
@@ -215,7 +211,7 @@ export function SMSNotifications() {
                       {template.charCount} caracteres • 1 SMS
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </Card>

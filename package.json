@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ci": "vitest run",
-    "format": "prettier --write src/"
+    "format": "prettier --write src/",
+    "analyze": "ANALYZE=true vite build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.90.1",
@@ -42,6 +43,7 @@
     "globals": "^16.5.0",
     "happy-dom": "^20.5.0",
     "pg": "^8.17.1",
+    "rollup-plugin-visualizer": "^6.0.5",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.2.4",

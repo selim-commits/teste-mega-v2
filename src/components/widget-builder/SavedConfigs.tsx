@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Trash2, Calendar, MessageCircle, Package } from 'lucide-react';
 import { Modal, ModalHeader, ModalBody } from '../ui/Modal';
 import { Button } from '../ui/Button';
@@ -53,11 +52,9 @@ export function SavedConfigs({ configs, activeConfigId, onLoad, onDelete, onClos
               const isActive = config.id === activeConfigId;
 
               return (
-                <motion.div
+                <div
                   key={config.id}
-                  className={`${styles.configItem} ${isActive ? styles.configItemActive : ''}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  className={`${styles.configItem} ${styles.animateIn} ${isActive ? styles.configItemActive : ''}`}
                 >
                   {/* Color preview */}
                   <div className={styles.colorPreview}>
@@ -111,7 +108,7 @@ export function SavedConfigs({ configs, activeConfigId, onLoad, onDelete, onClos
                       className={styles.deleteButton}
                     />
                   </div>
-                </motion.div>
+                </div>
               );
             })}
           </div>

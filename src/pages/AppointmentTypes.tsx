@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   ListChecks,
   Plus,
@@ -94,7 +93,7 @@ export function AppointmentTypes() {
       <div className={styles.content}>
         {/* Stats */}
         <div className={styles.statsGrid}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className={styles.animateIn}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-blue)15' }}>
                 <ListChecks size={20} color="var(--accent-blue)" />
@@ -104,8 +103,8 @@ export function AppointmentTypes() {
                 <span className={styles.statLabel}>Types de service</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '50ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-green)15' }}>
                 <DollarSign size={20} color="var(--accent-green)" />
@@ -115,8 +114,8 @@ export function AppointmentTypes() {
                 <span className={styles.statLabel}>Prix moyen</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '100ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-purple)15' }}>
                 <Clock size={20} color="var(--accent-purple)" />
@@ -126,7 +125,7 @@ export function AppointmentTypes() {
                 <span className={styles.statLabel}>Duree moyenne</span>
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* Toolbar */}
@@ -149,11 +148,10 @@ export function AppointmentTypes() {
         {/* Appointment Types Grid */}
         <div className={styles.grid}>
           {filteredTypes.map((type, index) => (
-            <motion.div
+            <div
               key={type.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
+              className={styles.animateIn}
+              style={{ animationDelay: `${index * 50}ms` }}
             >
               <Card padding="none" hoverable className={styles.card} style={{ opacity: type.isActive ? 1 : 0.6 }}>
                 <div className={styles.cardHeader}>
@@ -221,7 +219,7 @@ export function AppointmentTypes() {
                   </Button>
                 </div>
               </Card>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

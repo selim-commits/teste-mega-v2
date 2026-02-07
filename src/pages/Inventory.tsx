@@ -1,5 +1,4 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import {
   Search,
   Plus,
@@ -654,12 +653,7 @@ export function Inventory() {
 
         {/* Filters Panel */}
         {showFilters && (
-          <motion.div
-            className={styles.filtersPanel}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-          >
+          <div className={`${styles.filtersPanel} ${styles.animateIn}`}>
             <div className={styles.filterRow}>
               <Select
                 label="Statut"
@@ -686,7 +680,7 @@ export function Inventory() {
                 onChange={(v) => setFilters({ conditionMin: parseInt(v) })}
               />
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Categories */}
@@ -740,11 +734,10 @@ export function Inventory() {
               </div>
             ) : (
               paginatedData.map((item, index) => (
-                <motion.div
+                <div
                   key={item.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
+                  className={styles.animateIn}
+                  style={{ animationDelay: `${index * 50}ms` }}
                 >
                   <Card padding="none" hoverable className={styles.itemCard}>
                     <div className={styles.itemImage}>
@@ -826,7 +819,7 @@ export function Inventory() {
                       </div>
                     </div>
                   </Card>
-                </motion.div>
+                </div>
               ))
             )}
           </div>

@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { motion } from 'framer-motion';
 import {
   format,
   startOfWeek,
@@ -551,17 +550,14 @@ export function SpaceControl() {
                     {slotBookings.map((booking) => {
                       if (!isBookingStart(booking, selectedDate, time)) return null;
                       return (
-                        <motion.div
+                        <div
                           key={booking.id}
-                          className={styles.bookingBlock}
+                          className={`${styles.bookingBlock} ${styles.animateIn}`}
                           style={{
                             height: getBookingHeight(booking),
                             backgroundColor: `${getSpaceColor(space, index)}20`,
                             borderLeftColor: getSpaceColor(space, index),
                           }}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          whileHover={{ scale: 1.02 }}
                           onClick={(e) => handleBookingClick(booking, e)}
                         >
                           <div className={styles.bookingTime}>
@@ -572,7 +568,7 @@ export function SpaceControl() {
                           <Badge variant={STATUS_COLORS[booking.status]} size="sm">
                             {STATUS_LABELS[booking.status]}
                           </Badge>
-                        </motion.div>
+                        </div>
                       );
                     })}
                     {!slotBookings.length && (
@@ -630,7 +626,7 @@ export function SpaceControl() {
                       if (!isBookingStart(booking, day, time)) return null;
                       const heightHours = differenceInMinutes(parseISO(booking.end_time), parseISO(booking.start_time)) / 60;
                       return (
-                        <motion.div
+                        <div
                           key={booking.id}
                           className={styles.weekBookingBlock}
                           style={{
@@ -638,14 +634,13 @@ export function SpaceControl() {
                             backgroundColor: `${getSpaceColor(space, index)}20`,
                             borderLeftColor: getSpaceColor(space, index),
                           }}
-                          whileHover={{ scale: 1.02, zIndex: 10 }}
                           onClick={(e) => handleBookingClick(booking, e)}
                         >
                           <span className={styles.weekBookingTime}>
                             {format(parseISO(booking.start_time), 'HH:mm')}
                           </span>
                           <span className={styles.weekBookingTitle}>{booking.title}</span>
-                        </motion.div>
+                        </div>
                       );
                     });
                   })}
@@ -673,11 +668,10 @@ export function SpaceControl() {
           const dayBookings = getBookingsForDay(day);
           const isCurrentMonth = isSameMonth(day, selectedDate);
           return (
-            <motion.div
+            <div
               key={day.toISOString()}
               className={`${styles.monthDay} ${!isCurrentMonth ? styles.otherMonth : ''} ${isToday(day) ? styles.today : ''}`}
               onClick={() => handleDayClick(day)}
-              whileHover={{ backgroundColor: 'var(--bg-hover)' }}
             >
               <span className={`${styles.monthDayNumber} ${isToday(day) ? styles.todayNumber : ''}`}>
                 {format(day, 'd')}
@@ -709,7 +703,7 @@ export function SpaceControl() {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </div>
           );
         })}
       </div>

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   Mail,
   Send,
@@ -99,7 +98,7 @@ export function EmailNotifications() {
       <div className={styles.content}>
         {/* Stats */}
         <div className={styles.statsGrid}>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <div className={styles.animateIn}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-blue)15' }}>
                 <Mail size={20} color="var(--accent-blue)" />
@@ -109,8 +108,8 @@ export function EmailNotifications() {
                 <span className={styles.statLabel}>Templates</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '50ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-green)15' }}>
                 <Check size={20} color="var(--accent-green)" />
@@ -120,8 +119,8 @@ export function EmailNotifications() {
                 <span className={styles.statLabel}>Actifs</span>
               </div>
             </Card>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+          </div>
+          <div className={styles.animateIn} style={{ animationDelay: '100ms' }}>
             <Card padding="md" className={styles.statCard}>
               <div className={styles.statIcon} style={{ backgroundColor: 'var(--accent-purple)15' }}>
                 <Send size={20} color="var(--accent-purple)" />
@@ -131,7 +130,7 @@ export function EmailNotifications() {
                 <span className={styles.statLabel}>Envoyes ce mois</span>
               </div>
             </Card>
-          </motion.div>
+          </div>
         </div>
 
         {/* Email Settings */}
@@ -176,12 +175,10 @@ export function EmailNotifications() {
 
           <div className={styles.list}>
             {templates.map((template, index) => (
-              <motion.div
+              <div
                 key={template.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className={styles.listItem}
+                className={`${styles.listItem} ${styles.animateInLeft}`}
+                style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className={styles.listItemInfo}>
                   <div className={styles.listItemIcon}>
@@ -209,7 +206,7 @@ export function EmailNotifications() {
                     <Button variant="ghost" size="sm" icon={<Edit2 size={14} />} />
                   </div>
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
         </Card>

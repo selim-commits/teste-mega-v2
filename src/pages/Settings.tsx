@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
 import {
   Building2,
   Clock,
@@ -277,11 +276,7 @@ function StudioProfileSection() {
   const isLoading = updateProfile.isPending || isFetching;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className={styles.animateIn}>
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Profil du studio</h2>
@@ -480,7 +475,7 @@ function StudioProfileSection() {
           </div>
         </Card>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -549,11 +544,7 @@ function BusinessHoursSection() {
   const isLoading = updateBusinessHours.isPending;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className={styles.animateIn}>
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Horaires d'ouverture</h2>
@@ -641,7 +632,7 @@ function BusinessHoursSection() {
           </div>
         </Card>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -724,11 +715,7 @@ function BookingSettingsSection() {
   const isLoading = updateBookingSettings.isPending;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className={styles.animateIn}>
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Parametres de reservation</h2>
@@ -798,7 +785,7 @@ function BookingSettingsSection() {
           </div>
         </Card>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -846,11 +833,7 @@ function NotificationsSection() {
   const isLoading = updateNotificationSettings.isPending;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className={styles.animateIn}>
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Notifications</h2>
@@ -1034,7 +1017,7 @@ function NotificationsSection() {
           </div>
         </Card>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -1067,11 +1050,7 @@ function IntegrationsSection() {
   ];
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className={styles.animateIn}>
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Integrations</h2>
@@ -1133,7 +1112,7 @@ function IntegrationsSection() {
           </div>
         </Card>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -1208,11 +1187,7 @@ function BillingSection() {
   const isLoading = updateBillingSettings.isPending;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <div className={styles.animateIn}>
       <div className={styles.section}>
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Facturation</h2>
@@ -1306,6 +1281,6 @@ function BillingSection() {
           </div>
         </Card>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -250,7 +250,7 @@ export const chatAIService = {
    * Determine if a conversation should be escalated to human
    */
   async shouldEscalate(
-    conversation: ChatConversation,
+    _conversation: ChatConversation,
     message: string,
     intentResult?: IntentResult,
     previousMessages?: ChatMessage[]
@@ -347,8 +347,8 @@ export const chatAIService = {
    * Get availability response for a query
    */
   async getAvailabilityResponse(
-    studioId: string,
-    query: string,
+    _studioId: string,
+    _query: string,
     studioContext?: StudioContext
   ): Promise<AvailabilityResponse> {
     // Mock response - would integrate with booking service
@@ -391,7 +391,7 @@ export const chatAIService = {
    * Get packs/packages response
    */
   async getPacksResponse(
-    studioId: string,
+    _studioId: string,
     studioContext?: StudioContext
   ): Promise<PackResponse> {
     // Mock response - would fetch from database
@@ -443,8 +443,8 @@ export const chatAIService = {
    * Get pricing response for a specific space or general
    */
   async getPricingResponse(
-    studioId: string,
-    spaceId?: string,
+    _studioId: string,
+    _spaceId?: string,
     studioContext?: StudioContext
   ): Promise<PricingResponse> {
     const space = studioContext?.spaces?.[0];
@@ -594,7 +594,7 @@ export const chatAIService = {
     return `I'm truly sorry to hear you're having an issue. Your feedback is very important to us at ${context.studioName}. I want to make sure we address your concern properly.\n\nWould you like me to connect you with a team member who can help resolve this directly? They'll be able to look into your specific situation and find the best solution for you.`;
   },
 
-  generateGeneralResponse(message: string, context: StudioContext): string {
+  generateGeneralResponse(_message: string, context: StudioContext): string {
     return `Thank you for your message! ${context.studioName} offers professional studio spaces for photography, video production, and creative projects.\n\nI can help you with:\n- Checking availability and booking\n- Pricing information\n- Our packages and services\n- General questions about the studio\n\nWhat would you like to know more about?`;
   },
 

@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import styles from './Progress.module.css';
 
@@ -39,11 +38,9 @@ export function Progress({
         aria-valuemax={max}
         aria-label={label || undefined}
       >
-        <motion.div
+        <div
           className={cn(styles.bar, styles[variant])}
-          initial={{ width: 0 }}
-          animate={{ width: `${percentage}%` }}
-          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ width: `${percentage}%` }}
         />
       </div>
     </div>
@@ -91,16 +88,14 @@ export function CircularProgress({
           r={radius}
           strokeWidth={strokeWidth}
         />
-        <motion.circle
+        <circle
           className={cn(styles.circleBar, styles[variant])}
           cx={size / 2}
           cy={size / 2}
           r={radius}
           strokeWidth={strokeWidth}
           strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          strokeDashoffset={offset}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>

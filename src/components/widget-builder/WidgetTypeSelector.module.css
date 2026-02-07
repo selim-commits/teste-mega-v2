@@ -33,12 +33,17 @@
   border-radius: var(--radius-lg);
   cursor: pointer;
   position: relative;
-  transition: all var(--duration-fast) var(--ease-default);
+  transition: all var(--duration-fast) var(--ease-out);
 }
 
 .option:hover {
   background-color: var(--bg-hover);
   border-color: var(--border-strong);
+  transform: scale(1.02);
+}
+
+.option:active {
+  transform: scale(0.98);
 }
 
 .optionActive {
@@ -87,6 +92,11 @@
   color: var(--text-muted);
 }
 
+@keyframes scaleIn {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
 .checkmark {
   position: absolute;
   top: var(--space-2);
@@ -99,6 +109,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  animation: scaleIn var(--duration-slow) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @media (max-width: 400px) {

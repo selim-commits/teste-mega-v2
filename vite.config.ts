@@ -1,10 +1,23 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
+import { visualizer } from 'rollup-plugin-visualizer'
+import type { PluginOption } from 'vite'
+
+const isAnalyze = process.env.ANALYZE === 'true'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    isAnalyze &&
+      (visualizer({
+        open: true,
+        filename: 'stats.html',
+        gzipSize: true,
+        brotliSize: true,
+      }) as PluginOption),
+  ],
   build: {
     rollupOptions: {
       input: {
@@ -19,6 +32,13 @@ export default defineConfig({
             return `${chunkInfo.name}/[name].[hash].js`
           }
           return 'assets/[name].[hash].js'
+        },
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-zustand': ['zustand'],
         },
       },
     },

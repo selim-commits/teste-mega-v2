@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion';
 import { Monitor, Tablet, Smartphone } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import styles from './DeviceSelector.module.css';
@@ -26,26 +25,20 @@ export function DeviceSelector({ value, onChange }: DeviceSelectorProps) {
     <div className={styles.container}>
       <div className={styles.buttons}>
         {devices.map(({ type, label, icon: Icon }) => (
-          <motion.button
+          <button
             key={type}
             type="button"
             className={cn(styles.button, value === type && styles.buttonActive)}
             onClick={() => onChange(type)}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
             aria-label={label}
             title={label}
           >
             <Icon size={18} />
             <span className={styles.label}>{label}</span>
             {value === type && (
-              <motion.div
-                className={styles.indicator}
-                layoutId="device-indicator"
-                transition={{ type: 'spring', duration: 0.4, bounce: 0.2 }}
-              />
+              <div className={styles.indicator} />
             )}
-          </motion.button>
+          </button>
         ))}
       </div>
       <span className={styles.dimensions}>

@@ -1,5 +1,4 @@
 import { useState, createContext, useContext, type ReactNode } from 'react';
-import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import styles from './Tabs.module.css';
 
@@ -112,18 +111,10 @@ export function TabsTrigger({
       {icon && <span className={styles.icon}>{icon}</span>}
       <span className={styles.label}>{children}</span>
       {isActive && variant === 'default' && (
-        <motion.div
-          className={styles.indicator}
-          layoutId="tab-indicator"
-          transition={{ type: 'spring', duration: 0.4, bounce: 0.2 }}
-        />
+        <div className={styles.indicator} />
       )}
       {isActive && variant === 'underline' && (
-        <motion.div
-          className={styles.underline}
-          layoutId="tab-underline"
-          transition={{ type: 'spring', duration: 0.4, bounce: 0.2 }}
-        />
+        <div className={styles.underline} />
       )}
     </button>
   );
@@ -141,14 +132,11 @@ export function TabsContent({ value, children, className }: TabsContentProps) {
   if (activeTab !== value) return null;
 
   return (
-    <motion.div
-      className={cn(styles.content, className)}
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
+    <div
+      className={cn(styles.content, styles.animateIn, className)}
       role="tabpanel"
     >
       {children}
-    </motion.div>
+    </div>
   );
 }

@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Copy, Check, Code } from 'lucide-react';
-import { motion } from 'framer-motion';
 import { Button } from '../ui/Button';
 import type { WidgetConfig } from '../../pages/WidgetBuilder';
 import styles from './EmbedCodeDisplay.module.css';
@@ -113,11 +112,7 @@ export function EmbedCodeDisplay({ config }: EmbedCodeDisplayProps) {
           <code>{embedCode}</code>
         </pre>
 
-        <motion.div
-          className={styles.copyButton}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
+        <div className={styles.copyButton}>
           <Button
             variant={copied ? 'success' : 'secondary'}
             size="sm"
@@ -126,7 +121,7 @@ export function EmbedCodeDisplay({ config }: EmbedCodeDisplayProps) {
           >
             {copied ? 'Copie!' : 'Copier'}
           </Button>
-        </motion.div>
+        </div>
       </div>
 
       <div className={styles.hint}>
