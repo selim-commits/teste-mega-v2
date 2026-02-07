@@ -48,17 +48,20 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(
   ) => {
     const [isOpen, setIsOpen] = useState(false);
     const [selectedValue, setSelectedValue] = useState(value ?? defaultValue ?? '');
+    const [prevValue, setPrevValue] = useState(value);
     const selectRef = useRef<HTMLDivElement>(null);
 
     // Ensure options is always an array
     const safeOptions = options || [];
     const selectedOption = safeOptions.find((opt) => opt.value === selectedValue);
 
-    useEffect(() => {
+    // Sync controlled value (React recommended pattern for prop-driven state)
+    if (value !== prevValue) {
+      setPrevValue(value);
       if (value !== undefined) {
         setSelectedValue(value);
       }
-    }, [value]);
+    }
 
     useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {

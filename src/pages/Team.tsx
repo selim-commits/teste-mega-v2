@@ -16,14 +16,10 @@ import {
   UserCheck,
   UserX,
   UserCog,
-  X,
   Edit2,
   Trash2,
   Eye,
   Shield,
-  ShieldCheck,
-  ShieldAlert,
-  Activity,
   CheckCircle,
   XCircle,
 } from 'lucide-react';
@@ -31,12 +27,9 @@ import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Modal';
 import { Table, Pagination } from '../components/ui/Table';
 import { Dropdown, DropdownItem, DropdownDivider } from '../components/ui/Dropdown';
-import { Switch } from '../components/ui/Checkbox';
 import { Avatar } from '../components/ui/Avatar';
 import {
   useTeamMembers,
@@ -52,27 +45,13 @@ import { useTeamStore } from '../stores/teamStore';
 import { useNotifications } from '../stores/uiStore';
 import { DEMO_STUDIO_ID } from '../stores/authStore';
 import type { TeamMember, TeamRole, TeamMemberInsert, TeamMemberUpdate } from '../types/database';
+import { TeamMemberFormModal } from './team/TeamMemberFormModal';
+import type { TeamMemberFormData } from './team/TeamMemberFormModal';
+import { TeamRoleChangeModal } from './team/TeamRoleChangeModal';
+import { TeamDeleteConfirmModal } from './team/TeamDeleteConfirmModal';
+import { TeamMemberDetailSidebar } from './team/TeamMemberDetailSidebar';
+import { getRoleBadge, getRoleLabel, formatDate } from './team/teamUtils';
 import styles from './Team.module.css';
-
-interface TeamMemberFormData {
-  name: string;
-  email: string;
-  phone: string;
-  job_title: string;
-  role: TeamRole;
-  hourly_rate: string;
-  is_active: boolean;
-}
-
-const defaultFormData: TeamMemberFormData = {
-  name: '',
-  email: '',
-  phone: '',
-  job_title: '',
-  role: 'staff',
-  hourly_rate: '',
-  is_active: true,
-};
 
 const roleOptions = [
   { value: 'all', label: 'Tous les roles' },
@@ -82,8 +61,6 @@ const roleOptions = [
   { value: 'staff', label: 'Staff' },
   { value: 'viewer', label: 'Lecteur' },
 ];
-
-const roleOptionsForForm = roleOptions.filter((o) => o.value !== 'all');
 
 const statusOptions = [
   { value: 'all', label: 'Tous les statuts' },
@@ -120,11 +97,7 @@ export function Team() {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isRoleChangeModalOpen, setIsRoleChangeModalOpen] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
-
-  // Form state
-  const [formData, setFormData] = useState<TeamMemberFormData>(defaultFormData);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof TeamMemberFormData, string>>>({});
-  const [newRole, setNewRole] = useState<TeamRole>('staff');
+  const [editFormData, setEditFormData] = useState<TeamMemberFormData | null>(null);
 
   // Zustand store (reserved for future use)
   void useTeamStore;
@@ -205,26 +178,7 @@ export function Team() {
   }, [teamMembers]);
 
   // Handlers
-  const validateForm = useCallback((): boolean => {
-    const errors: Partial<Record<keyof TeamMemberFormData, string>> = {};
-
-    if (!formData.name.trim()) {
-      errors.name = 'Le nom est requis';
-    }
-
-    if (!formData.email.trim()) {
-      errors.email = "L'email est requis";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Email invalide';
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  }, [formData]);
-
-  const handleCreateMember = useCallback(async () => {
-    if (!validateForm()) return;
-
+  const handleCreateMember = useCallback(async (formData: TeamMemberFormData) => {
     const memberData: Omit<TeamMemberInsert, 'id' | 'created_at' | 'updated_at'> = {
       studio_id: DEMO_STUDIO_ID,
       user_id: crypto.randomUUID(), // In production, this would be the actual user ID from auth
@@ -242,14 +196,13 @@ export function Team() {
       await createMutation.mutateAsync(memberData);
       showSuccess('Membre ajoute', 'Le membre a ete ajoute avec succes');
       setIsCreateModalOpen(false);
-      setFormData(defaultFormData);
     } catch {
       showError('Erreur', "Impossible d'ajouter le membre");
     }
-  }, [formData, validateForm, createMutation, showSuccess, showError]);
+  }, [createMutation, showSuccess, showError]);
 
-  const handleUpdateMember = useCallback(async () => {
-    if (!selectedMemberId || !validateForm()) return;
+  const handleUpdateMember = useCallback(async (formData: TeamMemberFormData) => {
+    if (!selectedMemberId) return;
 
     const updateData: TeamMemberUpdate = {
       name: formData.name,
@@ -269,7 +222,7 @@ export function Team() {
     } catch {
       showError('Erreur', 'Impossible de modifier le membre');
     }
-  }, [selectedMemberId, formData, validateForm, updateMutation, showSuccess, showError]);
+  }, [selectedMemberId, updateMutation, showSuccess, showError]);
 
   const handleDeleteMember = useCallback(async () => {
     if (!selectedMemberId) return;
@@ -299,21 +252,21 @@ export function Team() {
     }
   }, [activateMutation, deactivateMutation, showSuccess, showError]);
 
-  const handleChangeRole = useCallback(async () => {
+  const handleChangeRole = useCallback(async (role: TeamRole) => {
     if (!selectedMemberId) return;
 
     try {
-      await updateRoleMutation.mutateAsync({ id: selectedMemberId, role: newRole });
+      await updateRoleMutation.mutateAsync({ id: selectedMemberId, role });
       showSuccess('Role modifie', 'Le role a ete modifie avec succes');
       setIsRoleChangeModalOpen(false);
     } catch {
       showError('Erreur', 'Impossible de modifier le role');
     }
-  }, [selectedMemberId, newRole, updateRoleMutation, showSuccess, showError]);
+  }, [selectedMemberId, updateRoleMutation, showSuccess, showError]);
 
   const openEditModal = useCallback((member: TeamMember) => {
     setSelectedMemberId(member.id);
-    setFormData({
+    setEditFormData({
       name: member.name,
       email: member.email,
       phone: member.phone || '',
@@ -332,44 +285,8 @@ export function Team() {
 
   const openRoleChangeModal = useCallback((member: TeamMember) => {
     setSelectedMemberId(member.id);
-    setNewRole(member.role);
     setIsRoleChangeModalOpen(true);
   }, []);
-
-  const getRoleBadge = (role: TeamRole) => {
-    switch (role) {
-      case 'owner':
-        return <Badge variant="warning" size="sm"><ShieldAlert size={12} className={styles.badgeIcon} />Proprietaire</Badge>;
-      case 'admin':
-        return <Badge variant="error" size="sm"><ShieldCheck size={12} className={styles.badgeIcon} />Admin</Badge>;
-      case 'manager':
-        return <Badge variant="info" size="sm"><Shield size={12} className={styles.badgeIcon} />Manager</Badge>;
-      case 'staff':
-        return <Badge variant="success" size="sm">Staff</Badge>;
-      case 'viewer':
-      default:
-        return <Badge variant="default" size="sm">Lecteur</Badge>;
-    }
-  };
-
-  const getRoleLabel = (role: TeamRole) => {
-    switch (role) {
-      case 'owner': return 'Proprietaire';
-      case 'admin': return 'Administrateur';
-      case 'manager': return 'Manager';
-      case 'staff': return 'Staff';
-      case 'viewer': return 'Lecteur';
-      default: return role;
-    }
-  };
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-    });
-  };
 
   // Table columns for list view
   const tableColumns = [
@@ -463,64 +380,6 @@ export function Team() {
     },
   ];
 
-  // Render form fields (shared between create and edit modals)
-  const renderFormFields = () => (
-    <div className={styles.formGrid}>
-      <Input
-        label="Nom *"
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        error={formErrors.name}
-        fullWidth
-      />
-      <Input
-        label="Email *"
-        type="email"
-        value={formData.email}
-        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        error={formErrors.email}
-        icon={<Mail size={16} />}
-        fullWidth
-      />
-      <Input
-        label="Telephone"
-        value={formData.phone}
-        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-        icon={<Phone size={16} />}
-        fullWidth
-      />
-      <Input
-        label="Poste"
-        value={formData.job_title}
-        onChange={(e) => setFormData({ ...formData, job_title: e.target.value })}
-        icon={<Briefcase size={16} />}
-        fullWidth
-      />
-      <Select
-        label="Role"
-        options={roleOptionsForForm}
-        value={formData.role}
-        onChange={(value) => setFormData({ ...formData, role: value as TeamRole })}
-        fullWidth
-      />
-      <Input
-        label="Taux horaire (EUR)"
-        type="number"
-        value={formData.hourly_rate}
-        onChange={(e) => setFormData({ ...formData, hourly_rate: e.target.value })}
-        fullWidth
-      />
-      <div className={styles.formFullWidth}>
-        <Switch
-          label="Membre actif"
-          description="Les membres inactifs ne peuvent pas se connecter"
-          checked={formData.is_active}
-          onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-        />
-      </div>
-    </div>
-  );
-
   return (
     <div className={styles.page}>
       <Header
@@ -591,11 +450,7 @@ export function Team() {
               variant="primary"
               size="sm"
               icon={<Plus size={16} />}
-              onClick={() => {
-                setFormData(defaultFormData);
-                setFormErrors({});
-                setIsCreateModalOpen(true);
-              }}
+              onClick={() => setIsCreateModalOpen(true)}
             >
               Nouveau membre
             </Button>
@@ -703,11 +558,7 @@ export function Team() {
             <Button
               variant="primary"
               icon={<Plus size={16} />}
-              onClick={() => {
-                setFormData(defaultFormData);
-                setFormErrors({});
-                setIsCreateModalOpen(true);
-              }}
+              onClick={() => setIsCreateModalOpen(true)}
             >
               Ajouter un membre
             </Button>
@@ -849,292 +700,56 @@ export function Team() {
       </div>
 
       {/* Create Member Modal */}
-      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} size="lg">
-        <ModalHeader title="Inviter un membre" subtitle="Ajoutez un nouveau membre a votre equipe" onClose={() => setIsCreateModalOpen(false)} />
-        <ModalBody>{renderFormFields()}</ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" onClick={() => setIsCreateModalOpen(false)}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleCreateMember}
-            loading={createMutation.isPending}
-          >
-            Inviter
-          </Button>
-        </ModalFooter>
-      </Modal>
+      <TeamMemberFormModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSubmit={handleCreateMember}
+        isSubmitting={createMutation.isPending}
+      />
 
       {/* Edit Member Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} size="lg">
-        <ModalHeader
-          title="Modifier le membre"
-          subtitle={selectedMember?.name}
-          onClose={() => setIsEditModalOpen(false)}
-        />
-        <ModalBody>{renderFormFields()}</ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" onClick={() => setIsEditModalOpen(false)}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleUpdateMember}
-            loading={updateMutation.isPending}
-          >
-            Enregistrer
-          </Button>
-        </ModalFooter>
-      </Modal>
+      <TeamMemberFormModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedMemberId(null);
+        }}
+        onSubmit={handleUpdateMember}
+        initialData={editFormData}
+        isSubmitting={updateMutation.isPending}
+        title="Modifier le membre"
+        subtitle={selectedMember?.name}
+        submitLabel="Enregistrer"
+      />
 
       {/* Role Change Modal */}
-      <Modal isOpen={isRoleChangeModalOpen} onClose={() => setIsRoleChangeModalOpen(false)} size="sm">
-        <ModalHeader title="Changer le role" onClose={() => setIsRoleChangeModalOpen(false)} />
-        <ModalBody>
-          <p className={styles.roleChangeInfo}>
-            Selectionnez le nouveau role pour {selectedMember?.name}
-          </p>
-          <Select
-            label="Nouveau role"
-            options={roleOptionsForForm}
-            value={newRole}
-            onChange={(value) => setNewRole(value as TeamRole)}
-            fullWidth
-          />
-          <div className={styles.rolePermissions}>
-            <h4>Permissions du role</h4>
-            {newRole === 'owner' && (
-              <p>Acces complet a toutes les fonctionnalites et parametres.</p>
-            )}
-            {newRole === 'admin' && (
-              <p>Peut gerer l'equipe, les clients, les reservations et les parametres.</p>
-            )}
-            {newRole === 'manager' && (
-              <p>Peut gerer les reservations, les clients et consulter les rapports.</p>
-            )}
-            {newRole === 'staff' && (
-              <p>Peut consulter et gerer les reservations qui lui sont assignees.</p>
-            )}
-            {newRole === 'viewer' && (
-              <p>Peut uniquement consulter les informations sans modification.</p>
-            )}
-          </div>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" onClick={() => setIsRoleChangeModalOpen(false)}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleChangeRole}
-            loading={updateRoleMutation.isPending}
-          >
-            Changer le role
-          </Button>
-        </ModalFooter>
-      </Modal>
+      <TeamRoleChangeModal
+        isOpen={isRoleChangeModalOpen}
+        onClose={() => setIsRoleChangeModalOpen(false)}
+        onSubmit={handleChangeRole}
+        memberName={selectedMember?.name}
+        currentRole={selectedMember?.role || 'staff'}
+        isSubmitting={updateRoleMutation.isPending}
+      />
 
       {/* Delete Confirmation Modal */}
-      <Modal isOpen={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)} size="sm">
-        <ModalHeader title="Supprimer le membre" onClose={() => setIsDeleteConfirmOpen(false)} />
-        <ModalBody>
-          <p>Etes-vous sur de vouloir supprimer ce membre ? Cette action est irreversible.</p>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" onClick={() => setIsDeleteConfirmOpen(false)}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleDeleteMember}
-            loading={deleteMutation.isPending}
-            className={styles.deleteBtn}
-          >
-            Supprimer
-          </Button>
-        </ModalFooter>
-      </Modal>
+      <TeamDeleteConfirmModal
+        isOpen={isDeleteConfirmOpen}
+        onClose={() => setIsDeleteConfirmOpen(false)}
+        onConfirm={handleDeleteMember}
+        isDeleting={deleteMutation.isPending}
+      />
 
       {/* Member Detail Sidebar */}
       <AnimatePresence>
         {isDetailSidebarOpen && selectedMember && (
-          <>
-            <motion.div
-              className={styles.sidebarOverlay}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsDetailSidebarOpen(false)}
-            />
-            <motion.div
-              className={styles.sidebar}
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            >
-              <div className={styles.sidebarHeader}>
-                <div className={styles.sidebarTitle}>
-                  <h2>Profil du membre</h2>
-                  <button onClick={() => setIsDetailSidebarOpen(false)}>
-                    <X size={20} />
-                  </button>
-                </div>
-              </div>
-
-              <div className={styles.sidebarContent}>
-                <div className={styles.memberProfile}>
-                  <Avatar
-                    size="2xl"
-                    name={selectedMember.name}
-                    src={selectedMember.avatar_url || undefined}
-                    status={selectedMember.is_active ? 'online' : 'offline'}
-                    showStatus
-                  />
-                  <h3>{selectedMember.name}</h3>
-                  <p>{selectedMember.job_title || getRoleLabel(selectedMember.role)}</p>
-                  <div className={styles.profileBadges}>
-                    {getRoleBadge(selectedMember.role)}
-                    {selectedMember.is_active ? (
-                      <Badge variant="success" size="sm" dot>Actif</Badge>
-                    ) : (
-                      <Badge variant="error" size="sm" dot>Inactif</Badge>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.sidebarSection}>
-                  <h4>Informations de contact</h4>
-                  <div className={styles.contactList}>
-                    <div className={styles.contactRow}>
-                      <Mail size={16} />
-                      <a href={`mailto:${selectedMember.email}`}>{selectedMember.email}</a>
-                    </div>
-                    {selectedMember.phone && (
-                      <div className={styles.contactRow}>
-                        <Phone size={16} />
-                        <a href={`tel:${selectedMember.phone}`}>{selectedMember.phone}</a>
-                      </div>
-                    )}
-                    {selectedMember.job_title && (
-                      <div className={styles.contactRow}>
-                        <Briefcase size={16} />
-                        <span>{selectedMember.job_title}</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.sidebarSection}>
-                  <h4>Permissions</h4>
-                  <div className={styles.permissionsList}>
-                    {selectedMember.role === 'owner' || selectedMember.role === 'admin' ? (
-                      <div className={styles.permissionItem}>
-                        <ShieldCheck size={16} />
-                        <span>Acces complet (administrateur)</span>
-                      </div>
-                    ) : (
-                      <>
-                        {(selectedMember.permissions as Record<string, boolean>)?.can_manage_bookings && (
-                          <div className={styles.permissionItem}>
-                            <CheckCircle size={16} />
-                            <span>Gestion des reservations</span>
-                          </div>
-                        )}
-                        {(selectedMember.permissions as Record<string, boolean>)?.can_view_clients && (
-                          <div className={styles.permissionItem}>
-                            <CheckCircle size={16} />
-                            <span>Consultation des clients</span>
-                          </div>
-                        )}
-                        {(selectedMember.permissions as Record<string, boolean>)?.can_manage_clients && (
-                          <div className={styles.permissionItem}>
-                            <CheckCircle size={16} />
-                            <span>Gestion des clients</span>
-                          </div>
-                        )}
-                        {(selectedMember.permissions as Record<string, boolean>)?.can_view_equipment && (
-                          <div className={styles.permissionItem}>
-                            <CheckCircle size={16} />
-                            <span>Consultation de l'equipement</span>
-                          </div>
-                        )}
-                        {(selectedMember.permissions as Record<string, boolean>)?.can_view_reports && (
-                          <div className={styles.permissionItem}>
-                            <CheckCircle size={16} />
-                            <span>Consultation des rapports</span>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                <div className={styles.sidebarSection}>
-                  <h4>Historique d'activite</h4>
-                  <div className={styles.activityPlaceholder}>
-                    <Activity size={24} />
-                    <p>L'historique d'activite sera bientot disponible</p>
-                  </div>
-                </div>
-
-                <div className={styles.sidebarSection}>
-                  <h4>Informations</h4>
-                  <div className={styles.metaList}>
-                    <div className={styles.metaRow}>
-                      <span>Membre depuis</span>
-                      <span>{formatDate(selectedMember.created_at)}</span>
-                    </div>
-                    <div className={styles.metaRow}>
-                      <span>Derniere modification</span>
-                      <span>{formatDate(selectedMember.updated_at)}</span>
-                    </div>
-                    {selectedMember.hourly_rate && (
-                      <div className={styles.metaRow}>
-                        <span>Taux horaire</span>
-                        <span>{selectedMember.hourly_rate} EUR/h</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className={styles.sidebarFooter}>
-                <Button
-                  variant="secondary"
-                  fullWidth
-                  icon={<Edit2 size={16} />}
-                  onClick={() => {
-                    openEditModal(selectedMember);
-                    setIsDetailSidebarOpen(false);
-                  }}
-                >
-                  Modifier
-                </Button>
-                <Button
-                  variant="secondary"
-                  fullWidth
-                  icon={<Shield size={16} />}
-                  onClick={() => {
-                    openRoleChangeModal(selectedMember);
-                    setIsDetailSidebarOpen(false);
-                  }}
-                >
-                  Changer le role
-                </Button>
-                <Button
-                  variant="ghost"
-                  fullWidth
-                  icon={<Trash2 size={16} />}
-                  onClick={() => setIsDeleteConfirmOpen(true)}
-                  className={styles.deleteBtn}
-                >
-                  Supprimer
-                </Button>
-              </div>
-            </motion.div>
-          </>
+          <TeamMemberDetailSidebar
+            member={selectedMember}
+            onClose={() => setIsDetailSidebarOpen(false)}
+            onEdit={openEditModal}
+            onChangeRole={openRoleChangeModal}
+            onDelete={() => setIsDeleteConfirmOpen(true)}
+          />
         )}
       </AnimatePresence>
     </div>

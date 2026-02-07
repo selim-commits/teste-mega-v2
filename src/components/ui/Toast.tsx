@@ -28,6 +28,7 @@ interface ToastContextValue {
 
 const ToastContext = createContext<ToastContextValue | null>(null);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
   const context = useContext(ToastContext);
   if (!context) {
@@ -199,6 +200,7 @@ function ToastItem({ toast, onRemove }: ToastItemProps) {
 }
 
 // Helper functions for quick toast creation
+// eslint-disable-next-line react-refresh/only-export-components
 export function toast(options: Omit<Toast, 'id' | 'variant'> & { variant?: ToastVariant }) {
   // This will be used with the hook
   return {

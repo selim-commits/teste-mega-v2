@@ -299,22 +299,23 @@ export function PacksApp({ config }: PacksAppProps) {
     setError,
   } = usePacksStore();
 
-  useEffect(() => {
-    setConfig(config);
-    loadData();
-    notifyParent('ROOOM_PACKS_READY', {});
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        notifyParent('ROOOM_PACKS_RESIZE', { height: entry.contentRect.height });
+  const getParentOrigin = (): string => {
+    try {
+      if (document.referrer) {
+        return new URL(document.referrer).origin;
       }
-    });
+    } catch {
+      // Invalid referrer URL
+    }
+    // Ne pas utiliser '*' - utiliser l'origin du document comme fallback securise
+    return window.location.origin;
+  };
 
-    const container = document.getElementById('rooom-packs-root');
-    if (container) resizeObserver.observe(container);
-
-    return () => resizeObserver.disconnect();
-  }, []);
+  const notifyParent = (type: string, payload: unknown) => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type, payload }, getParentOrigin());
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -361,23 +362,22 @@ export function PacksApp({ config }: PacksAppProps) {
     setLoading(false);
   };
 
-  const getParentOrigin = (): string => {
-    try {
-      if (document.referrer) {
-        return new URL(document.referrer).origin;
-      }
-    } catch {
-      // Invalid referrer URL
-    }
-    // Ne pas utiliser '*' - utiliser l'origin du document comme fallback securise
-    return window.location.origin;
-  };
+  useEffect(() => {
+    setConfig(config);
+    loadData();
+    notifyParent('ROOOM_PACKS_READY', {});
 
-  const notifyParent = (type: string, payload: unknown) => {
-    if (window.parent !== window) {
-      window.parent.postMessage({ type, payload }, getParentOrigin());
-    }
-  };
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        notifyParent('ROOOM_PACKS_RESIZE', { height: entry.contentRect.height });
+      }
+    });
+
+    const container = document.getElementById('rooom-packs-root');
+    if (container) resizeObserver.observe(container);
+
+    return () => resizeObserver.disconnect();
+  }, []);
 
   const themeClass = config.theme === 'dark' ? 'rooom-dark' : 'rooom-light';
 

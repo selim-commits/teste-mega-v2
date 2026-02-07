@@ -1,5 +1,5 @@
 // src/embed/components/PaymentStep.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEmbedStore } from '../store/embedStore';
 
 const isValidPaymentUrl = (url: string): boolean => {
@@ -14,11 +14,13 @@ const isValidPaymentUrl = (url: string): boolean => {
 export function PaymentStep() {
   const { bookingResult, goToStep, setError } = useEmbedStore();
   const [paymentError, setPaymentError] = useState<string | null>(null);
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
-    if (!bookingResult) {
+    if (!bookingResult || hasProcessed.current) {
       return;
     }
+    hasProcessed.current = true;
 
     if (bookingResult.paymentUrl) {
       if (isValidPaymentUrl(bookingResult.paymentUrl)) {
@@ -27,8 +29,11 @@ export function PaymentStep() {
       } else {
         // Invalid or non-HTTPS payment URL
         const errorMsg = 'URL de paiement invalide ou non securisee';
-        setPaymentError(errorMsg);
-        setError(errorMsg);
+        // Use microtask to avoid synchronous setState in effect
+        queueMicrotask(() => {
+          setPaymentError(errorMsg);
+          setError(errorMsg);
+        });
       }
     } else {
       // No payment required, skip to confirmation

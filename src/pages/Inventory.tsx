@@ -6,9 +6,6 @@ import {
   Grid3X3,
   List,
   Package,
-  Camera,
-  Lightbulb,
-  Monitor,
   MoreVertical,
   AlertTriangle,
   CheckCircle,
@@ -20,17 +17,12 @@ import {
   Archive,
   DollarSign,
   Boxes,
-  Mic,
-  Speaker,
-  Music,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Modal';
 import { Table, Pagination } from '../components/ui/Table';
 import { Checkbox } from '../components/ui/Checkbox';
 import { Dropdown, DropdownItem, DropdownDivider } from '../components/ui/Dropdown';
@@ -47,65 +39,12 @@ import {
 import { useEquipmentStore, selectFilteredEquipment } from '../stores/equipmentStore';
 import { DEMO_STUDIO_ID as STUDIO_ID } from '../stores/authStore';
 import type { Equipment, EquipmentInsert, EquipmentStatus } from '../types/database';
+import { EquipmentFormModal } from './inventory/EquipmentFormModal';
+import { DeleteEquipmentModal } from './inventory/DeleteEquipmentModal';
+import { QrCodeModal } from './inventory/QrCodeModal';
+import type { EquipmentFormData } from './inventory/types';
+import { statusOptions, conditionOptions, getCategoryIcon } from './inventory/types';
 import styles from './Inventory.module.css';
-
-interface EquipmentFormData {
-  name: string;
-  description: string;
-  category: string;
-  brand: string;
-  model: string;
-  serial_number: string;
-  status: EquipmentStatus;
-  condition: number;
-  purchase_date: string;
-  purchase_price: string;
-  current_value: string;
-  hourly_rate: string;
-  daily_rate: string;
-  location: string;
-  image_url: string;
-}
-
-const defaultFormData: EquipmentFormData = {
-  name: '',
-  description: '',
-  category: '',
-  brand: '',
-  model: '',
-  serial_number: '',
-  status: 'available',
-  condition: 10,
-  purchase_date: '',
-  purchase_price: '',
-  current_value: '',
-  hourly_rate: '',
-  daily_rate: '',
-  location: '',
-  image_url: '',
-};
-
-const statusOptions = [
-  { value: 'all', label: 'Tous les statuts' },
-  { value: 'available', label: 'Disponible' },
-  { value: 'reserved', label: 'Reserv\u00e9' },
-  { value: 'in_use', label: 'En utilisation' },
-  { value: 'maintenance', label: 'Maintenance' },
-  { value: 'retired', label: 'Retir\u00e9' },
-];
-
-const statusFormOptions = [
-  { value: 'available', label: 'Disponible' },
-  { value: 'reserved', label: 'Reserv\u00e9' },
-  { value: 'in_use', label: 'En utilisation' },
-  { value: 'maintenance', label: 'Maintenance' },
-  { value: 'retired', label: 'Retir\u00e9' },
-];
-
-const conditionOptions = Array.from({ length: 10 }, (_, i) => ({
-  value: String(i + 1),
-  label: `${i + 1} - ${i < 3 ? 'Mauvais' : i < 6 ? 'Moyen' : i < 9 ? 'Bon' : 'Excellent'}`,
-}));
 
 export function Inventory() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
@@ -118,10 +57,7 @@ export function Inventory() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(null);
-
-  // Form state
-  const [formData, setFormData] = useState<EquipmentFormData>(defaultFormData);
-  const [formErrors, setFormErrors] = useState<Partial<EquipmentFormData>>({});
+  const [editFormData, setEditFormData] = useState<EquipmentFormData | null>(null);
 
   // Store state
   const { filters, setFilters, pagination, setPage, setEquipment } = useEquipmentStore();
@@ -147,12 +83,6 @@ export function Inventory() {
 
   // Categories with counts
   const categories = useMemo(() => {
-    const counts: Record<string, number> = { all: filteredEquipment.length };
-    filteredEquipment.forEach((item) => {
-      const cat = item.category.toLowerCase();
-      counts[cat] = (counts[cat] || 0) + 1;
-    });
-
     const dbCategories = categoriesData || [];
     return [
       { id: 'all', name: 'Tout', icon: Package, count: equipment?.length || 0 },
@@ -163,7 +93,7 @@ export function Inventory() {
         count: equipment?.filter((e) => e.category.toLowerCase() === cat.toLowerCase()).length || 0,
       })),
     ];
-  }, [categoriesData, equipment, filteredEquipment.length]);
+  }, [categoriesData, equipment]);
 
   // Stats
   const stats = useMemo(() => {
@@ -201,27 +131,7 @@ export function Inventory() {
     setFilters({ category: categoryId === 'all' ? 'all' : categoryId });
   }, [setFilters]);
 
-  const handleFormChange = useCallback((field: keyof EquipmentFormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    setFormErrors((prev) => ({ ...prev, [field]: undefined }));
-  }, []);
-
-  const validateForm = useCallback((): boolean => {
-    const errors: Partial<EquipmentFormData> = {};
-
-    if (!formData.name.trim()) errors.name = 'Le nom est requis';
-    if (!formData.category.trim()) errors.category = 'La cat\u00e9gorie est requise';
-    if (formData.condition < 1 || formData.condition > 10) {
-      errors.condition = 'La condition doit \u00eatre entre 1 et 10' as unknown as number;
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  }, [formData]);
-
-  const handleCreate = useCallback(async () => {
-    if (!validateForm()) return;
-
+  const handleCreate = useCallback(async (formData: EquipmentFormData) => {
     const newEquipment: Omit<EquipmentInsert, 'id' | 'created_at' | 'updated_at'> = {
       studio_id: STUDIO_ID,
       name: formData.name,
@@ -245,15 +155,14 @@ export function Inventory() {
     try {
       await createMutation.mutateAsync(newEquipment);
       setShowCreateModal(false);
-      setFormData(defaultFormData);
       refetch();
     } catch (error) {
       console.error('Failed to create equipment:', error);
     }
-  }, [formData, validateForm, createMutation, refetch]);
+  }, [createMutation, refetch]);
 
-  const handleUpdate = useCallback(async () => {
-    if (!validateForm() || !selectedEquipment) return;
+  const handleUpdate = useCallback(async (formData: EquipmentFormData) => {
+    if (!selectedEquipment) return;
 
     try {
       await updateMutation.mutateAsync({
@@ -278,12 +187,12 @@ export function Inventory() {
       });
       setShowEditModal(false);
       setSelectedEquipment(null);
-      setFormData(defaultFormData);
+      setEditFormData(null);
       refetch();
     } catch (error) {
       console.error('Failed to update equipment:', error);
     }
-  }, [formData, selectedEquipment, validateForm, updateMutation, refetch]);
+  }, [selectedEquipment, updateMutation, refetch]);
 
   const handleDelete = useCallback(async () => {
     if (!selectedEquipment) return;
@@ -338,7 +247,7 @@ export function Inventory() {
 
   const openEditModal = useCallback((item: Equipment) => {
     setSelectedEquipment(item);
-    setFormData({
+    setEditFormData({
       name: item.name,
       description: item.description || '',
       category: item.category,
@@ -640,11 +549,7 @@ export function Inventory() {
               variant="primary"
               size="sm"
               icon={<Plus size={16} />}
-              onClick={() => {
-                setFormData(defaultFormData);
-                setFormErrors({});
-                setShowCreateModal(true);
-              }}
+              onClick={() => setShowCreateModal(true)}
             >
               Ajouter
             </Button>
@@ -835,329 +740,51 @@ export function Inventory() {
       </div>
 
       {/* Create Modal */}
-      <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} size="lg">
-        <ModalHeader title="Ajouter un \u00e9quipement" onClose={() => setShowCreateModal(false)} />
-        <ModalBody>
-          <div className={styles.formGrid}>
-            <Input
-              label="Nom *"
-              value={formData.name}
-              onChange={(e) => handleFormChange('name', e.target.value)}
-              error={formErrors.name}
-              fullWidth
-            />
-            <Input
-              label="Cat\u00e9gorie *"
-              value={formData.category}
-              onChange={(e) => handleFormChange('category', e.target.value)}
-              error={formErrors.category}
-              fullWidth
-            />
-            <Input
-              label="Marque"
-              value={formData.brand}
-              onChange={(e) => handleFormChange('brand', e.target.value)}
-              fullWidth
-            />
-            <Input
-              label="Mod\u00e8le"
-              value={formData.model}
-              onChange={(e) => handleFormChange('model', e.target.value)}
-              fullWidth
-            />
-            <Input
-              label="Num\u00e9ro de s\u00e9rie"
-              value={formData.serial_number}
-              onChange={(e) => handleFormChange('serial_number', e.target.value)}
-              fullWidth
-            />
-            <Select
-              label="Statut"
-              options={statusFormOptions}
-              value={formData.status}
-              onChange={(v) => handleFormChange('status', v)}
-              fullWidth
-            />
-            <Select
-              label="\u00c9tat (1-10)"
-              options={conditionOptions}
-              value={String(formData.condition)}
-              onChange={(v) => handleFormChange('condition', v)}
-              fullWidth
-            />
-            <Input
-              label="Emplacement"
-              value={formData.location}
-              onChange={(e) => handleFormChange('location', e.target.value)}
-              fullWidth
-            />
-            <Input
-              label="Date d'achat"
-              type="date"
-              value={formData.purchase_date}
-              onChange={(e) => handleFormChange('purchase_date', e.target.value)}
-              fullWidth
-            />
-            <Input
-              label="Prix d'achat ($)"
-              type="number"
-              value={formData.purchase_price}
-              onChange={(e) => handleFormChange('purchase_price', e.target.value)}
-              placeholder="0.00"
-              fullWidth
-            />
-            <Input
-              label="Valeur actuelle ($)"
-              type="number"
-              value={formData.current_value}
-              onChange={(e) => handleFormChange('current_value', e.target.value)}
-              placeholder="0.00"
-              fullWidth
-            />
-            <Input
-              label="Tarif horaire ($)"
-              type="number"
-              value={formData.hourly_rate}
-              onChange={(e) => handleFormChange('hourly_rate', e.target.value)}
-              placeholder="0.00"
-              fullWidth
-            />
-            <Input
-              label="Tarif journalier ($)"
-              type="number"
-              value={formData.daily_rate}
-              onChange={(e) => handleFormChange('daily_rate', e.target.value)}
-              placeholder="0.00"
-              fullWidth
-            />
-            <div />
-            <div className={styles.fullWidth}>
-              <Input
-                label="Description"
-                value={formData.description}
-                onChange={(e) => handleFormChange('description', e.target.value)}
-                fullWidth
-              />
-            </div>
-            <div className={styles.fullWidth}>
-              <Input
-                label="URL de l'image"
-                value={formData.image_url}
-                onChange={(e) => handleFormChange('image_url', e.target.value)}
-                placeholder="https://exemple.com/image.jpg"
-                fullWidth
-              />
-            </div>
-          </div>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" onClick={() => setShowCreateModal(false)}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleCreate}
-            disabled={createMutation.isPending}
-          >
-            {createMutation.isPending ? 'Creation...' : 'Creer'}
-          </Button>
-        </ModalFooter>
-      </Modal>
+      <EquipmentFormModal
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSubmit={handleCreate}
+        isSubmitting={createMutation.isPending}
+        title="Ajouter un \u00e9quipement"
+        submitLabel="Cr\u00e9er"
+      />
 
       {/* Edit Modal */}
-      <Modal isOpen={showEditModal} onClose={() => setShowEditModal(false)} size="lg">
-        <ModalHeader title="Modifier l'\u00e9quipement" onClose={() => setShowEditModal(false)} />
-        <ModalBody>
-          <div className={styles.formGrid}>
-            <Input
-              label="Nom *"
-              value={formData.name}
-              onChange={(e) => handleFormChange('name', e.target.value)}
-              error={formErrors.name}
-              fullWidth
-            />
-            <Input
-              label="Cat\u00e9gorie *"
-              value={formData.category}
-              onChange={(e) => handleFormChange('category', e.target.value)}
-              error={formErrors.category}
-              fullWidth
-            />
-            <Input
-              label="Marque"
-              value={formData.brand}
-              onChange={(e) => handleFormChange('brand', e.target.value)}
-              fullWidth
-            />
-            <Input
-              label="Mod\u00e8le"
-              value={formData.model}
-              onChange={(e) => handleFormChange('model', e.target.value)}
-              fullWidth
-            />
-            <Input
-              label="Num\u00e9ro de s\u00e9rie"
-              value={formData.serial_number}
-              onChange={(e) => handleFormChange('serial_number', e.target.value)}
-              fullWidth
-            />
-            <Select
-              label="Statut"
-              options={statusFormOptions}
-              value={formData.status}
-              onChange={(v) => handleFormChange('status', v)}
-              fullWidth
-            />
-            <Select
-              label="\u00c9tat (1-10)"
-              options={conditionOptions}
-              value={String(formData.condition)}
-              onChange={(v) => handleFormChange('condition', v)}
-              fullWidth
-            />
-            <Input
-              label="Emplacement"
-              value={formData.location}
-              onChange={(e) => handleFormChange('location', e.target.value)}
-              fullWidth
-            />
-            <Input
-              label="Date d'achat"
-              type="date"
-              value={formData.purchase_date}
-              onChange={(e) => handleFormChange('purchase_date', e.target.value)}
-              fullWidth
-            />
-            <Input
-              label="Prix d'achat ($)"
-              type="number"
-              value={formData.purchase_price}
-              onChange={(e) => handleFormChange('purchase_price', e.target.value)}
-              placeholder="0.00"
-              fullWidth
-            />
-            <Input
-              label="Valeur actuelle ($)"
-              type="number"
-              value={formData.current_value}
-              onChange={(e) => handleFormChange('current_value', e.target.value)}
-              placeholder="0.00"
-              fullWidth
-            />
-            <Input
-              label="Tarif horaire ($)"
-              type="number"
-              value={formData.hourly_rate}
-              onChange={(e) => handleFormChange('hourly_rate', e.target.value)}
-              placeholder="0.00"
-              fullWidth
-            />
-            <Input
-              label="Tarif journalier ($)"
-              type="number"
-              value={formData.daily_rate}
-              onChange={(e) => handleFormChange('daily_rate', e.target.value)}
-              placeholder="0.00"
-              fullWidth
-            />
-            <div />
-            <div className={styles.fullWidth}>
-              <Input
-                label="Description"
-                value={formData.description}
-                onChange={(e) => handleFormChange('description', e.target.value)}
-                fullWidth
-              />
-            </div>
-            <div className={styles.fullWidth}>
-              <Input
-                label="URL de l'image"
-                value={formData.image_url}
-                onChange={(e) => handleFormChange('image_url', e.target.value)}
-                placeholder="https://exemple.com/image.jpg"
-                fullWidth
-              />
-            </div>
-          </div>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" onClick={() => setShowEditModal(false)}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleUpdate}
-            disabled={updateMutation.isPending}
-          >
-            {updateMutation.isPending ? 'Mise a jour...' : 'Enregistrer'}
-          </Button>
-        </ModalFooter>
-      </Modal>
+      <EquipmentFormModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedEquipment(null);
+          setEditFormData(null);
+        }}
+        onSubmit={handleUpdate}
+        initialData={editFormData}
+        isSubmitting={updateMutation.isPending}
+        title="Modifier l'\u00e9quipement"
+        submitLabel="Enregistrer"
+      />
 
       {/* Delete Confirmation Modal */}
-      <Modal isOpen={showDeleteModal} onClose={() => setShowDeleteModal(false)} size="sm">
-        <ModalHeader title="Confirmer la suppression" onClose={() => setShowDeleteModal(false)} />
-        <ModalBody>
-          <p className={styles.deleteMessage}>
-            \u00cates-vous s\u00fbr de vouloir supprimer <strong>{selectedEquipment?.name}</strong> ?
-            Cette action est irr\u00e9versible.
-          </p>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" onClick={() => setShowDeleteModal(false)}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleDelete}
-            disabled={deleteMutation.isPending}
-            className={styles.deleteBtn}
-          >
-            {deleteMutation.isPending ? 'Suppression...' : 'Supprimer'}
-          </Button>
-        </ModalFooter>
-      </Modal>
+      <DeleteEquipmentModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSelectedEquipment(null);
+        }}
+        onConfirm={handleDelete}
+        equipment={selectedEquipment}
+        isDeleting={deleteMutation.isPending}
+      />
 
       {/* QR Code Modal */}
-      <Modal isOpen={showQrModal} onClose={() => setShowQrModal(false)} size="sm">
-        <ModalHeader title="QR Code" onClose={() => setShowQrModal(false)} />
-        <ModalBody>
-          <div className={styles.qrContainer}>
-            <div className={styles.qrCode}>
-              {/* QR Code placeholder - in production, use a QR library like qrcode.react */}
-              <div className={styles.qrPlaceholder}>
-                <QrCode size={120} />
-                <span className={styles.qrText}>{selectedEquipment?.qr_code || 'N/A'}</span>
-              </div>
-            </div>
-            <div className={styles.qrInfo}>
-              <h4>{selectedEquipment?.name}</h4>
-              <p>{selectedEquipment?.brand} {selectedEquipment?.model}</p>
-              <p className={styles.qrSerial}>S/N: {selectedEquipment?.serial_number || 'N/A'}</p>
-            </div>
-          </div>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" onClick={() => setShowQrModal(false)}>
-            Fermer
-          </Button>
-          <Button variant="primary" icon={<QrCode size={16} />}>
-            T\u00e9l\u00e9charger
-          </Button>
-        </ModalFooter>
-      </Modal>
+      <QrCodeModal
+        isOpen={showQrModal}
+        onClose={() => {
+          setShowQrModal(false);
+          setSelectedEquipment(null);
+        }}
+        equipment={selectedEquipment}
+      />
     </div>
   );
-}
-
-// Helper function to get icon for category
-function getCategoryIcon(category: string) {
-  const cat = category.toLowerCase();
-  if (cat.includes('camera') || cat.includes('video')) return Camera;
-  if (cat.includes('eclair') || cat.includes('light') || cat.includes('lumiere')) return Lightbulb;
-  if (cat.includes('ecran') || cat.includes('monitor') || cat.includes('display')) return Monitor;
-  if (cat.includes('micro') || cat.includes('mic')) return Mic;
-  if (cat.includes('speaker') || cat.includes('enceinte') || cat.includes('hp')) return Speaker;
-  if (cat.includes('audio') || cat.includes('son') || cat.includes('music')) return Music;
-  return Package;
 }

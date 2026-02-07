@@ -4,6 +4,7 @@ import { fr } from 'date-fns/locale';
 import type { BookingSlot } from '../types';
 import { useChatStore } from '../store/chatStore';
 import { chatApi } from '../services/chatApi';
+import { generateId } from '../../lib/utils';
 
 interface BookingCardProps {
   slots: BookingSlot[];
@@ -17,7 +18,7 @@ export function BookingCard({ slots }: BookingCardProps) {
 
     // Add user selection message
     const userMessage = {
-      id: Math.random().toString(36).substring(2, 15),
+      id: generateId(),
       type: 'text' as const,
       sender: 'user' as const,
       content: `Je souhaite reserver le ${format(new Date(slot.date), 'EEEE d MMMM', { locale: fr })} de ${slot.startTime} a ${slot.endTime} - ${slot.spaceName}`,
@@ -36,7 +37,7 @@ export function BookingCard({ slots }: BookingCardProps) {
 
       if (result.data?.success) {
         addMessage({
-          id: Math.random().toString(36).substring(2, 15),
+          id: generateId(),
           type: 'text',
           sender: 'ai',
           content: `Excellent choix ! J'ai pre-reserve ce creneau pour vous. Pour finaliser votre reservation, vous allez etre redirige vers notre formulaire de reservation. Le creneau sera bloque pendant 10 minutes.`,
@@ -47,7 +48,7 @@ export function BookingCard({ slots }: BookingCardProps) {
     } catch {
       setTyping({ isTyping: false, typingUser: null });
       addMessage({
-        id: Math.random().toString(36).substring(2, 15),
+        id: generateId(),
         type: 'text',
         sender: 'ai',
         content: `Desole, une erreur s'est produite. Veuillez reessayer ou contacter notre equipe.`,

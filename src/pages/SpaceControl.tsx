@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   format,
   startOfWeek,
@@ -25,20 +25,12 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
-  Clock,
-  User,
-  MapPin,
-  Edit2,
-  Trash2,
   AlertCircle,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Modal';
-import { Input } from '../components/ui/Input';
-import { Select } from '../components/ui/Select';
 import { Skeleton } from '../components/ui/Skeleton';
 import { useAuthStore } from '../stores/authStore';
 import { useBookingStore, type ViewMode } from '../stores/bookingStore';
@@ -52,6 +44,9 @@ import {
 import { useActiveSpaces } from '../hooks/useSpaces';
 import { useActiveClients } from '../hooks/useClients';
 import type { Booking, BookingStatus, Space } from '../types/database';
+import { BookingFormModal, initialFormData } from './space-control/BookingFormModal';
+import type { BookingFormData } from './space-control/BookingFormModal';
+import { BookingDetailModal } from './space-control/BookingDetailModal';
 import styles from './SpaceControl.module.css';
 
 // Time slots for the calendar grid (8h to 21h)
@@ -90,28 +85,6 @@ const SPACE_COLORS = [
   '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#6366F1',
 ];
 
-interface BookingFormData {
-  title: string;
-  description: string;
-  space_id: string;
-  client_id: string;
-  start_time: string;
-  end_time: string;
-  status: BookingStatus;
-  notes: string;
-}
-
-const initialFormData: BookingFormData = {
-  title: '',
-  description: '',
-  space_id: '',
-  client_id: '',
-  start_time: '',
-  end_time: '',
-  status: 'pending',
-  notes: '',
-};
-
 export function SpaceControl() {
   // Auth store
   const { studioId } = useAuthStore();
@@ -129,9 +102,7 @@ export function SpaceControl() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState<BookingFormData>(initialFormData);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof BookingFormData, string>>>({});
+  const [createFormData, setCreateFormData] = useState<BookingFormData>(initialFormData);
   const [visibleSpaces, setVisibleSpaces] = useState<Set<string>>(new Set());
 
   // Calculate date range based on view mode
@@ -202,12 +173,12 @@ export function SpaceControl() {
   const { data: spaces = [], isLoading: spacesLoading } = useActiveSpaces(studioId || '');
   const { data: clients = [], isLoading: clientsLoading } = useActiveClients(studioId || '');
 
-  // Initialize visible spaces when spaces load
-  useEffect(() => {
-    if (spaces.length > 0 && visibleSpaces.size === 0) {
-      setVisibleSpaces(new Set(spaces.map(s => s.id)));
-    }
-  }, [spaces, visibleSpaces.size]);
+  // Initialize visible spaces when spaces load (React recommended pattern)
+  const [prevSpacesLength, setPrevSpacesLength] = useState(0);
+  if (spaces.length > 0 && spaces.length !== prevSpacesLength && visibleSpaces.size === 0) {
+    setPrevSpacesLength(spaces.length);
+    setVisibleSpaces(new Set(spaces.map(s => s.id)));
+  }
 
   // Filter bookings by visible spaces
   const filteredBookings = useMemo(() => {
@@ -269,6 +240,11 @@ export function SpaceControl() {
     return client?.name || 'Client inconnu';
   }, [clients]);
 
+  // Get space name for a booking
+  const getSpaceName = useCallback((spaceId: string) => {
+    return spaces.find((s) => s.id === spaceId)?.name || 'Espace inconnu';
+  }, [spaces]);
+
   // Get bookings for a specific day
   const getBookingsForDay = useCallback((date: Date) => {
     const dateStr = format(date, 'yyyy-MM-dd');
@@ -318,13 +294,12 @@ export function SpaceControl() {
     const [hours] = time.split(':').map(Number);
     const endHour = hours + 1;
 
-    setFormData({
+    setCreateFormData({
       ...initialFormData,
       space_id: spaceId,
       start_time: `${dateStr}T${time}`,
       end_time: `${dateStr}T${endHour.toString().padStart(2, '0')}:00`,
     });
-    setIsEditing(false);
     setShowCreateModal(true);
   };
 
@@ -338,16 +313,6 @@ export function SpaceControl() {
   const handleBookingClick = (booking: Booking, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
     setSelectedBooking(booking);
-    setFormData({
-      title: booking.title,
-      description: booking.description || '',
-      space_id: booking.space_id,
-      client_id: booking.client_id,
-      start_time: booking.start_time.slice(0, 16),
-      end_time: booking.end_time.slice(0, 16),
-      status: booking.status,
-      notes: booking.notes || '',
-    });
     setShowDetailModal(true);
   };
 
@@ -373,74 +338,60 @@ export function SpaceControl() {
     }
   };
 
-  // Validate form
-  const validateForm = (): boolean => {
-    const errors: Partial<Record<keyof BookingFormData, string>> = {};
-
-    if (!formData.title.trim()) {
-      errors.title = 'Le titre est requis';
-    }
-    if (!formData.space_id) {
-      errors.space_id = "L'espace est requis";
-    }
-    if (!formData.client_id) {
-      errors.client_id = 'Le client est requis';
-    }
-    if (!formData.start_time) {
-      errors.start_time = "L'heure de debut est requise";
-    }
-    if (!formData.end_time) {
-      errors.end_time = "L'heure de fin est requise";
-    }
-    if (formData.start_time && formData.end_time && formData.start_time >= formData.end_time) {
-      errors.end_time = "L'heure de fin doit etre apres l'heure de debut";
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
-
-  // Handle form submission for create/update
-  const handleSubmit = async () => {
-    if (!validateForm() || !studioId) return;
+  // Handle form submission for create
+  const handleCreateSubmit = async (formData: BookingFormData) => {
+    if (!studioId) return;
 
     try {
-      if (isEditing && selectedBooking) {
-        await updateBookingMutation.mutateAsync({
-          id: selectedBooking.id,
-          data: {
-            title: formData.title,
-            description: formData.description || null,
-            space_id: formData.space_id,
-            client_id: formData.client_id,
-            start_time: new Date(formData.start_time).toISOString(),
-            end_time: new Date(formData.end_time).toISOString(),
-            status: formData.status,
-            notes: formData.notes || null,
-          },
-        });
-        setShowDetailModal(false);
-      } else {
-        await createBookingMutation.mutateAsync({
-          studio_id: studioId,
-          space_id: formData.space_id,
-          client_id: formData.client_id,
-          title: formData.title,
-          description: formData.description || null,
-          start_time: new Date(formData.start_time).toISOString(),
-          end_time: new Date(formData.end_time).toISOString(),
-          status: formData.status,
-          notes: formData.notes || null,
-          created_by: studioId,
-        });
-        setShowCreateModal(false);
-      }
+      await createBookingMutation.mutateAsync({
+        studio_id: studioId,
+        space_id: formData.space_id,
+        client_id: formData.client_id,
+        title: formData.title,
+        description: formData.description || null,
+        start_time: new Date(formData.start_time).toISOString(),
+        end_time: new Date(formData.end_time).toISOString(),
+        status: formData.status,
+        notes: formData.notes || null,
+        created_by: studioId,
+      });
+      setShowCreateModal(false);
+    } catch (error) {
+      console.error('Error creating booking:', error);
+    }
+  };
 
-      setFormData(initialFormData);
-      setIsEditing(false);
+  // Handle form submission for update
+  const handleUpdateSubmit = async (data: {
+    title: string;
+    description: string;
+    space_id: string;
+    client_id: string;
+    start_time: string;
+    end_time: string;
+    status: BookingStatus;
+    notes: string;
+  }) => {
+    if (!selectedBooking) return;
+
+    try {
+      await updateBookingMutation.mutateAsync({
+        id: selectedBooking.id,
+        data: {
+          title: data.title,
+          description: data.description || null,
+          space_id: data.space_id,
+          client_id: data.client_id,
+          start_time: new Date(data.start_time).toISOString(),
+          end_time: new Date(data.end_time).toISOString(),
+          status: data.status,
+          notes: data.notes || null,
+        },
+      });
+      setShowDetailModal(false);
       setSelectedBooking(null);
     } catch (error) {
-      console.error('Error saving booking:', error);
+      console.error('Error updating booking:', error);
     }
   };
 
@@ -467,25 +418,9 @@ export function SpaceControl() {
         status,
       });
       setSelectedBooking({ ...selectedBooking, status });
-      setFormData({ ...formData, status });
     } catch (error) {
       console.error('Error updating status:', error);
     }
-  };
-
-  // Close modals
-  const handleCloseCreateModal = () => {
-    setShowCreateModal(false);
-    setFormData(initialFormData);
-    setFormErrors({});
-  };
-
-  const handleCloseDetailModal = () => {
-    setShowDetailModal(false);
-    setSelectedBooking(null);
-    setIsEditing(false);
-    setFormData(initialFormData);
-    setFormErrors({});
   };
 
   // Space options for select
@@ -500,18 +435,8 @@ export function SpaceControl() {
     label: client.name,
   }));
 
-  // Status options for select
-  const statusOptions = [
-    { value: 'pending', label: 'En attente' },
-    { value: 'confirmed', label: 'Confirme' },
-    { value: 'in_progress', label: 'En cours' },
-    { value: 'completed', label: 'Termine' },
-    { value: 'cancelled', label: 'Annule' },
-  ];
-
   // Loading state
   const isLoading = bookingsLoading || spacesLoading || clientsLoading;
-  const isMutating = createBookingMutation.isPending || updateBookingMutation.isPending || deleteBookingMutation.isPending;
 
   // Render Day View
   const renderDayView = () => (
@@ -759,8 +684,7 @@ export function SpaceControl() {
                 fullWidth
                 icon={<Plus size={18} />}
                 onClick={() => {
-                  setFormData(initialFormData);
-                  setIsEditing(false);
+                  setCreateFormData(initialFormData);
                   setShowCreateModal(true);
                 }}
               >
@@ -861,256 +785,38 @@ export function SpaceControl() {
       </div>
 
       {/* Create Booking Modal */}
-      <Modal isOpen={showCreateModal} onClose={handleCloseCreateModal} size="md">
-        <ModalHeader title="Nouvelle reservation" onClose={handleCloseCreateModal} />
-        <ModalBody>
-          <div className={styles.formGrid}>
-            <Input
-              label="Titre"
-              placeholder="Ex: Shooting photo"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              error={formErrors.title}
-              fullWidth
-            />
-            <Select
-              label="Espace"
-              options={spaceOptions}
-              value={formData.space_id}
-              onChange={(value) => setFormData({ ...formData, space_id: value })}
-              placeholder="Selectionnez un espace"
-              error={formErrors.space_id}
-              fullWidth
-            />
-            <Select
-              label="Client"
-              options={clientOptions}
-              value={formData.client_id}
-              onChange={(value) => setFormData({ ...formData, client_id: value })}
-              placeholder="Selectionnez un client"
-              error={formErrors.client_id}
-              fullWidth
-            />
-            <div className={styles.formRow}>
-              <Input
-                label="Debut"
-                type="datetime-local"
-                value={formData.start_time}
-                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                error={formErrors.start_time}
-                fullWidth
-              />
-              <Input
-                label="Fin"
-                type="datetime-local"
-                value={formData.end_time}
-                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                error={formErrors.end_time}
-                fullWidth
-              />
-            </div>
-            <Select
-              label="Statut"
-              options={statusOptions}
-              value={formData.status}
-              onChange={(value) => setFormData({ ...formData, status: value as BookingStatus })}
-              fullWidth
-            />
-            <Input
-              label="Notes"
-              placeholder="Notes internes"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              fullWidth
-            />
-          </div>
-        </ModalBody>
-        <ModalFooter>
-          <Button variant="ghost" onClick={handleCloseCreateModal}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleSubmit}
-            disabled={isMutating}
-          >
-            {createBookingMutation.isPending ? 'Creation...' : 'Creer'}
-          </Button>
-        </ModalFooter>
-      </Modal>
+      <BookingFormModal
+        isOpen={showCreateModal}
+        onClose={() => {
+          setShowCreateModal(false);
+          setCreateFormData(initialFormData);
+        }}
+        onSubmit={handleCreateSubmit}
+        initialData={createFormData}
+        spaceOptions={spaceOptions}
+        clientOptions={clientOptions}
+        isSubmitting={createBookingMutation.isPending}
+      />
 
       {/* Booking Detail/Edit Modal */}
-      <Modal isOpen={showDetailModal} onClose={handleCloseDetailModal} size="md">
-        <ModalHeader
-          title={isEditing ? 'Modifier la reservation' : 'Details de la reservation'}
-          onClose={handleCloseDetailModal}
-        />
-        <ModalBody>
-          {isEditing ? (
-            <div className={styles.formGrid}>
-              <Input
-                label="Titre"
-                placeholder="Ex: Shooting photo"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                error={formErrors.title}
-                fullWidth
-              />
-              <Select
-                label="Espace"
-                options={spaceOptions}
-                value={formData.space_id}
-                onChange={(value) => setFormData({ ...formData, space_id: value })}
-                placeholder="Selectionnez un espace"
-                error={formErrors.space_id}
-                fullWidth
-              />
-              <Select
-                label="Client"
-                options={clientOptions}
-                value={formData.client_id}
-                onChange={(value) => setFormData({ ...formData, client_id: value })}
-                placeholder="Selectionnez un client"
-                error={formErrors.client_id}
-                fullWidth
-              />
-              <div className={styles.formRow}>
-                <Input
-                  label="Debut"
-                  type="datetime-local"
-                  value={formData.start_time}
-                  onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-                  error={formErrors.start_time}
-                  fullWidth
-                />
-                <Input
-                  label="Fin"
-                  type="datetime-local"
-                  value={formData.end_time}
-                  onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-                  error={formErrors.end_time}
-                  fullWidth
-                />
-              </div>
-              <Select
-                label="Statut"
-                options={statusOptions}
-                value={formData.status}
-                onChange={(value) => setFormData({ ...formData, status: value as BookingStatus })}
-                fullWidth
-              />
-              <Input
-                label="Notes"
-                placeholder="Notes internes"
-                value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                fullWidth
-              />
-            </div>
-          ) : selectedBooking && (
-            <div className={styles.bookingDetails}>
-              <div className={styles.detailHeader}>
-                <h3>{selectedBooking.title}</h3>
-                <Badge variant={STATUS_COLORS[selectedBooking.status]}>
-                  {STATUS_LABELS[selectedBooking.status]}
-                </Badge>
-              </div>
-
-              <div className={styles.detailGrid}>
-                <div className={styles.detailItem}>
-                  <Clock size={16} />
-                  <div>
-                    <span className={styles.detailLabel}>Horaire</span>
-                    <span className={styles.detailValue}>
-                      {format(parseISO(selectedBooking.start_time), "EEEE d MMMM yyyy", { locale: fr })}
-                      <br />
-                      {format(parseISO(selectedBooking.start_time), 'HH:mm')} - {format(parseISO(selectedBooking.end_time), 'HH:mm')}
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.detailItem}>
-                  <MapPin size={16} />
-                  <div>
-                    <span className={styles.detailLabel}>Espace</span>
-                    <span className={styles.detailValue}>
-                      {spaces.find((s) => s.id === selectedBooking.space_id)?.name || 'Espace inconnu'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className={styles.detailItem}>
-                  <User size={16} />
-                  <div>
-                    <span className={styles.detailLabel}>Client</span>
-                    <span className={styles.detailValue}>
-                      {getClientName(selectedBooking.client_id)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {selectedBooking.notes && (
-                <div className={styles.detailSection}>
-                  <span className={styles.detailLabel}>Notes</span>
-                  <p>{selectedBooking.notes}</p>
-                </div>
-              )}
-
-              <div className={styles.statusActions}>
-                <span className={styles.detailLabel}>Changer le statut</span>
-                <div className={styles.statusButtons}>
-                  {(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled'] as BookingStatus[]).map((status) => (
-                    <Button
-                      key={status}
-                      variant={selectedBooking.status === status ? 'primary' : 'ghost'}
-                      size="sm"
-                      onClick={() => handleStatusChange(status)}
-                      disabled={updateStatusMutation.isPending}
-                    >
-                      {STATUS_LABELS[status]}
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-        </ModalBody>
-        <ModalFooter>
-          {isEditing ? (
-            <>
-              <Button variant="ghost" onClick={() => setIsEditing(false)}>
-                Annuler
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handleSubmit}
-                disabled={isMutating}
-              >
-                {updateBookingMutation.isPending ? 'Sauvegarde...' : 'Sauvegarder'}
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button
-                variant="ghost"
-                icon={<Trash2 size={16} />}
-                onClick={handleDelete}
-                disabled={deleteBookingMutation.isPending}
-              >
-                {deleteBookingMutation.isPending ? 'Suppression...' : 'Supprimer'}
-              </Button>
-              <Button
-                variant="secondary"
-                icon={<Edit2 size={16} />}
-                onClick={() => setIsEditing(true)}
-              >
-                Modifier
-              </Button>
-            </>
-          )}
-        </ModalFooter>
-      </Modal>
+      <BookingDetailModal
+        isOpen={showDetailModal}
+        onClose={() => {
+          setShowDetailModal(false);
+          setSelectedBooking(null);
+        }}
+        booking={selectedBooking}
+        onUpdate={handleUpdateSubmit}
+        onDelete={handleDelete}
+        onStatusChange={handleStatusChange}
+        spaceOptions={spaceOptions}
+        clientOptions={clientOptions}
+        getSpaceName={getSpaceName}
+        getClientName={getClientName}
+        isUpdating={updateBookingMutation.isPending}
+        isDeleting={deleteBookingMutation.isPending}
+        isStatusUpdating={updateStatusMutation.isPending}
+      />
     </div>
   );
 }

@@ -123,7 +123,7 @@ export function Calendar({
                 ...(disabled ? styles.dayDisabled : {}),
               }}
               aria-label={format(day, 'd MMMM yyyy', { locale: fr })}
-              aria-selected={isSelected || undefined}
+              aria-pressed={isSelected || undefined}
             >
               {format(day, 'd')}
             </button>

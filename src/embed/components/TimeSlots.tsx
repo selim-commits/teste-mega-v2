@@ -87,7 +87,7 @@ export function TimeSlots({
                   ...styles.slotButton,
                   ...(selected ? styles.slotButtonSelected : {}),
                 }}
-                aria-selected={selected || undefined}
+                aria-pressed={selected || undefined}
               >
                 <span style={styles.slotTime}>
                   {formatTime(slot.start)} - {formatTime(slot.end)}

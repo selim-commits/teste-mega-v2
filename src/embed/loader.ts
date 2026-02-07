@@ -125,7 +125,7 @@
   };
 
   // Expose to window
-  (window as any).Rooom = {
+  (window as unknown as Record<string, unknown>).Rooom = {
     createWidget,
   };
 

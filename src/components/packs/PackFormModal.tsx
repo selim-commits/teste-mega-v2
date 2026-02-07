@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Plus, X, Zap, Clock, Package, RefreshCw, Gift } from 'lucide-react';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 import { Input } from '../ui/Input';
@@ -91,11 +91,15 @@ export function PackFormModal({
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [benefits, setBenefits] = useState<string[]>([]);
   const [newBenefit, setNewBenefit] = useState('');
+  const [prevIsOpen, setPrevIsOpen] = useState(false);
+  const [prevPack, setPrevPack] = useState(pack);
 
   const isEdit = !!pack;
 
-  // Reset form when modal opens/closes or pack changes
-  useEffect(() => {
+  // Reset form when modal opens/closes or pack changes (React recommended pattern)
+  if (isOpen !== prevIsOpen || pack !== prevPack) {
+    setPrevIsOpen(isOpen);
+    setPrevPack(pack);
     if (isOpen && pack) {
       setFormData({
         name: pack.name,
@@ -121,7 +125,7 @@ export function PackFormModal({
       setBenefits([]);
     }
     setFormErrors({});
-  }, [isOpen, pack]);
+  }
 
   const handleChange = useCallback((field: keyof FormData, value: string | boolean | string[]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

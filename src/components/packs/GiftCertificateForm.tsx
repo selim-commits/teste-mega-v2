@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { Gift, Mail, Copy, Check } from 'lucide-react';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../ui/Modal';
 import { Input } from '../ui/Input';
@@ -52,16 +52,19 @@ export function GiftCertificateForm({
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [giftCode, setGiftCode] = useState('');
   const [copied, setCopied] = useState(false);
+  const [prevIsOpen, setPrevIsOpen] = useState(false);
 
-  // Reset form when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      setFormData(defaultFormData);
-      setFormErrors({});
-      setGiftCode(generateGiftCode());
-      setCopied(false);
-    }
-  }, [isOpen]);
+  // Reset form when modal opens (React recommended pattern for prop-driven state reset)
+  if (isOpen && !prevIsOpen) {
+    setPrevIsOpen(true);
+    setFormData(defaultFormData);
+    setFormErrors({});
+    setGiftCode(generateGiftCode());
+    setCopied(false);
+  }
+  if (!isOpen && prevIsOpen) {
+    setPrevIsOpen(false);
+  }
 
   const handleChange = useCallback((field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

@@ -2,6 +2,7 @@
 import type { Pack } from '../types';
 import { useChatStore } from '../store/chatStore';
 import { chatApi } from '../services/chatApi';
+import { generateId } from '../../lib/utils';
 
 interface PackCardProps {
   packs: Pack[];
@@ -15,7 +16,7 @@ export function PackCard({ packs }: PackCardProps) {
 
     // Add user selection message
     const userMessage = {
-      id: Math.random().toString(36).substring(2, 15),
+      id: generateId(),
       type: 'text' as const,
       sender: 'user' as const,
       content: `Je suis interesse par le ${pack.name}`,
@@ -34,7 +35,7 @@ export function PackCard({ packs }: PackCardProps) {
 
       if (result.data?.success) {
         addMessage({
-          id: Math.random().toString(36).substring(2, 15),
+          id: generateId(),
           type: 'text',
           sender: 'ai',
           content: `Le ${pack.name} est un excellent choix ! Avec ${pack.hours} heures de studio, vous economisez ${pack.savings}EUR par rapport au tarif horaire. Je vous prepare le lien de paiement...`,
@@ -45,7 +46,7 @@ export function PackCard({ packs }: PackCardProps) {
     } catch {
       setTyping({ isTyping: false, typingUser: null });
       addMessage({
-        id: Math.random().toString(36).substring(2, 15),
+        id: generateId(),
         type: 'text',
         sender: 'ai',
         content: `Desole, une erreur s'est produite. Veuillez reessayer ou contacter notre equipe.`,

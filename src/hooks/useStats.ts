@@ -170,11 +170,12 @@ export function useRevenueByPeriod(
           case 'day':
             periodKey = date.toISOString().split('T')[0];
             break;
-          case 'week':
+          case 'week': {
             const weekStart = new Date(date);
             weekStart.setDate(date.getDate() - date.getDay());
             periodKey = weekStart.toISOString().split('T')[0];
             break;
+          }
           case 'month':
           default:
             periodKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;

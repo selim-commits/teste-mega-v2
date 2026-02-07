@@ -3,6 +3,7 @@ import { Calendar, Tag, User } from 'lucide-react';
 import type { QuickAction } from '../types';
 import { useChatStore } from '../store/chatStore';
 import { chatApi } from '../services/chatApi';
+import { generateId } from '../../lib/utils';
 
 interface QuickActionsProps {
   actions: QuickAction[];
@@ -34,7 +35,7 @@ export function QuickActions({ actions }: QuickActionsProps) {
     };
 
     const userMessage = {
-      id: Math.random().toString(36).substring(2, 15),
+      id: generateId(),
       type: 'text' as const,
       sender: 'user' as const,
       content: actionLabels[action.action] || action.label,
@@ -66,7 +67,7 @@ export function QuickActions({ actions }: QuickActionsProps) {
     } catch {
       setTyping({ isTyping: false, typingUser: null });
       addMessage({
-        id: Math.random().toString(36).substring(2, 15),
+        id: generateId(),
         type: 'text',
         sender: 'ai',
         content: `Desole, une erreur s'est produite. Veuillez reessayer.`,

@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { Copy, Check, Info } from 'lucide-react';
 import { Button } from '../ui/Button';
 import styles from './CustomCSSEditor.module.css';
@@ -40,13 +40,9 @@ export function CustomCSSEditor({ value, onChange }: CustomCSSEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [lineCount, setLineCount] = useState(1);
 
-  // Update line count
-  useEffect(() => {
-    const lines = value.split('\n').length;
-    setLineCount(Math.max(lines, 10));
-  }, [value]);
+  // Derive line count from value
+  const lineCount = useMemo(() => Math.max(value.split('\n').length, 10), [value]);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = e.target.value;

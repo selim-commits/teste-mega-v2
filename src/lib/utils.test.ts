@@ -7,7 +7,8 @@ describe('cn', () => {
   });
 
   it('ignore les valeurs falsy', () => {
-    expect(cn('a', false && 'b', 'c')).toBe('a c');
+    const condition = false;
+    expect(cn('a', condition && 'b', 'c')).toBe('a c');
   });
 });
 
