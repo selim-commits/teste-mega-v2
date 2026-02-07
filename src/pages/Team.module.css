@@ -196,7 +196,7 @@
   padding: 0 var(--space-2);
   background-color: rgba(0, 0, 0, 0.1);
   border-radius: var(--radius-full);
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 600;
 }
 
@@ -419,7 +419,7 @@
   height: 40px;
   border: 3px solid var(--border-default);
   border-top-color: var(--accent-primary);
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
 }
 
@@ -723,7 +723,7 @@
 /* Mobile Styles */
 @media (max-width: 768px) {
   .content {
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .toolbar {
@@ -783,7 +783,7 @@
 
 @media (max-width: 480px) {
   .content {
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   .statsGrid {

@@ -109,12 +109,12 @@
 
 .agentButton.selected .agentIconWrapper {
   background-color: rgba(255, 255, 255, 0.2);
-  color: white;
+  color: var(--color-white);
 }
 
 .agentButton.selected .agentButtonName,
 .agentButton.selected .agentButtonRole {
-  color: white;
+  color: var(--color-white);
 }
 
 .agentIconWrapper {
@@ -290,7 +290,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--dark-text-primary);
 }
 
 .chatHeaderInfo h2 {
@@ -298,7 +298,7 @@
   font-size: var(--text-xl);
   font-weight: 500;
   font-style: italic;
-  color: white;
+  color: var(--dark-text-primary);
   margin: 0;
 }
 
@@ -341,7 +341,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--dark-text-primary);
   margin-bottom: var(--space-5);
 }
 
@@ -350,7 +350,7 @@
   font-size: var(--text-2xl);
   font-weight: 500;
   font-style: italic;
-  color: white;
+  color: var(--dark-text-primary);
   margin: 0 0 var(--space-2);
 }
 
@@ -449,7 +449,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--dark-text-primary);
   flex-shrink: 0;
 }
 
@@ -462,8 +462,8 @@
 }
 
 .messageBubble.user {
-  background: linear-gradient(135deg, #1E3A5F 0%, #2a4a70 100%);
-  color: white;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-primary-hover) 100%);
+  color: var(--dark-text-primary);
   border-bottom-right-radius: var(--radius-sm);
 }
 
@@ -481,7 +481,7 @@
 }
 
 .messageBubble.user .messageContent {
-  color: white;
+  color: var(--dark-text-primary);
 }
 
 .messageTime {
@@ -504,21 +504,21 @@
 .markdownH2 {
   font-size: var(--text-lg);
   font-weight: 600;
-  color: white;
+  color: var(--dark-text-primary);
   margin: var(--space-3) 0 var(--space-2);
 }
 
 .markdownH3 {
   font-size: var(--text-base);
   font-weight: 600;
-  color: white;
+  color: var(--dark-text-primary);
   margin: var(--space-2) 0 var(--space-1);
 }
 
 .markdownH4 {
   font-size: var(--text-sm);
   font-weight: 600;
-  color: white;
+  color: var(--dark-text-primary);
   margin: var(--space-2) 0 var(--space-1);
 }
 
@@ -548,7 +548,7 @@
 
 .messageContent strong {
   font-weight: 600;
-  color: white;
+  color: var(--dark-text-primary);
 }
 
 .messageContent em {

@@ -76,16 +76,16 @@
 .colorSwatch {
   width: 32px;
   height: 10px;
-  border-radius: 2px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border-default);
 }
 
 .colorSwatch:first-child {
-  border-radius: 2px 2px 0 0;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
 }
 
 .colorSwatch:last-child {
-  border-radius: 0 0 2px 2px;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
 
 /* Config Info */

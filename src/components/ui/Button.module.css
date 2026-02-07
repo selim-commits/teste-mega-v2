@@ -83,8 +83,8 @@
 }
 
 .danger:hover:not(:disabled) {
-  background-color: #dc2626;
-  border-color: #dc2626;
+  background-color: var(--state-error);
+  border-color: var(--state-error);
 }
 
 .success {
@@ -94,8 +94,8 @@
 }
 
 .success:hover:not(:disabled) {
-  background-color: #16a34a;
-  border-color: #16a34a;
+  background-color: var(--state-success);
+  border-color: var(--state-success);
 }
 
 /* States */
