@@ -5,5 +5,11 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'happy-dom',
+    setupFiles: ['./src/test/setup.ts'],
+    css: {
+      modules: {
+        classNameStrategy: 'non-scoped',
+      },
+    },
   },
 })

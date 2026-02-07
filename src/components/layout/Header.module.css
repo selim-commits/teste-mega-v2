@@ -26,10 +26,10 @@
 
 .title {
   font-family: var(--font-sans);
-  font-size: 28px;
+  font-size: var(--text-3xl);
   font-weight: 600;
   color: var(--text-primary);
-  letter-spacing: -0.5px;
+  letter-spacing: var(--tracking-tight);
   margin: 0;
 }
 
@@ -59,7 +59,7 @@
   border-radius: var(--radius-full);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--duration-fast);
 }
 
 .helpBtn:hover {
@@ -73,7 +73,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 10px var(--space-5);
+  padding: var(--space-3) var(--space-5);
   background-color: var(--bg-primary);
   border: 1px solid var(--text-primary);
   border-radius: var(--radius-sm);
@@ -82,9 +82,9 @@
   font-weight: 500;
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--duration-fast);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--tracking-wide);
 }
 
 .secondaryBtn:hover {
@@ -96,7 +96,7 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  padding: 10px var(--space-5);
+  padding: var(--space-3) var(--space-5);
   background-color: var(--color-black);
   border: 1px solid var(--color-black);
   border-radius: var(--radius-sm);
@@ -105,9 +105,9 @@
   font-weight: 500;
   color: var(--color-white);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: all var(--duration-fast);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: var(--tracking-wide);
 }
 
 .primaryBtn:hover {
@@ -128,7 +128,7 @@
   }
 
   .title {
-    font-size: 20px;
+    font-size: var(--text-xl);
   }
 
   .subtitle {
@@ -175,18 +175,18 @@
   }
 
   .right {
-    gap: 6px;
+    gap: var(--space-2);
   }
 
   .secondaryBtn {
-    padding: 6px var(--space-2);
-    font-size: 9px;
-    letter-spacing: 0.3px;
+    padding: var(--space-2) var(--space-2);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-normal);
   }
 
   .primaryBtn {
-    padding: 6px var(--space-2);
-    font-size: 9px;
-    letter-spacing: 0.3px;
+    padding: var(--space-2) var(--space-2);
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-normal);
   }
 }

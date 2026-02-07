@@ -130,6 +130,8 @@ export const queryKeys = {
   // Purchases
   purchases: {
     all: ['purchases'] as const,
+    lists: () => [...queryKeys.purchases.all, 'list'] as const,
+    list: (filters: object) => [...queryKeys.purchases.lists(), filters] as const,
     details: () => [...queryKeys.purchases.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.purchases.details(), id] as const,
     byClient: (clientId: string) => [...queryKeys.purchases.all, 'client', clientId] as const,
@@ -150,5 +152,33 @@ export const queryKeys = {
     all: ['giftCertificates'] as const,
     byStudio: (studioId: string) => [...queryKeys.giftCertificates.all, 'studio', studioId] as const,
     byCode: (studioId: string, code: string) => [...queryKeys.giftCertificates.all, 'code', studioId, code] as const,
+  },
+
+  // Chat
+  chat: {
+    all: ['chat'] as const,
+    conversations: () => [...queryKeys.chat.all, 'conversations'] as const,
+    conversationList: (studioId: string, filters?: object) =>
+      [...queryKeys.chat.conversations(), 'list', studioId, filters] as const,
+    conversationDetail: (id: string) =>
+      [...queryKeys.chat.conversations(), 'detail', id] as const,
+    conversationWithMessages: (id: string) =>
+      [...queryKeys.chat.conversations(), 'withMessages', id] as const,
+    messages: (conversationId: string) =>
+      [...queryKeys.chat.all, 'messages', conversationId] as const,
+    unreadCount: (studioId: string) =>
+      [...queryKeys.chat.all, 'unread', studioId] as const,
+    conversationCounts: (studioId: string) =>
+      [...queryKeys.chat.all, 'counts', studioId] as const,
+  },
+
+  // Packs
+  packs: {
+    all: ['packs'] as const,
+    lists: () => [...queryKeys.packs.all, 'list'] as const,
+    list: (filters: object) => [...queryKeys.packs.lists(), filters] as const,
+    details: () => [...queryKeys.packs.all, 'detail'] as const,
+    detail: (id: string) => [...queryKeys.packs.details(), id] as const,
+    stats: (studioId: string) => [...queryKeys.packs.all, 'stats', studioId] as const,
   },
 } as const;

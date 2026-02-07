@@ -4,25 +4,11 @@ import type { PackFilters, ClientPurchaseFilters } from '../services/packs';
 import type { Pack, PackInsert, PackUpdate, ClientPurchase, ClientPurchaseInsert, ClientPurchaseUpdate, PricingProductType, SubscriptionStatus } from '../types/database';
 import { isDemoMode, withDemoMode } from '../lib/supabase';
 import { mockPacks, mockClientPurchases, calculateMockPackStats } from '../lib/mockData';
+import { queryKeys } from '../lib/queryClient';
 
-// Query keys for packs
-export const packQueryKeys = {
-  all: ['packs'] as const,
-  lists: () => [...packQueryKeys.all, 'list'] as const,
-  list: (filters: object) => [...packQueryKeys.lists(), filters] as const,
-  details: () => [...packQueryKeys.all, 'detail'] as const,
-  detail: (id: string) => [...packQueryKeys.details(), id] as const,
-  stats: (studioId: string) => [...packQueryKeys.all, 'stats', studioId] as const,
-};
-
-export const purchaseQueryKeys = {
-  all: ['purchases'] as const,
-  lists: () => [...purchaseQueryKeys.all, 'list'] as const,
-  list: (filters: object) => [...purchaseQueryKeys.lists(), filters] as const,
-  details: () => [...purchaseQueryKeys.all, 'detail'] as const,
-  detail: (id: string) => [...purchaseQueryKeys.details(), id] as const,
-  byClient: (clientId: string) => [...purchaseQueryKeys.all, 'client', clientId] as const,
-};
+// Re-export centralized query keys for backward compatibility
+export const packQueryKeys = queryKeys.packs;
+export const purchaseQueryKeys = queryKeys.purchases;
 
 // =====================
 // PACK HOOKS

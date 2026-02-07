@@ -509,11 +509,11 @@
 .categoryBadge {
   display: inline-block;
   padding: var(--space-1) var(--space-2);
-  background: linear-gradient(135deg, rgba(156, 39, 176, 0.15) 0%, rgba(103, 58, 183, 0.15) 100%);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent-primary) 15%, transparent) 0%, color-mix(in srgb, var(--accent-primary) 15%, transparent) 100%);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
   font-weight: 500;
-  color: #9c27b0;
+  color: var(--accent-primary);
   margin-bottom: var(--space-1);
 }
 
@@ -532,7 +532,7 @@
   align-items: center;
   gap: var(--space-1);
   padding: var(--space-1) var(--space-2);
-  background-color: rgba(76, 175, 80, 0.1);
+  background-color: color-mix(in srgb, var(--state-success) 10%, transparent);
   border-radius: var(--radius-sm);
   font-size: var(--text-xs);
   font-weight: 600;

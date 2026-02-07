@@ -18,7 +18,6 @@ import {
   Edit2,
   Trash2,
   Eye,
-  Building,
   Tag,
   CheckCircle,
   XCircle,
@@ -30,12 +29,10 @@ import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
-import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Modal';
 import { Table, Pagination } from '../components/ui/Table';
 import { Dropdown, DropdownItem, DropdownDivider } from '../components/ui/Dropdown';
-import { Switch } from '../components/ui/Checkbox';
 import { Progress } from '../components/ui/Progress';
 import {
   useClients,
@@ -50,37 +47,9 @@ import { useBookings } from '../hooks/useBookings';
 import { useNotifications } from '../stores/uiStore';
 import { DEMO_STUDIO_ID } from '../stores/authStore';
 import type { Client, ClientTier, ClientInsert, ClientUpdate, Booking } from '../types/database';
+import { ClientFormModal } from './clients/ClientFormModal';
+import type { ClientFormData } from './clients/ClientFormModal';
 import styles from './Clients.module.css';
-
-interface ClientFormData {
-  name: string;
-  email: string;
-  phone: string;
-  company: string;
-  address: string;
-  city: string;
-  country: string;
-  postal_code: string;
-  tier: ClientTier;
-  notes: string;
-  tags: string[];
-  is_active: boolean;
-}
-
-const defaultFormData: ClientFormData = {
-  name: '',
-  email: '',
-  phone: '',
-  company: '',
-  address: '',
-  city: '',
-  country: '',
-  postal_code: '',
-  tier: 'standard',
-  notes: '',
-  tags: [],
-  is_active: true,
-};
 
 const tierOptions = [
   { value: 'all', label: 'Tous les niveaux' },
@@ -144,10 +113,8 @@ export function Clients() {
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
-  // Form state
-  const [formData, setFormData] = useState<ClientFormData>(defaultFormData);
-  const [formErrors, setFormErrors] = useState<Partial<Record<keyof ClientFormData, string>>>({});
-  const [newTag, setNewTag] = useState('');
+  // Edit mode data for client form modal
+  const [editFormData, setEditFormData] = useState<ClientFormData | null>(null);
 
   // Hooks
   const { success: showSuccess, error: showError } = useNotifications();
@@ -259,24 +226,7 @@ export function Clients() {
   }, [clients]);
 
   // Handlers
-  const validateForm = useCallback((): boolean => {
-    const errors: Partial<Record<keyof ClientFormData, string>> = {};
-
-    if (!formData.name.trim()) {
-      errors.name = 'Le nom est requis';
-    }
-
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      errors.email = 'Email invalide';
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  }, [formData]);
-
-  const handleCreateClient = useCallback(async () => {
-    if (!validateForm()) return;
-
+  const handleCreateClient = useCallback(async (formData: ClientFormData) => {
     const clientData: Omit<ClientInsert, 'id' | 'created_at' | 'updated_at'> = {
       studio_id: DEMO_STUDIO_ID,
       name: formData.name,
@@ -297,14 +247,13 @@ export function Clients() {
       await createMutation.mutateAsync(clientData);
       showSuccess('Client créé', 'Le client a été créé avec succès');
       setIsCreateModalOpen(false);
-      setFormData(defaultFormData);
     } catch {
       showError('Erreur', 'Impossible de créer le client');
     }
-  }, [formData, validateForm, createMutation, showSuccess, showError]);
+  }, [createMutation, showSuccess, showError]);
 
-  const handleUpdateClient = useCallback(async () => {
-    if (!selectedClientId || !validateForm()) return;
+  const handleUpdateClient = useCallback(async (formData: ClientFormData) => {
+    if (!selectedClientId) return;
 
     const updateData: ClientUpdate = {
       name: formData.name,
@@ -329,7 +278,7 @@ export function Clients() {
     } catch {
       showError('Erreur', 'Impossible de modifier le client');
     }
-  }, [selectedClientId, formData, validateForm, updateMutation, showSuccess, showError]);
+  }, [selectedClientId, updateMutation, showSuccess, showError]);
 
   const handleDeleteClient = useCallback(async () => {
     if (!selectedClientId) return;
@@ -359,17 +308,6 @@ export function Clients() {
     }
   }, [activateMutation, deactivateMutation, showSuccess, showError]);
 
-  const handleAddTag = useCallback(() => {
-    if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData((prev) => ({ ...prev, tags: [...prev.tags, newTag.trim()] }));
-      setNewTag('');
-    }
-  }, [newTag, formData.tags]);
-
-  const handleRemoveTag = useCallback((tag: string) => {
-    setFormData((prev) => ({ ...prev, tags: prev.tags.filter((t) => t !== tag) }));
-  }, []);
-
   const handleToggleTagFilter = useCallback((tag: string) => {
     setTagFilter((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
@@ -379,7 +317,7 @@ export function Clients() {
 
   const openEditModal = useCallback((client: Client) => {
     setSelectedClientId(client.id);
-    setFormData({
+    setEditFormData({
       name: client.name,
       email: client.email || '',
       phone: client.phone || '',
@@ -537,148 +475,6 @@ export function Clients() {
     },
   ];
 
-  // Render form fields (shared between create and edit modals)
-  const renderFormFields = () => (
-    <div className={styles.formGrid}>
-      <Input
-        label="Nom *"
-        value={formData.name}
-        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-        error={formErrors.name}
-        fullWidth
-      />
-      <Input
-        label="Email"
-        type="email"
-        value={formData.email}
-        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        error={formErrors.email}
-        icon={<Mail size={16} />}
-        fullWidth
-      />
-      <Input
-        label="Téléphone"
-        value={formData.phone}
-        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-        icon={<Phone size={16} />}
-        fullWidth
-      />
-      <Input
-        label="Entreprise"
-        value={formData.company}
-        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-        icon={<Building size={16} />}
-        fullWidth
-      />
-      <Input
-        label="Adresse"
-        value={formData.address}
-        onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-        icon={<MapPin size={16} />}
-        fullWidth
-      />
-      <Input
-        label="Ville"
-        value={formData.city}
-        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-        fullWidth
-      />
-      <Input
-        label="Code postal"
-        value={formData.postal_code}
-        onChange={(e) => setFormData({ ...formData, postal_code: e.target.value })}
-        fullWidth
-      />
-      <Input
-        label="Pays"
-        value={formData.country}
-        onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-        fullWidth
-      />
-      <Select
-        label="Niveau"
-        options={tierOptions.filter((o) => o.value !== 'all')}
-        value={formData.tier}
-        onChange={(value) => setFormData({ ...formData, tier: value as ClientTier })}
-        fullWidth
-      />
-      <div className={styles.formFullWidth}>
-        <label className={styles.formLabel}>Notes</label>
-        <textarea
-          className={styles.textarea}
-          value={formData.notes}
-          onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-          rows={3}
-          placeholder="Notes internes sur le client..."
-        />
-      </div>
-      <div className={styles.formFullWidth}>
-        <label className={styles.formLabel}>Tags</label>
-        <div className={styles.tagsSection}>
-          <div className={styles.tagsInput}>
-            <Input
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  handleAddTag();
-                }
-              }}
-              placeholder="Ajouter un tag..."
-              icon={<Tag size={16} />}
-            />
-            <Button variant="secondary" size="sm" onClick={handleAddTag}>
-              Ajouter
-            </Button>
-          </div>
-          <div className={styles.commonTags}>
-            {commonTags.map((tag) => (
-              <button
-                key={tag}
-                type="button"
-                className={`${styles.commonTag} ${formData.tags.includes(tag) ? styles.active : ''}`}
-                onClick={() => {
-                  if (formData.tags.includes(tag)) {
-                    handleRemoveTag(tag);
-                  } else {
-                    setFormData((prev) => ({ ...prev, tags: [...prev.tags, tag] }));
-                  }
-                }}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-          {formData.tags.length > 0 && (
-            <div className={styles.selectedTags}>
-              {formData.tags.map((tag) => (
-                <Badge key={tag} variant="info" size="sm">
-                  {tag}
-                  <button
-                    type="button"
-                    className={styles.removeTag}
-                    onClick={() => handleRemoveTag(tag)}
-                  >
-                    <X size={12} />
-                  </button>
-                </Badge>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-      <div className={styles.formFullWidth}>
-        <Switch
-          label="Client actif"
-          description="Les clients inactifs n'apparaissent pas dans les listes de sélection"
-          checked={formData.is_active}
-          onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-        />
-      </div>
-    </div>
-  );
-
   return (
     <div className={styles.page}>
       <Header title="Client 360" subtitle="Gérez vos relations clients" />
@@ -747,11 +543,7 @@ export function Clients() {
               variant="primary"
               size="sm"
               icon={<Plus size={16} />}
-              onClick={() => {
-                setFormData(defaultFormData);
-                setFormErrors({});
-                setIsCreateModalOpen(true);
-              }}
+              onClick={() => setIsCreateModalOpen(true)}
             >
               Nouveau client
             </Button>
@@ -878,11 +670,7 @@ export function Clients() {
             <Button
               variant="primary"
               icon={<Plus size={16} />}
-              onClick={() => {
-                setFormData(defaultFormData);
-                setFormErrors({});
-                setIsCreateModalOpen(true);
-              }}
+              onClick={() => setIsCreateModalOpen(true)}
             >
               Ajouter un client
             </Button>
@@ -1051,44 +839,31 @@ export function Clients() {
       </div>
 
       {/* Create Client Modal */}
-      <Modal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} size="lg">
-        <ModalHeader title="Nouveau client" subtitle="Ajoutez un nouveau client à votre base" onClose={() => setIsCreateModalOpen(false)} />
-        <ModalBody>{renderFormFields()}</ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" onClick={() => setIsCreateModalOpen(false)}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleCreateClient}
-            loading={createMutation.isPending}
-          >
-            Créer le client
-          </Button>
-        </ModalFooter>
-      </Modal>
+      {isCreateModalOpen && (
+        <ClientFormModal
+          isOpen={isCreateModalOpen}
+          onClose={() => setIsCreateModalOpen(false)}
+          onSubmit={handleCreateClient}
+          isSubmitting={createMutation.isPending}
+          title="Nouveau client"
+          subtitle="Ajoutez un nouveau client à votre base"
+          submitLabel="Créer le client"
+        />
+      )}
 
       {/* Edit Client Modal */}
-      <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} size="lg">
-        <ModalHeader
+      {isEditModalOpen && (
+        <ClientFormModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSubmit={handleUpdateClient}
+          initialData={editFormData}
+          isSubmitting={updateMutation.isPending}
           title="Modifier le client"
           subtitle={selectedClient?.name}
-          onClose={() => setIsEditModalOpen(false)}
+          submitLabel="Enregistrer"
         />
-        <ModalBody>{renderFormFields()}</ModalBody>
-        <ModalFooter>
-          <Button variant="secondary" onClick={() => setIsEditModalOpen(false)}>
-            Annuler
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleUpdateClient}
-            loading={updateMutation.isPending}
-          >
-            Enregistrer
-          </Button>
-        </ModalFooter>
-      </Modal>
+      )}
 
       {/* Delete Confirmation Modal */}
       <Modal isOpen={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)} size="sm">

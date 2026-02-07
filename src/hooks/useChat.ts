@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { queryKeys } from '../lib/queryClient';
 import {
   chatService,
   type ChatConversation,
@@ -17,23 +18,8 @@ import {
   type StudioContext,
 } from '../services/chatAIService';
 
-// Extend query keys for chat
-const chatQueryKeys = {
-  all: ['chat'] as const,
-  conversations: () => [...chatQueryKeys.all, 'conversations'] as const,
-  conversationList: (studioId: string, filters?: ConversationFilters) =>
-    [...chatQueryKeys.conversations(), 'list', studioId, filters] as const,
-  conversationDetail: (id: string) =>
-    [...chatQueryKeys.conversations(), 'detail', id] as const,
-  conversationWithMessages: (id: string) =>
-    [...chatQueryKeys.conversations(), 'withMessages', id] as const,
-  messages: (conversationId: string) =>
-    [...chatQueryKeys.all, 'messages', conversationId] as const,
-  unreadCount: (studioId: string) =>
-    [...chatQueryKeys.all, 'unread', studioId] as const,
-  conversationCounts: (studioId: string) =>
-    [...chatQueryKeys.all, 'counts', studioId] as const,
-};
+// Re-export centralized chat query keys for backward compatibility
+const chatQueryKeys = queryKeys.chat;
 
 // ==================== CONVERSATION HOOKS ====================
 

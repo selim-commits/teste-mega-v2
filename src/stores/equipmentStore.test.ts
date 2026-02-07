@@ -79,9 +79,9 @@ describe('equipmentStore - CRUD', () => {
 
 describe('selectFilteredEquipment', () => {
   const items = [
-    mockEquip({ id: 'e-1', status: 'available', category: 'camera', condition: 5, name: 'Canon R5' }),
-    mockEquip({ id: 'e-2', status: 'maintenance', category: 'lighting', condition: 2, name: 'Profoto B10' }),
-    mockEquip({ id: 'e-3', status: 'available', category: 'camera', condition: 3, name: 'Sony A7' }),
+    mockEquip({ id: 'e-1', status: 'available', category: 'camera', condition: 5, name: 'Canon R5', brand: 'Canon', model: 'EOS R5' }),
+    mockEquip({ id: 'e-2', status: 'maintenance', category: 'lighting', condition: 2, name: 'Profoto B10', brand: 'Profoto', model: 'B10' }),
+    mockEquip({ id: 'e-3', status: 'available', category: 'camera', condition: 3, name: 'Sony A7', brand: 'Sony', model: 'A7 IV' }),
   ];
 
   it('filtre par status', () => {
