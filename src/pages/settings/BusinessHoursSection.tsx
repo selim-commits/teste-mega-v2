@@ -95,7 +95,7 @@ export function BusinessHoursSection() {
             {(Object.keys(hours) as Array<keyof BusinessHours>).map((day) => (
               <div key={day} className={styles.scheduleItem}>
                 <div className={styles.scheduleDay}>
-                  <label className={styles.toggle}>
+                  <label className={styles.toggle} aria-label={`Activer ${dayLabels[day]}`}>
                     <input
                       type="checkbox"
                       checked={hours[day].enabled}

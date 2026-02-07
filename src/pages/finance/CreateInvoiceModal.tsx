@@ -307,8 +307,9 @@ export function CreateInvoiceModal({
           <div className={styles.formSection}>
             <h4>Notes & Conditions</h4>
             <div className={styles.formFullWidth}>
-              <label className={styles.formLabel}>Notes</label>
+              <label className={styles.formLabel} htmlFor="invoice-notes">Notes</label>
               <textarea
+                id="invoice-notes"
                 className={styles.textarea}
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -317,8 +318,9 @@ export function CreateInvoiceModal({
               />
             </div>
             <div className={styles.formFullWidth}>
-              <label className={styles.formLabel}>Conditions de paiement</label>
+              <label className={styles.formLabel} htmlFor="invoice-terms">Conditions de paiement</label>
               <textarea
+                id="invoice-terms"
                 className={styles.textarea}
                 value={formData.terms}
                 onChange={(e) => setFormData({ ...formData, terms: e.target.value })}

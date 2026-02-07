@@ -104,8 +104,9 @@ export function BillingSection() {
           </p>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Conditions de paiement</label>
+            <label className={styles.label} htmlFor="billing-payment-terms">Conditions de paiement</label>
             <textarea
+              id="billing-payment-terms"
               className={styles.textarea}
               placeholder="Ex: Paiement a la reservation. Annulation gratuite jusqu'a 48h avant."
               rows={3}
@@ -140,8 +141,9 @@ export function BillingSection() {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Mentions legales</label>
+            <label className={styles.label} htmlFor="billing-legal-mentions">Mentions legales</label>
             <textarea
+              id="billing-legal-mentions"
               className={styles.textarea}
               placeholder="Raison sociale, forme juridique, capital social, RCS..."
               rows={4}

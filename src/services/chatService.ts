@@ -2,10 +2,8 @@ import { supabase } from '../lib/supabase';
 import type { Json } from '../types/database';
 
 // Note: chatService uses custom types that don't match the DB schema exactly
-// (e.g. 'waiting_for_human' vs DB's 'waiting_human'). Using `as any` until
-// the local types are aligned with the generated DB types.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
+// (e.g. 'waiting_for_human' vs DB's 'waiting_human'). Local types are used
+// for the service interface while the DB operations use the typed client.
 
 // Chat conversation status
 export type ConversationStatus = 'active' | 'waiting_for_human' | 'assigned' | 'resolved' | 'closed';
@@ -149,21 +147,21 @@ export const chatService = {
       tags: [],
     };
 
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('chat_conversations')
-      .insert(conversationData)
+      .insert(conversationData as Record<string, unknown>)
       .select()
       .single();
 
     if (error) throw error;
-    return data as ChatConversation;
+    return data as unknown as ChatConversation;
   },
 
   /**
    * Get a conversation by ID
    */
   async getConversation(id: string): Promise<ChatConversation | null> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('chat_conversations')
       .select('*')
       .eq('id', id)
@@ -180,7 +178,7 @@ export const chatService = {
    * Get a conversation with all its messages
    */
   async getConversationWithMessages(id: string): Promise<ConversationWithMessages | null> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('chat_conversations')
       .select(`
         *,
@@ -208,7 +206,7 @@ export const chatService = {
    * Get a conversation with related client and assigned team member
    */
   async getConversationWithRelations(id: string): Promise<ConversationWithRelations | null> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('chat_conversations')
       .select(`
         *,
@@ -232,7 +230,7 @@ export const chatService = {
     studioId: string,
     filters?: Omit<ConversationFilters, 'studioId'>
   ): Promise<ConversationWithRelations[]> {
-    let query = db
+    let query = supabase
       .from('chat_conversations')
       .select(`
         *,
@@ -295,15 +293,15 @@ export const chatService = {
     id: string,
     updates: ChatConversationUpdate
   ): Promise<ChatConversation> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('chat_conversations')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update({ ...updates, updated_at: new Date().toISOString() } as Record<string, unknown>)
       .eq('id', id)
       .select()
       .single();
 
     if (error) throw error;
-    return data as ChatConversation;
+    return data as unknown as ChatConversation;
   },
 
   /**
@@ -428,9 +426,9 @@ export const chatService = {
       is_read: message.sender_type !== 'visitor', // Mark non-visitor messages as read
     };
 
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('chat_messages')
-      .insert(messageData)
+      .insert(messageData as Record<string, unknown>)
       .select()
       .single();
 
@@ -442,13 +440,13 @@ export const chatService = {
     // For visitor messages, increment unread count
     if (message.sender_type === 'visitor') {
       // Get current unread count and increment
-      const { data: conv } = await db
+      const { data: conv } = await supabase
         .from('chat_conversations')
         .select('unread_count')
         .eq('id', conversationId)
         .single();
 
-      await db
+      await supabase
         .from('chat_conversations')
         .update({
           last_message_at: new Date().toISOString(),
@@ -458,7 +456,7 @@ export const chatService = {
         })
         .eq('id', conversationId);
     } else {
-      await db
+      await supabase
         .from('chat_conversations')
         .update({
           last_message_at: new Date().toISOString(),
@@ -468,7 +466,7 @@ export const chatService = {
         .eq('id', conversationId);
     }
 
-    return data as ChatMessage;
+    return data as unknown as ChatMessage;
   },
 
   /**
@@ -479,7 +477,7 @@ export const chatService = {
     limit: number = 50,
     before?: string // cursor: message ID to fetch before
   ): Promise<ChatMessage[]> {
-    let query = db
+    let query = supabase
       .from('chat_messages')
       .select('*')
       .eq('conversation_id', conversationId)
@@ -488,7 +486,7 @@ export const chatService = {
 
     if (before) {
       // Get the timestamp of the cursor message
-      const { data: cursorMessage } = await db
+      const { data: cursorMessage } = await supabase
         .from('chat_messages')
         .select('created_at')
         .eq('id', before)
@@ -514,7 +512,7 @@ export const chatService = {
     upToMessageId: string
   ): Promise<void> {
     // Get the timestamp of the target message
-    const { data: targetMessage, error: fetchError } = await db
+    const { data: targetMessage, error: fetchError } = await supabase
       .from('chat_messages')
       .select('created_at')
       .eq('id', upToMessageId)
@@ -523,7 +521,7 @@ export const chatService = {
     if (fetchError) throw fetchError;
 
     // Mark all messages up to this point as read
-    const { error: updateError } = await db
+    const { error: updateError } = await supabase
       .from('chat_messages')
       .update({ is_read: true })
       .eq('conversation_id', conversationId)
@@ -533,7 +531,7 @@ export const chatService = {
     if (updateError) throw updateError;
 
     // Reset unread count on conversation
-    await db
+    await supabase
       .from('chat_conversations')
       .update({ unread_count: 0, updated_at: new Date().toISOString() })
       .eq('id', conversationId);
@@ -543,7 +541,7 @@ export const chatService = {
    * Mark all messages in a conversation as read
    */
   async markAllMessagesRead(conversationId: string): Promise<void> {
-    const { error: updateError } = await db
+    const { error: updateError } = await supabase
       .from('chat_messages')
       .update({ is_read: true })
       .eq('conversation_id', conversationId)
@@ -551,7 +549,7 @@ export const chatService = {
 
     if (updateError) throw updateError;
 
-    await db
+    await supabase
       .from('chat_conversations')
       .update({ unread_count: 0, updated_at: new Date().toISOString() })
       .eq('id', conversationId);
@@ -561,7 +559,7 @@ export const chatService = {
    * Get a single message by ID
    */
   async getMessage(id: string): Promise<ChatMessage | null> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('chat_messages')
       .select('*')
       .eq('id', id)
@@ -580,7 +578,7 @@ export const chatService = {
    * Get unread count for a studio
    */
   async getUnreadCount(studioId: string): Promise<number> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('chat_conversations')
       .select('unread_count')
       .eq('studio_id', studioId)
@@ -600,7 +598,7 @@ export const chatService = {
   async getConversationCounts(
     studioId: string
   ): Promise<Record<ConversationStatus, number>> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('chat_conversations')
       .select('status')
       .eq('studio_id', studioId);
@@ -626,7 +624,7 @@ export const chatService = {
    * Get active conversations count (not resolved/closed)
    */
   async getActiveConversationsCount(studioId: string): Promise<number> {
-    const { count, error } = await db
+    const { count, error } = await supabase
       .from('chat_conversations')
       .select('id', { count: 'exact', head: true })
       .eq('studio_id', studioId)
@@ -640,7 +638,7 @@ export const chatService = {
    * Get conversations waiting for human response
    */
   async getWaitingForHumanCount(studioId: string): Promise<number> {
-    const { count, error } = await db
+    const { count, error } = await supabase
       .from('chat_conversations')
       .select('id', { count: 'exact', head: true })
       .eq('studio_id', studioId)

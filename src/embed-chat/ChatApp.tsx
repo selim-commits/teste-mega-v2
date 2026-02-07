@@ -1,5 +1,5 @@
 // src/embed-chat/ChatApp.tsx
-import { useEffect } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useChatStore } from './store/chatStore';
 import { chatApi, chatWebSocket } from './services/chatApi';
 import { ChatBubble } from './components/ChatBubble';
@@ -23,63 +23,8 @@ export function ChatApp({ config }: ChatAppProps) {
     setTyping,
   } = useChatStore();
 
-  // Initialize on mount
-  useEffect(() => {
-    setConfig(config);
-    initializeChat();
-    setupWebSocket();
-
-    // Notify parent that chat is ready
-    notifyParent('ROOOM_CHAT_READY', { studioId: config.studioId });
-
-    return () => {
-      chatWebSocket.disconnect();
-    };
-  }, []);
-
-  // Initialize chat conversation
-  const initializeChat = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await chatApi.initConversation(
-        config.studioId,
-        config.studioName
-      );
-
-      if (response.error) {
-        setError(response.error);
-        return;
-      }
-
-      if (response.data) {
-        setConversationId(response.data.conversationId);
-        addMessages(response.data.messages);
-      }
-    } catch {
-      setError('Impossible d\'initialiser le chat. Veuillez reessayer.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Setup WebSocket for real-time updates
-  const setupWebSocket = async () => {
-    await chatWebSocket.connect();
-
-    chatWebSocket.on('message', (data) => {
-      addMessage(data as ChatMessage);
-    });
-
-    chatWebSocket.on('typing', (data) => {
-      const typingData = data as { isTyping: boolean; typingUser: string };
-      setTyping(typingData);
-    });
-  };
-
   // Notify parent window with secure origin
-  const getParentOrigin = (): string => {
+  const getParentOrigin = useCallback((): string => {
     try {
       if (document.referrer) {
         return new URL(document.referrer).origin;
@@ -89,13 +34,76 @@ export function ChatApp({ config }: ChatAppProps) {
     }
     // Ne pas utiliser '*' - utiliser l'origin du document comme fallback securise
     return window.location.origin;
-  };
+  }, []);
 
-  const notifyParent = (type: string, payload: unknown) => {
+  const notifyParent = useCallback((type: string, payload: unknown) => {
     if (window.parent !== window) {
       window.parent.postMessage({ type, payload }, getParentOrigin());
     }
-  };
+  }, [getParentOrigin]);
+
+  // Use refs to avoid stale closures in the initialization effect
+  const configRef = useRef(config);
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  // Initialize on mount
+  useEffect(() => {
+    const currentConfig = configRef.current;
+    setConfig(currentConfig);
+
+    // Initialize chat conversation
+    const initializeChat = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await chatApi.initConversation(
+          currentConfig.studioId,
+          currentConfig.studioName
+        );
+
+        if (response.error) {
+          setError(response.error);
+          return;
+        }
+
+        if (response.data) {
+          setConversationId(response.data.conversationId);
+          addMessages(response.data.messages);
+        }
+      } catch {
+        setError('Impossible d\'initialiser le chat. Veuillez reessayer.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    // Setup WebSocket for real-time updates
+    const setupWebSocket = async () => {
+      await chatWebSocket.connect();
+
+      chatWebSocket.on('message', (data) => {
+        addMessage(data as ChatMessage);
+      });
+
+      chatWebSocket.on('typing', (data) => {
+        const typingData = data as { isTyping: boolean; typingUser: string };
+        setTyping(typingData);
+      });
+    };
+
+    initializeChat();
+    setupWebSocket();
+
+    // Notify parent that chat is ready
+    notifyParent('ROOOM_CHAT_READY', { studioId: currentConfig.studioId });
+
+    return () => {
+      chatWebSocket.disconnect();
+    };
+  }, [setConfig, setLoading, setError, setConversationId, addMessages, addMessage, setTyping, notifyParent]);
 
   // Notify parent on window state changes
   useEffect(() => {
@@ -104,7 +112,7 @@ export function ChatApp({ config }: ChatAppProps) {
     } else if (windowState === 'closed') {
       notifyParent('ROOOM_CHAT_CLOSE', {});
     }
-  }, [windowState]);
+  }, [windowState, notifyParent]);
 
   const themeClass = config.theme === 'dark' ? 'rooom-chat-dark' : 'rooom-chat-light';
   const positionClass = `rooom-chat-${config.position}`;

@@ -199,8 +199,9 @@ export function ClientFormModal({
             fullWidth
           />
           <div className={styles.formFullWidth}>
-            <label className={styles.formLabel}>Notes</label>
+            <label className={styles.formLabel} htmlFor="client-notes">Notes</label>
             <textarea
+              id="client-notes"
               className={styles.textarea}
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -209,7 +210,7 @@ export function ClientFormModal({
             />
           </div>
           <div className={styles.formFullWidth}>
-            <label className={styles.formLabel}>Tags</label>
+            <span className={styles.formLabel}>Tags</span>
             <div className={styles.tagsSection}>
               <div className={styles.tagsInput}>
                 <Input

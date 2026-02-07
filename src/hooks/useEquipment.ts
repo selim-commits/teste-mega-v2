@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { equipmentService } from '../services';
 import { queryKeys } from '../lib/queryClient';
 import { isDemoMode, withDemoMode } from '../lib/supabase';
-import { mockEquipment, getMockMaintenanceEquipment } from '../lib/mockData';
+import { getMockMaintenanceEquipment, getFilteredMockEquipment } from '../lib/mockData';
 import type { Equipment, EquipmentInsert, EquipmentUpdate, EquipmentStatus } from '../types/database';
 
 export interface EquipmentFilters {
@@ -16,17 +16,7 @@ export function useEquipment(filters?: EquipmentFilters) {
   return useQuery({
     queryKey: queryKeys.equipment.list(filters || {}),
     queryFn: async (): Promise<Equipment[]> => {
-      // Return mock data in demo mode
-      if (isDemoMode) {
-        let result = [...mockEquipment] as Equipment[];
-        if (filters?.status) {
-          result = result.filter(e => e.status === filters.status);
-        }
-        if (filters?.category) {
-          result = result.filter(e => e.category === filters.category);
-        }
-        return result;
-      }
+      if (isDemoMode) return getFilteredMockEquipment(filters) as Equipment[];
 
       if (filters?.studioId && filters?.status) {
         return equipmentService.getByStatus(filters.studioId, filters.status);

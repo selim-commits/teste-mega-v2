@@ -107,8 +107,9 @@ export function GiftCertificate({ certificates, onSelect, currency = 'EUR' }: Gi
             <h3 className="rooom-gift-form-section-title">Destinataire</h3>
 
             <div className="rooom-packs-input-group">
-              <label className="rooom-packs-label rooom-packs-label-required">Nom</label>
+              <label className="rooom-packs-label rooom-packs-label-required" htmlFor="gift-recipient-name">Nom</label>
               <input
+                id="gift-recipient-name"
                 type="text"
                 className={`rooom-packs-input ${errors.recipientName ? 'rooom-packs-input-error' : ''}`}
                 placeholder="Nom du destinataire"
@@ -121,8 +122,9 @@ export function GiftCertificate({ certificates, onSelect, currency = 'EUR' }: Gi
             </div>
 
             <div className="rooom-packs-input-group">
-              <label className="rooom-packs-label rooom-packs-label-required">Email</label>
+              <label className="rooom-packs-label rooom-packs-label-required" htmlFor="gift-recipient-email">Email</label>
               <input
+                id="gift-recipient-email"
                 type="email"
                 className={`rooom-packs-input ${errors.recipientEmail ? 'rooom-packs-input-error' : ''}`}
                 placeholder="email@exemple.com"
@@ -140,8 +142,9 @@ export function GiftCertificate({ certificates, onSelect, currency = 'EUR' }: Gi
             <h3 className="rooom-gift-form-section-title">De la part de</h3>
 
             <div className="rooom-packs-input-group">
-              <label className="rooom-packs-label rooom-packs-label-required">Votre nom</label>
+              <label className="rooom-packs-label rooom-packs-label-required" htmlFor="gift-sender-name">Votre nom</label>
               <input
+                id="gift-sender-name"
                 type="text"
                 className={`rooom-packs-input ${errors.senderName ? 'rooom-packs-input-error' : ''}`}
                 placeholder="Votre nom"

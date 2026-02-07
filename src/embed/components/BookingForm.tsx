@@ -23,6 +23,25 @@ export function BookingForm() {
     isLoading,
   } = useEmbedStore();
 
+  // Post message to parent window with secure origin
+  const getParentOrigin = useCallback((): string => {
+    try {
+      if (document.referrer) {
+        return new URL(document.referrer).origin;
+      }
+    } catch {
+      // Invalid referrer URL
+    }
+    // Ne pas utiliser '*' - utiliser l'origin du document comme fallback securise
+    return window.location.origin;
+  }, []);
+
+  const postMessageToParent = useCallback((type: string, payload?: unknown) => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type, payload }, getParentOrigin());
+    }
+  }, [getParentOrigin]);
+
   // Zod validation via hook
   const submitBooking = useCallback(async () => {
     if (!config?.studioId || !selectedService || !selectedDate || !selectedSlot) {
@@ -66,7 +85,7 @@ export function BookingForm() {
     } finally {
       setLoading(false);
     }
-  }, [config, selectedService, selectedDate, selectedSlot, formData, setLoading, setError, setBookingResult]);
+  }, [config, selectedService, selectedDate, selectedSlot, formData, setLoading, setError, setBookingResult, postMessageToParent]);
 
   const { errors, touched, handleBlur, handleSubmit } = useFormValidation({
     schema: embedBookingSchema,
@@ -105,25 +124,6 @@ export function BookingForm() {
   // Handle input change
   const handleChange = (field: keyof BookingFormData, value: string | boolean) => {
     updateFormData({ [field]: value });
-  };
-
-  // Post message to parent window with secure origin
-  const getParentOrigin = (): string => {
-    try {
-      if (document.referrer) {
-        return new URL(document.referrer).origin;
-      }
-    } catch {
-      // Invalid referrer URL
-    }
-    // Ne pas utiliser '*' - utiliser l'origin du document comme fallback securise
-    return window.location.origin;
-  };
-
-  const postMessageToParent = (type: string, payload?: unknown) => {
-    if (window.parent !== window) {
-      window.parent.postMessage({ type, payload }, getParentOrigin());
-    }
   };
 
   return (

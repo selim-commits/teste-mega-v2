@@ -1,9 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { Payment, PaymentInsert, PaymentUpdate, PaymentMethod } from '../types/database';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 export interface PaymentFilters {
   studioId?: string;
   invoiceId?: string;
@@ -14,7 +11,7 @@ export interface PaymentFilters {
 
 export const paymentService = {
   async getAll(filters?: PaymentFilters): Promise<Payment[]> {
-    let query = db.from('payments').select('*');
+    let query = supabase.from('payments').select('*');
 
     if (filters?.studioId) {
       query = query.eq('studio_id', filters.studioId);
@@ -69,7 +66,7 @@ export const paymentService = {
   },
 
   async delete(id: string): Promise<void> {
-    const { error } = await db.from('payments').delete().eq('id', id);
+    const { error } = await supabase.from('payments').delete().eq('id', id);
     if (error) throw error;
   },
 

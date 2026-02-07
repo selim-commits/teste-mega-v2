@@ -695,11 +695,12 @@ export function useLiveChat(conversationId: string, studioContext?: StudioContex
   const markRead = useMarkMessagesRead();
 
   // Auto-mark messages as read when conversation is viewed
+  const unreadCount = conversation.data?.unread_count;
   useEffect(() => {
-    if (conversation.data && conversation.data.unread_count > 0) {
+    if (unreadCount && unreadCount > 0) {
       markRead.mutate({ conversationId });
     }
-  }, [conversationId, conversation.data?.unread_count]);
+  }, [conversationId, unreadCount]); // eslint-disable-line react-hooks/exhaustive-deps -- markRead is a stable mutation object from useMutation
 
   const send = useCallback(
     async (content: string, useAI: boolean = false) => {

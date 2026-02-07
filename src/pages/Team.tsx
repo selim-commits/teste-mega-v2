@@ -624,7 +624,7 @@ export function Team() {
                         </Dropdown>
                       </div>
 
-                      <div className={styles.memberContent} onClick={() => openDetailSidebar(member)}>
+                      <div className={styles.memberContent} onClick={() => openDetailSidebar(member)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetailSidebar(member); } }} role="button" tabIndex={0}>
                         <div className={styles.memberInfo}>
                           <h4 className={styles.memberName}>{member.name}</h4>
                           <p className={styles.memberRole}>{member.job_title || getRoleLabel(member.role)}</p>

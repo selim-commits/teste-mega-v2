@@ -17,7 +17,7 @@ import { Button } from '../ui/Button';
 import { Select } from '../ui/Select';
 import { Table, Pagination } from '../ui/Table';
 import { Dropdown, DropdownItem, DropdownDivider } from '../ui/Dropdown';
-import type { ClientPurchase, Client, Pack, SubscriptionStatus } from '../../types/database';
+import type { ClientPurchase, ClientPurchaseWithRelations, SubscriptionStatus } from '../../types/database';
 import styles from '../../pages/Packs.module.css';
 
 interface ClientSubscriptionsProps {
@@ -51,10 +51,9 @@ export function ClientSubscriptions({
 
   // Filter purchases
   const filteredPurchases = purchases.filter((purchase) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const client = (purchase as any).client as Client | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const product = (purchase as any).product as Pack | undefined;
+    const purchaseWithRelations = purchase as ClientPurchaseWithRelations;
+    const client = purchaseWithRelations.client;
+    const product = purchaseWithRelations.product;
 
     // Search filter
     if (searchQuery) {
@@ -108,8 +107,7 @@ export function ClientSubscriptions({
       key: 'client',
       header: 'Client',
       render: (purchase: ClientPurchase) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const client = (purchase as any).client as Client | undefined;
+        const client = (purchase as ClientPurchaseWithRelations).client;
         return (
           <div className={styles.clientCell}>
             <div className={styles.clientAvatar}>
@@ -127,8 +125,7 @@ export function ClientSubscriptions({
       key: 'product',
       header: 'Pack / Abonnement',
       render: (purchase: ClientPurchase) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const product = (purchase as any).product as Pack | undefined;
+        const product = (purchase as ClientPurchaseWithRelations).product;
         return (
           <div className={styles.productCell}>
             <Package size={14} />

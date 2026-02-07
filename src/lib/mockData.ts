@@ -821,6 +821,114 @@ export function getMockMaintenanceEquipment(): MockData[] {
   return mockEquipment.filter(e => e.status === 'maintenance' || e.condition <= 2);
 }
 
+// =====================
+// Centralized demo mode filter functions
+// These extract filtering logic from hooks to keep demo mode handling consistent
+// =====================
+
+// Filter mock clients by optional criteria
+export function getFilteredMockClients(filters?: {
+  tier?: string;
+  isActive?: boolean;
+}): MockData[] {
+  let result = [...mockClients];
+  if (filters?.tier) {
+    result = result.filter(c => c.tier === filters.tier);
+  }
+  if (filters?.isActive !== undefined) {
+    result = result.filter(c => c.is_active === filters.isActive);
+  }
+  return result;
+}
+
+// Filter mock bookings by optional criteria
+export function getFilteredMockBookings(filters?: {
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+}): MockData[] {
+  let result = [...mockBookings];
+  if (filters?.startDate) {
+    result = result.filter(b => new Date(b.start_time) >= new Date(filters.startDate!));
+  }
+  if (filters?.endDate) {
+    result = result.filter(b => new Date(b.end_time) <= new Date(filters.endDate!));
+  }
+  if (filters?.status) {
+    result = result.filter(b => b.status === filters.status);
+  }
+  return result.sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+}
+
+// Get upcoming mock bookings (future, non-cancelled, sorted, limited)
+export function getMockUpcomingBookings(limit: number = 10): MockData[] {
+  const now = new Date();
+  return mockBookings
+    .filter(b => new Date(b.start_time) >= now && b.status !== 'cancelled')
+    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+    .slice(0, limit);
+}
+
+// Filter mock invoices by optional criteria
+export function getFilteredMockInvoices(filters?: {
+  status?: string;
+  clientId?: string;
+}): MockData[] {
+  let result = [...mockInvoices];
+  if (filters?.status) {
+    result = result.filter(i => i.status === filters.status);
+  }
+  if (filters?.clientId) {
+    result = result.filter(i => i.client_id === filters.clientId);
+  }
+  return result;
+}
+
+// Filter mock equipment by optional criteria
+export function getFilteredMockEquipment(filters?: {
+  status?: string;
+  category?: string;
+}): MockData[] {
+  let result = [...mockEquipment];
+  if (filters?.status) {
+    result = result.filter(e => e.status === filters.status);
+  }
+  if (filters?.category) {
+    result = result.filter(e => e.category === filters.category);
+  }
+  return result;
+}
+
+// Filter mock packs by optional criteria
+export function getFilteredMockPacks(filters?: {
+  type?: string;
+  isActive?: boolean;
+}): MockData[] {
+  let result = [...mockPacks];
+  if (filters?.type) {
+    result = result.filter(p => p.type === filters.type);
+  }
+  if (filters?.isActive === true) {
+    result = result.filter(p => p.is_active);
+  }
+  return result;
+}
+
+// Filter mock client purchases by optional criteria
+export function getFilteredMockClientPurchases(filters?: {
+  clientId?: string;
+  status?: string;
+}): MockData[] {
+  let result = [...mockClientPurchases];
+  if (filters?.clientId) {
+    result = result.filter(p => p.client_id === filters.clientId);
+  }
+  if (filters?.status) {
+    result = result.filter(p => p.status === filters.status);
+  }
+  return result;
+}
+
 // Mock Invoices
 // Mock Payments
 export const mockPayments: MockData[] = [

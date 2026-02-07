@@ -161,8 +161,9 @@ export function RecordPaymentModal({
             {/* Notes */}
             <div className={styles.formSection}>
               <div className={styles.formFullWidth}>
-                <label className={styles.formLabel}>Notes (optionnel)</label>
+                <label className={styles.formLabel} htmlFor="payment-notes">Notes (optionnel)</label>
                 <textarea
+                  id="payment-notes"
                   className={styles.textarea}
                   value={paymentFormData.notes}
                   onChange={(e) => setPaymentFormData({ ...paymentFormData, notes: e.target.value })}

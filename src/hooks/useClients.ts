@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientService } from '../services';
 import { queryKeys } from '../lib/queryClient';
 import { isDemoMode, withDemoMode } from '../lib/supabase';
-import { mockClients } from '../lib/mockData';
+import { mockClients, getFilteredMockClients } from '../lib/mockData';
 import type { Client, ClientInsert, ClientUpdate, ClientTier } from '../types/database';
 
 export interface ClientFilters {
@@ -17,17 +17,7 @@ export function useClients(filters?: ClientFilters) {
   return useQuery({
     queryKey: queryKeys.clients.list(filters || {}),
     queryFn: async (): Promise<Client[]> => {
-      // Return mock data in demo mode
-      if (isDemoMode) {
-        let result = [...mockClients] as Client[];
-        if (filters?.tier) {
-          result = result.filter(c => c.tier === filters.tier);
-        }
-        if (filters?.isActive !== undefined) {
-          result = result.filter(c => c.is_active === filters.isActive);
-        }
-        return result;
-      }
+      if (isDemoMode) return getFilteredMockClients(filters) as Client[];
 
       if (filters?.studioId && filters?.tier) {
         return clientService.getByTier(filters.studioId, filters.tier);

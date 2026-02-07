@@ -228,7 +228,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
     if (isOpen) {
       onClose();
     }
-  }, [location.pathname]);
+  }, [location.pathname]); // eslint-disable-line react-hooks/exhaustive-deps -- Close sidebar on route change only, not when isOpen/onClose change
 
   return (
     <>
@@ -236,6 +236,10 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       <div
         className={cn(styles.overlay, isOpen && styles.overlayVisible)}
         onClick={onClose}
+        onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
+        role="button"
+        tabIndex={-1}
+        aria-label="Fermer le menu"
       />
 
       <aside className={cn(styles.sidebar, isOpen && styles.sidebarOpen)}>

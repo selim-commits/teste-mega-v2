@@ -140,8 +140,9 @@ export function BookingSettingsSection() {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.label}>Politique d'annulation</label>
+            <label className={styles.label} htmlFor="booking-cancellation-policy">Politique d'annulation</label>
             <textarea
+              id="booking-cancellation-policy"
               className={styles.textarea}
               placeholder="Decrivez votre politique d'annulation..."
               rows={4}

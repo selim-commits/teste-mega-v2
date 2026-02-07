@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Search, Calendar, DollarSign, Package } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Table, Pagination } from '../ui/Table';
-import type { ClientPurchase, Client, Pack } from '../../types/database';
+import type { ClientPurchase, ClientPurchaseWithRelations } from '../../types/database';
 import styles from '../../pages/Packs.module.css';
 
 interface PurchaseHistoryProps {
@@ -23,10 +23,9 @@ export function PurchaseHistory({
   // Filter purchases
   const filteredPurchases = purchases.filter((purchase) => {
     if (!searchQuery) return true;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const client = (purchase as any).client as Client | undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const product = (purchase as any).product as Pack | undefined;
+    const purchaseWithRelations = purchase as ClientPurchaseWithRelations;
+    const client = purchaseWithRelations.client;
+    const product = purchaseWithRelations.product;
     const query = searchQuery.toLowerCase();
     return (
       client?.name?.toLowerCase().includes(query) ||
@@ -80,8 +79,7 @@ export function PurchaseHistory({
       key: 'client',
       header: 'Client',
       render: (purchase: ClientPurchase) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const client = (purchase as any).client as Client | undefined;
+        const client = (purchase as ClientPurchaseWithRelations).client;
         return (
           <div className={styles.clientCell}>
             <div className={styles.clientAvatar}>
@@ -99,8 +97,7 @@ export function PurchaseHistory({
       key: 'product',
       header: 'Produit',
       render: (purchase: ClientPurchase) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const product = (purchase as any).product as Pack | undefined;
+        const product = (purchase as ClientPurchaseWithRelations).product;
         return (
           <div className={styles.productCell}>
             <Package size={14} />
@@ -116,8 +113,7 @@ export function PurchaseHistory({
       key: 'amount',
       header: 'Montant',
       render: (purchase: ClientPurchase) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const product = (purchase as any).product as Pack | undefined;
+        const product = (purchase as ClientPurchaseWithRelations).product;
         return (
           <div className={styles.amountCell}>
             <DollarSign size={14} />

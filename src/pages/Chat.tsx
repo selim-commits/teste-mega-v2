@@ -61,7 +61,7 @@ export function Chat() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: conversationsData } = useStudioConversations(studioId || '');
-  const conversations = (conversationsData || []) as ChatConversation[];
+  const conversations = useMemo(() => (conversationsData || []) as ChatConversation[], [conversationsData]);
   const { data: selectedConversationData } = useConversation(selectedConversationId || '');
   const selectedConversation = selectedConversationData as (ChatConversation & { messages?: Array<{ id: string; sender_type: string; content: string; created_at: string; metadata?: Record<string, unknown> }> }) | null;
   const sendMessage = useSendMessage();
@@ -214,6 +214,9 @@ export function Chat() {
                       selectedConversationId === conv.id ? styles.selected : ''
                     } ${conv.status === 'waiting_for_human' ? styles.urgent : ''}`}
                     onClick={() => setSelectedConversationId(conv.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedConversationId(conv.id); } }}
+                    role="button"
+                    tabIndex={0}
                   >
                     <div className={styles.convAvatar}>
                       <User size={20} />

@@ -77,8 +77,9 @@ export function ContentEditor({ content, onChange, widgetType }: ContentEditorPr
 
         {widgetType === 'chat' && (
           <div className={styles.formGroup}>
-            <label className={styles.label}>Message de bienvenue</label>
+            <label className={styles.label} htmlFor="welcome-message">Message de bienvenue</label>
             <textarea
+              id="welcome-message"
               className={styles.textarea}
               placeholder="Bienvenue! Comment pouvons-nous vous aider?"
               value={content.welcomeMessage}
@@ -92,8 +93,9 @@ export function ContentEditor({ content, onChange, widgetType }: ContentEditorPr
         )}
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>Message de confirmation</label>
+          <label className={styles.label} htmlFor="success-message">Message de confirmation</label>
           <textarea
+            id="success-message"
             className={styles.textarea}
             placeholder="Merci! Votre reservation a ete confirmee."
             value={content.successMessage}

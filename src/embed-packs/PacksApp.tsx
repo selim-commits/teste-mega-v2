@@ -1,5 +1,5 @@
 // src/embed-packs/PacksApp.tsx
-import { useEffect } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { usePacksStore } from './store/packsStore';
 import { packsApi } from './services/packsApi';
 import {
@@ -299,7 +299,7 @@ export function PacksApp({ config }: PacksAppProps) {
     setError,
   } = usePacksStore();
 
-  const getParentOrigin = (): string => {
+  const getParentOrigin = useCallback((): string => {
     try {
       if (document.referrer) {
         return new URL(document.referrer).origin;
@@ -309,20 +309,27 @@ export function PacksApp({ config }: PacksAppProps) {
     }
     // Ne pas utiliser '*' - utiliser l'origin du document comme fallback securise
     return window.location.origin;
-  };
+  }, []);
 
-  const notifyParent = (type: string, payload: unknown) => {
+  const notifyParent = useCallback((type: string, payload: unknown) => {
     if (window.parent !== window) {
       window.parent.postMessage({ type, payload }, getParentOrigin());
     }
-  };
+  }, [getParentOrigin]);
 
-  const loadData = async () => {
+  // Use ref to avoid stale closures in the initialization effect
+  const configRef = useRef(config);
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  const loadData = useCallback(async () => {
+    const currentConfig = configRef.current;
     setLoading(true);
     setError(null);
 
     // Load studio config
-    const studioRes = await packsApi.getStudioConfig(config.studioId);
+    const studioRes = await packsApi.getStudioConfig(currentConfig.studioId);
     if (studioRes.error) {
       setError(studioRes.error);
       setLoading(false);
@@ -331,22 +338,22 @@ export function PacksApp({ config }: PacksAppProps) {
     setStudio(studioRes.data!);
 
     // Load packs
-    const packsRes = await packsApi.getPacks(config.studioId);
+    const packsRes = await packsApi.getPacks(currentConfig.studioId);
     if (packsRes.data) {
       setPacks(packsRes.data);
     }
 
     // Load subscriptions
-    if (config.showSubscriptions !== false) {
-      const subsRes = await packsApi.getSubscriptions(config.studioId);
+    if (currentConfig.showSubscriptions !== false) {
+      const subsRes = await packsApi.getSubscriptions(currentConfig.studioId);
       if (subsRes.data) {
         setSubscriptions(subsRes.data);
       }
     }
 
     // Load gift certificates
-    if (config.showGiftCertificates !== false) {
-      const giftsRes = await packsApi.getGiftCertificates(config.studioId);
+    if (currentConfig.showGiftCertificates !== false) {
+      const giftsRes = await packsApi.getGiftCertificates(currentConfig.studioId);
       if (giftsRes.data) {
         setGiftCertificates(giftsRes.data);
       }
@@ -354,16 +361,16 @@ export function PacksApp({ config }: PacksAppProps) {
 
     // Try to load client wallet (if auth token available)
     // In real implementation, this would check for stored auth token
-    const walletRes = await packsApi.getClientWallet(config.studioId);
+    const walletRes = await packsApi.getClientWallet(currentConfig.studioId);
     if (walletRes.data) {
       setClientWallet(walletRes.data);
     }
 
     setLoading(false);
-  };
+  }, [setLoading, setError, setStudio, setPacks, setSubscriptions, setGiftCertificates, setClientWallet]);
 
   useEffect(() => {
-    setConfig(config);
+    setConfig(configRef.current);
     loadData();
     notifyParent('ROOOM_PACKS_READY', {});
 
@@ -377,7 +384,7 @@ export function PacksApp({ config }: PacksAppProps) {
     if (container) resizeObserver.observe(container);
 
     return () => resizeObserver.disconnect();
-  }, []);
+  }, [setConfig, loadData, notifyParent]);
 
   const themeClass = config.theme === 'dark' ? 'rooom-dark' : 'rooom-light';
 

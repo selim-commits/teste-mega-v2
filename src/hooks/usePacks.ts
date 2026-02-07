@@ -3,7 +3,7 @@ import { packService, clientPurchaseService, packStatsService } from '../service
 import type { PackFilters, ClientPurchaseFilters } from '../services/packs';
 import type { Pack, PackInsert, PackUpdate, ClientPurchase, ClientPurchaseInsert, ClientPurchaseUpdate, PricingProductType, SubscriptionStatus } from '../types/database';
 import { isDemoMode, withDemoMode } from '../lib/supabase';
-import { mockPacks, mockClientPurchases, calculateMockPackStats } from '../lib/mockData';
+import { mockPacks, mockClientPurchases, calculateMockPackStats, getFilteredMockPacks, getFilteredMockClientPurchases } from '../lib/mockData';
 import { queryKeys } from '../lib/queryClient';
 
 // Re-export centralized query keys for backward compatibility
@@ -19,17 +19,7 @@ export function usePacks(filters?: PackFilters) {
   return useQuery({
     queryKey: packQueryKeys.list(filters || {}),
     queryFn: async (): Promise<Pack[]> => {
-      // Return mock data in demo mode
-      if (isDemoMode) {
-        let result = [...mockPacks] as Pack[];
-        if (filters?.type) {
-          result = result.filter(p => p.type === filters.type);
-        }
-        if (filters?.isActive === true) {
-          result = result.filter(p => p.is_active);
-        }
-        return result;
-      }
+      if (isDemoMode) return getFilteredMockPacks(filters) as Pack[];
 
       if (filters?.studioId) {
         if (filters?.type) {
@@ -196,17 +186,8 @@ export function useUpdatePackOrder() {
 export function useClientPurchases(filters?: ClientPurchaseFilters) {
   return useQuery({
     queryKey: purchaseQueryKeys.list(filters || {}),
-    queryFn: (): Promise<ClientPurchase[]> => {
-      if (isDemoMode) {
-        let result = [...mockClientPurchases] as ClientPurchase[];
-        if (filters?.clientId) {
-          result = result.filter(p => p.client_id === filters.clientId);
-        }
-        if (filters?.status) {
-          result = result.filter(p => p.status === filters.status);
-        }
-        return Promise.resolve(result);
-      }
+    queryFn: async (): Promise<ClientPurchase[]> => {
+      if (isDemoMode) return getFilteredMockClientPurchases(filters) as ClientPurchase[];
       return clientPurchaseService.getAll(filters);
     },
     enabled: true,

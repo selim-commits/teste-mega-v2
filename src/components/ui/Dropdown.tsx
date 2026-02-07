@@ -56,9 +56,10 @@ export function Dropdown({ trigger, children, align = 'start', className, label 
   }, [isOpen]);
 
   return (
-    <div ref={dropdownRef} className={cn(styles.dropdown, className)} onKeyDown={handleKeyDown}>
+    <div ref={dropdownRef} className={cn(styles.dropdown, className)} onKeyDown={handleKeyDown} role="presentation">
       <div
         onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsOpen(!isOpen); } }}
         role="button"
         tabIndex={0}
         aria-haspopup="menu"

@@ -1,12 +1,9 @@
 import { supabase } from '../lib/supabase';
 import type { Studio, StudioInsert, StudioUpdate, Json } from '../types/database';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 export const studioService = {
   async getAll(): Promise<Studio[]> {
-    const { data, error } = await db.from('studios').select('*');
+    const { data, error } = await supabase.from('studios').select('*');
     if (error) throw error;
     return (data as Studio[]) || [];
   },
@@ -22,7 +19,7 @@ export const studioService = {
   },
 
   async create(studio: StudioInsert): Promise<Studio> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('studios')
       .insert(studio)
       .select()
@@ -32,7 +29,7 @@ export const studioService = {
   },
 
   async update(id: string, studio: StudioUpdate): Promise<Studio> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('studios')
       .update(studio)
       .eq('id', id)
@@ -43,7 +40,7 @@ export const studioService = {
   },
 
   async delete(id: string): Promise<void> {
-    const { error } = await db.from('studios').delete().eq('id', id);
+    const { error } = await supabase.from('studios').delete().eq('id', id);
     if (error) throw error;
   },
 
@@ -67,7 +64,7 @@ export const studioService = {
   },
 
   async updateSettings(id: string, settings: Json): Promise<Studio> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('studios')
       .update({ settings })
       .eq('id', id)

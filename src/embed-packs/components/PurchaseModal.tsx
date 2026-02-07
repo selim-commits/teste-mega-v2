@@ -156,8 +156,9 @@ export function PurchaseModal({ currency = 'EUR' }: PurchaseModalProps) {
   };
 
   return (
-    <div className="rooom-packs-modal-overlay" onClick={closePurchaseModal}>
-      <div className="rooom-packs-modal" onClick={(e) => e.stopPropagation()}>
+    <div className="rooom-packs-modal-overlay" onClick={closePurchaseModal} onKeyDown={(e) => { if (e.key === 'Escape') closePurchaseModal(); }} role="button" tabIndex={-1} aria-label="Fermer">
+      {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+      <div className="rooom-packs-modal" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <div className="rooom-packs-modal-header">
           <h3 className="rooom-packs-modal-title">Recapitulatif</h3>
           <button className="rooom-packs-modal-close" onClick={closePurchaseModal}>

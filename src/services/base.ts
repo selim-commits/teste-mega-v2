@@ -3,19 +3,16 @@ import type { Database } from '../types/database';
 
 type TableName = keyof Database['public']['Tables'];
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 export function createBaseService<T extends { id: string }>(tableName: TableName) {
   return {
     async getAll(): Promise<T[]> {
-      const { data, error } = await db.from(tableName).select('*');
+      const { data, error } = await supabase.from(tableName).select('*');
       if (error) throw error;
       return (data as T[]) || [];
     },
 
     async getById(id: string, studioId?: string): Promise<T | null> {
-      let query = db.from(tableName).select('*').eq('id', id);
+      let query = supabase.from(tableName).select('*').eq('id', id);
       if (studioId) {
         query = query.eq('studio_id', studioId);
       }
@@ -25,20 +22,20 @@ export function createBaseService<T extends { id: string }>(tableName: TableName
     },
 
     async delete(id: string): Promise<void> {
-      const { error } = await db.from(tableName).delete().eq('id', id);
+      const { error } = await supabase.from(tableName).delete().eq('id', id);
       if (error) throw error;
     },
   };
 }
 
-export async function fetchAll<T>(tableName: string): Promise<T[]> {
-  const { data, error } = await db.from(tableName).select('*');
+export async function fetchAll<T>(tableName: TableName): Promise<T[]> {
+  const { data, error } = await supabase.from(tableName).select('*');
   if (error) throw error;
   return (data as T[]) || [];
 }
 
-export async function fetchById<T>(tableName: string, id: string, studioId?: string): Promise<T | null> {
-  let query = db.from(tableName).select('*').eq('id', id);
+export async function fetchById<T>(tableName: TableName, id: string, studioId?: string): Promise<T | null> {
+  let query = supabase.from(tableName).select('*').eq('id', id);
   if (studioId) {
     query = query.eq('studio_id', studioId);
   }
@@ -47,19 +44,19 @@ export async function fetchById<T>(tableName: string, id: string, studioId?: str
   return data as T;
 }
 
-export async function createOne<T>(tableName: string, item: Partial<T>): Promise<T> {
-  const { data, error } = await db.from(tableName).insert(item).select().single();
+export async function createOne<T>(tableName: TableName, item: Partial<T>): Promise<T> {
+  const { data, error } = await supabase.from(tableName).insert(item as Record<string, unknown>).select().single();
   if (error) throw error;
   return data as T;
 }
 
-export async function updateOne<T>(tableName: string, id: string, updates: Partial<T>): Promise<T> {
-  const { data, error } = await db.from(tableName).update(updates).eq('id', id).select().single();
+export async function updateOne<T>(tableName: TableName, id: string, updates: Partial<T>): Promise<T> {
+  const { data, error } = await supabase.from(tableName).update(updates as Record<string, unknown>).eq('id', id).select().single();
   if (error) throw error;
   return data as T;
 }
 
-export async function deleteOne(tableName: string, id: string): Promise<void> {
-  const { error } = await db.from(tableName).delete().eq('id', id);
+export async function deleteOne(tableName: TableName, id: string): Promise<void> {
+  const { error } = await supabase.from(tableName).delete().eq('id', id);
   if (error) throw error;
 }

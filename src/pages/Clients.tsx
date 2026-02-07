@@ -595,7 +595,7 @@ export function Clients() {
               </div>
               {/* Tag Filters */}
               <div className={styles.tagFiltersSection}>
-                <label className={styles.filterSectionLabel}>Filtrer par tags</label>
+                <span className={styles.filterSectionLabel}>Filtrer par tags</span>
                 <div className={styles.tagFilters}>
                   {commonTags.map((tag) => (
                     <button
@@ -739,7 +739,7 @@ export function Clients() {
                         </Dropdown>
                       </div>
 
-                      <div className={styles.clientContent} onClick={() => openDetailSidebar(client)}>
+                      <div className={styles.clientContent} onClick={() => openDetailSidebar(client)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDetailSidebar(client); } }} role="button" tabIndex={0}>
                         <div className={styles.clientInfo}>
                           <h4 className={styles.clientName}>{client.name}</h4>
                           <p className={styles.clientCompany}>{client.company || 'Particulier'}</p>

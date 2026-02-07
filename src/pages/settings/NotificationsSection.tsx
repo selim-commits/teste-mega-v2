@@ -80,7 +80,7 @@ export function NotificationsSection() {
                   Recevez les notifications par email
                 </span>
               </div>
-              <label className={styles.toggle}>
+              <label className={styles.toggle} aria-label="Notifications par email">
                 <input
                   type="checkbox"
                   checked={settings.emailEnabled}
@@ -97,7 +97,7 @@ export function NotificationsSection() {
                   Recevez les notifications par SMS (bientot disponible)
                 </span>
               </div>
-              <label className={styles.toggle}>
+              <label className={styles.toggle} aria-label="Notifications SMS">
                 <input
                   type="checkbox"
                   checked={settings.smsEnabled}
@@ -125,7 +125,7 @@ export function NotificationsSection() {
                   Envoyer un rappel 24 heures avant la reservation
                 </span>
               </div>
-              <label className={styles.toggle}>
+              <label className={styles.toggle} aria-label="Rappel 24h avant">
                 <input
                   type="checkbox"
                   checked={settings.reminder24h}
@@ -142,7 +142,7 @@ export function NotificationsSection() {
                   Envoyer un rappel 48 heures avant la reservation
                 </span>
               </div>
-              <label className={styles.toggle}>
+              <label className={styles.toggle} aria-label="Rappel 48h avant">
                 <input
                   type="checkbox"
                   checked={settings.reminder48h}
@@ -159,7 +159,7 @@ export function NotificationsSection() {
                   Envoyer un rappel 1 semaine avant la reservation
                 </span>
               </div>
-              <label className={styles.toggle}>
+              <label className={styles.toggle} aria-label="Rappel 1 semaine avant">
                 <input
                   type="checkbox"
                   checked={settings.reminder1Week}
@@ -186,7 +186,7 @@ export function NotificationsSection() {
                   Recevoir une alerte pour chaque nouvelle reservation
                 </span>
               </div>
-              <label className={styles.toggle}>
+              <label className={styles.toggle} aria-label="Nouvelle reservation">
                 <input
                   type="checkbox"
                   checked={settings.newBookingAlert}
@@ -203,7 +203,7 @@ export function NotificationsSection() {
                   Etre prevenu en cas d'annulation
                 </span>
               </div>
-              <label className={styles.toggle}>
+              <label className={styles.toggle} aria-label="Annulation">
                 <input
                   type="checkbox"
                   checked={settings.cancellationAlert}
@@ -220,7 +220,7 @@ export function NotificationsSection() {
                   Confirmation de reception de paiement
                 </span>
               </div>
-              <label className={styles.toggle}>
+              <label className={styles.toggle} aria-label="Paiement recu">
                 <input
                   type="checkbox"
                   checked={settings.paymentAlert}

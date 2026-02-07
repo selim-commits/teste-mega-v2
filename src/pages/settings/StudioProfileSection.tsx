@@ -111,7 +111,7 @@ export function StudioProfileSection() {
           {/* Logo and Cover */}
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Logo du studio</label>
+              <span className={styles.label}>Logo du studio</span>
               <div className={styles.logoUploadContainer}>
                 <div className={styles.uploadAreaSmall}>
                   {profile.logoUrl ? (
@@ -133,7 +133,7 @@ export function StudioProfileSection() {
               </div>
             </div>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Image de couverture</label>
+              <span className={styles.label}>Image de couverture</span>
               <div className={styles.logoUploadContainer}>
                 <div className={styles.uploadAreaSmall}>
                   {profile.coverUrl ? (
@@ -179,8 +179,9 @@ export function StudioProfileSection() {
 
           {/* Description */}
           <div className={styles.formGroup}>
-            <label className={styles.label}>Description</label>
+            <label className={styles.label} htmlFor="studio-description">Description</label>
             <textarea
+              id="studio-description"
               className={styles.textarea}
               placeholder="Decrivez votre studio..."
               rows={4}

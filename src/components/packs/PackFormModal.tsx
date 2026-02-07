@@ -300,7 +300,7 @@ export function PackFormModal({
           {/* Applicable Spaces */}
           {spaces.length > 0 && (
             <div className={styles.formFullWidth}>
-              <label className={styles.formLabel}>Espaces applicables</label>
+              <span className={styles.formLabel}>Espaces applicables</span>
               <div className={styles.spacesSelection}>
                 {spaces.map((space) => (
                   <button
@@ -332,7 +332,7 @@ export function PackFormModal({
 
           {/* Benefits */}
           <div className={styles.formFullWidth}>
-            <label className={styles.formLabel}>Avantages inclus</label>
+            <span className={styles.formLabel}>Avantages inclus</span>
             <div className={styles.benefitsSection}>
               <div className={styles.benefitsInput}>
                 <Input
@@ -371,8 +371,9 @@ export function PackFormModal({
 
           {/* Terms */}
           <div className={styles.formFullWidth}>
-            <label className={styles.formLabel}>Termes et conditions</label>
+            <label className={styles.formLabel} htmlFor="pack-terms">Termes et conditions</label>
             <textarea
+              id="pack-terms"
               className={styles.textarea}
               value={formData.terms_and_conditions}
               onChange={(e) => handleChange('terms_and_conditions', e.target.value)}

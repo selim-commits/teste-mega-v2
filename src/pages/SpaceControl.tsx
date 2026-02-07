@@ -471,6 +471,9 @@ export function SpaceControl() {
                     key={`${space.id}-${time}`}
                     className={styles.timeSlot}
                     onClick={() => !slotBookings.length && handleSlotClick(space.id, selectedDate, time)}
+                    onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && !slotBookings.length) { e.preventDefault(); handleSlotClick(space.id, selectedDate, time); } }}
+                    role="button"
+                    tabIndex={0}
                   >
                     {slotBookings.map((booking) => {
                       if (!isBookingStart(booking, selectedDate, time)) return null;
@@ -484,6 +487,9 @@ export function SpaceControl() {
                             borderLeftColor: getSpaceColor(space, index),
                           }}
                           onClick={(e) => handleBookingClick(booking, e)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBookingClick(booking); } }}
+                          role="button"
+                          tabIndex={0}
                         >
                           <div className={styles.bookingTime}>
                             {format(parseISO(booking.start_time), 'HH:mm')} - {format(parseISO(booking.end_time), 'HH:mm')}
@@ -524,6 +530,9 @@ export function SpaceControl() {
               setSelectedDate(day);
               setViewMode('day');
             }}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedDate(day); setViewMode('day'); } }}
+            role="button"
+            tabIndex={0}
           >
             <span className={styles.weekDayName}>{format(day, 'EEE', { locale: fr })}</span>
             <span className={`${styles.weekDayNumber} ${isToday(day) ? styles.todayNumber : ''}`}>
@@ -560,6 +569,9 @@ export function SpaceControl() {
                             borderLeftColor: getSpaceColor(space, index),
                           }}
                           onClick={(e) => handleBookingClick(booking, e)}
+                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBookingClick(booking); } }}
+                          role="button"
+                          tabIndex={0}
                         >
                           <span className={styles.weekBookingTime}>
                             {format(parseISO(booking.start_time), 'HH:mm')}
@@ -597,6 +609,9 @@ export function SpaceControl() {
               key={day.toISOString()}
               className={`${styles.monthDay} ${!isCurrentMonth ? styles.otherMonth : ''} ${isToday(day) ? styles.today : ''}`}
               onClick={() => handleDayClick(day)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleDayClick(day); } }}
+              role="button"
+              tabIndex={0}
             >
               <span className={`${styles.monthDayNumber} ${isToday(day) ? styles.todayNumber : ''}`}>
                 {format(day, 'd')}
@@ -614,6 +629,9 @@ export function SpaceControl() {
                         borderLeftColor: getSpaceColor(space!, spaceIndex),
                       }}
                       onClick={(e) => handleBookingClick(booking, e)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleBookingClick(booking); } }}
+                      role="button"
+                      tabIndex={0}
                     >
                       <span className={styles.monthBookingTime}>
                         {format(parseISO(booking.start_time), 'HH:mm')}

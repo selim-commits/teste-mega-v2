@@ -57,7 +57,7 @@ export function BehaviorEditor({ behavior, onChange, widgetType }: BehaviorEdito
               Le widget sera visible sur les appareils mobiles
             </span>
           </div>
-          <label className={styles.toggle}>
+          <label className={styles.toggle} aria-label="Afficher sur mobile">
             <input
               type="checkbox"
               checked={behavior.showOnMobile}
@@ -79,7 +79,7 @@ export function BehaviorEditor({ behavior, onChange, widgetType }: BehaviorEdito
               Le widget s'ouvre apres un delai
             </span>
           </div>
-          <label className={styles.toggle}>
+          <label className={styles.toggle} aria-label="Activer l'ouverture automatique">
             <input
               type="checkbox"
               checked={behavior.autoOpen}
@@ -115,7 +115,7 @@ export function BehaviorEditor({ behavior, onChange, widgetType }: BehaviorEdito
               Le widget se ferme quand on clique en dehors
             </span>
           </div>
-          <label className={styles.toggle}>
+          <label className={styles.toggle} aria-label="Fermer au clic exterieur">
             <input
               type="checkbox"
               checked={behavior.closeOnOutsideClick}

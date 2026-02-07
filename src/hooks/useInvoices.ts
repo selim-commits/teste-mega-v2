@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoiceService } from '../services';
 import { queryKeys } from '../lib/queryClient';
 import { isDemoMode } from '../lib/supabase';
-import { mockInvoices } from '../lib/mockData';
+import { getFilteredMockInvoices } from '../lib/mockData';
 import type { Invoice, InvoiceInsert, InvoiceUpdate, InvoiceStatus } from '../types/database';
 
 export interface InvoiceFilters {
@@ -18,17 +18,7 @@ export function useInvoices(filters?: InvoiceFilters) {
   return useQuery({
     queryKey: queryKeys.invoices.list(filters || {}),
     queryFn: async (): Promise<Invoice[]> => {
-      // Return mock data in demo mode
-      if (isDemoMode) {
-        let result = [...mockInvoices] as Invoice[];
-        if (filters?.status) {
-          result = result.filter(i => i.status === filters.status);
-        }
-        if (filters?.clientId) {
-          result = result.filter(i => i.client_id === filters.clientId);
-        }
-        return result;
-      }
+      if (isDemoMode) return getFilteredMockInvoices(filters) as Invoice[];
 
       if (filters?.studioId && filters?.status) {
         return invoiceService.getByStatus(filters.studioId, filters.status);

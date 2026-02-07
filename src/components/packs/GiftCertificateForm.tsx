@@ -179,8 +179,9 @@ export function GiftCertificateForm({
             />
 
             <div className={styles.formField}>
-              <label className={styles.formLabel}>Message personnel</label>
+              <label className={styles.formLabel} htmlFor="gift-message">Message personnel</label>
               <textarea
+                id="gift-message"
                 className={styles.textarea}
                 value={formData.gift_message}
                 onChange={(e) => handleChange('gift_message', e.target.value)}

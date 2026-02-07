@@ -62,9 +62,10 @@ export function AppearanceEditor({ appearance, onChange }: AppearanceEditorProps
         <h4 className={styles.sectionTitle}>Style</h4>
 
         <div className={styles.formGroup}>
-          <label className={styles.label}>Arrondi des coins</label>
+          <label className={styles.label} htmlFor="border-radius-slider">Arrondi des coins</label>
           <div className={styles.sliderContainer}>
             <input
+              id="border-radius-slider"
               type="range"
               min="0"
               max="24"

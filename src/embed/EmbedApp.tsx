@@ -1,5 +1,5 @@
 // src/embed/EmbedApp.tsx
-import { useEffect } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useEmbedStore } from './store/embedStore';
 import { embedApi } from './services/embedApi';
 import { ServiceSelection } from './components/ServiceSelection';
@@ -30,7 +30,7 @@ export function EmbedApp({ config }: EmbedAppProps) {
     setError,
   } = useEmbedStore();
 
-  const getParentOrigin = (): string => {
+  const getParentOrigin = useCallback((): string => {
     try {
       if (document.referrer) {
         return new URL(document.referrer).origin;
@@ -40,19 +40,26 @@ export function EmbedApp({ config }: EmbedAppProps) {
     }
     // Ne pas utiliser '*' - utiliser l'origin du document comme fallback securise
     return window.location.origin;
-  };
+  }, []);
 
-  const notifyParent = (type: string, payload: unknown) => {
+  const notifyParent = useCallback((type: string, payload: unknown) => {
     if (window.parent !== window) {
       window.parent.postMessage({ type, payload }, getParentOrigin());
     }
-  };
+  }, [getParentOrigin]);
 
-  const loadStudioData = async () => {
+  // Use ref to avoid stale closures in the initialization effect
+  const configRef = useRef(config);
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  const loadStudioData = useCallback(async () => {
+    const currentConfig = configRef.current;
     setLoading(true);
     setError(null);
 
-    const studioRes = await embedApi.getStudioConfig(config.studioId);
+    const studioRes = await embedApi.getStudioConfig(currentConfig.studioId);
     if (studioRes.error) {
       setError(studioRes.error);
       setLoading(false);
@@ -61,8 +68,8 @@ export function EmbedApp({ config }: EmbedAppProps) {
     setStudio(studioRes.data!);
 
     const servicesRes = await embedApi.getServices(
-      config.studioId,
-      config.services.length ? config.services : undefined
+      currentConfig.studioId,
+      currentConfig.services.length ? currentConfig.services : undefined
     );
     if (servicesRes.error) {
       setError(servicesRes.error);
@@ -71,10 +78,10 @@ export function EmbedApp({ config }: EmbedAppProps) {
     }
     setServices(servicesRes.data!);
     setLoading(false);
-  };
+  }, [setLoading, setError, setStudio, setServices]);
 
   useEffect(() => {
-    setConfig(config);
+    setConfig(configRef.current);
     loadStudioData();
     notifyParent('ROOOM_READY', {});
 
@@ -88,7 +95,7 @@ export function EmbedApp({ config }: EmbedAppProps) {
     if (container) resizeObserver.observe(container);
 
     return () => resizeObserver.disconnect();
-  }, []);
+  }, [setConfig, loadStudioData, notifyParent]);
 
   const themeClass = config.theme === 'dark' ? 'rooom-dark' : 'rooom-light';
 
