@@ -105,59 +105,77 @@ export const usePacksStore = create<PacksState>((set) => ({
   setPageSize: (pageSize) => set((state) => ({ pagination: { ...state.pagination, pageSize, page: 1 } })),
 }));
 
-// Selector for filtered packs
+// Selector for filtered packs - returns packs directly if no filters applied
 export const selectFilteredPacks = (state: PacksState): Pack[] => {
   const { packs, packFilters } = state;
-  let filtered = [...packs];
 
-  // Apply search filter
-  if (packFilters.searchQuery) {
-    const query = packFilters.searchQuery.toLowerCase();
-    filtered = filtered.filter(
-      (pack) =>
-        pack.name.toLowerCase().includes(query) ||
-        (pack.description && pack.description.toLowerCase().includes(query))
-    );
+  // If no filters applied, return the original array to maintain reference stability
+  const hasSearchFilter = packFilters.searchQuery !== '';
+  const hasTypeFilter = packFilters.type !== 'all';
+  const hasActiveFilter = packFilters.isActive !== 'all';
+
+  if (!hasSearchFilter && !hasTypeFilter && !hasActiveFilter) {
+    return packs;
   }
 
-  // Apply type filter
-  if (packFilters.type !== 'all') {
-    filtered = filtered.filter((pack) => pack.type === packFilters.type);
-  }
+  // Only create a new array when filtering is actually needed
+  return packs.filter((pack) => {
+    // Apply search filter
+    if (hasSearchFilter) {
+      const query = packFilters.searchQuery.toLowerCase();
+      if (!pack.name.toLowerCase().includes(query) &&
+          !(pack.description && pack.description.toLowerCase().includes(query))) {
+        return false;
+      }
+    }
 
-  // Apply active filter
-  if (packFilters.isActive !== 'all') {
-    filtered = filtered.filter((pack) => pack.is_active === packFilters.isActive);
-  }
+    // Apply type filter
+    if (hasTypeFilter && pack.type !== packFilters.type) {
+      return false;
+    }
 
-  return filtered;
+    // Apply active filter
+    if (hasActiveFilter && pack.is_active !== packFilters.isActive) {
+      return false;
+    }
+
+    return true;
+  });
 };
 
-// Selector for filtered purchases
+// Selector for filtered purchases - returns purchases directly if no filters applied
 export const selectFilteredPurchases = (state: PacksState): ClientPurchase[] => {
   const { purchases, purchaseFilters } = state;
-  let filtered = [...purchases];
 
-  // Apply search filter
-  if (purchaseFilters.searchQuery) {
-    const query = purchaseFilters.searchQuery.toLowerCase();
-    filtered = filtered.filter((purchase) => {
+  // If no filters applied, return the original array to maintain reference stability
+  const hasSearchFilter = purchaseFilters.searchQuery !== '';
+  const hasStatusFilter = purchaseFilters.status !== 'all';
+
+  if (!hasSearchFilter && !hasStatusFilter) {
+    return purchases;
+  }
+
+  // Only create a new array when filtering is actually needed
+  return purchases.filter((purchase) => {
+    // Apply search filter
+    if (hasSearchFilter) {
+      const query = purchaseFilters.searchQuery.toLowerCase();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const client = (purchase as any).client;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const product = (purchase as any).product;
-      return (
-        (client?.name && client.name.toLowerCase().includes(query)) ||
-        (client?.email && client.email.toLowerCase().includes(query)) ||
-        (product?.name && product.name.toLowerCase().includes(query))
-      );
-    });
-  }
+      if (!(client?.name && client.name.toLowerCase().includes(query)) &&
+          !(client?.email && client.email.toLowerCase().includes(query)) &&
+          !(product?.name && product.name.toLowerCase().includes(query))) {
+        return false;
+      }
+    }
 
-  // Apply status filter
-  if (purchaseFilters.status !== 'all') {
-    filtered = filtered.filter((purchase) => purchase.status === purchaseFilters.status);
-  }
+    // Apply status filter
+    if (hasStatusFilter && purchase.status !== purchaseFilters.status) {
+      return false;
+    }
 
-  return filtered;
+    return true;
+  });
 };

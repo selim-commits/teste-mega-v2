@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
@@ -37,7 +37,8 @@ import {
   useUpdatePurchaseStatus,
 } from '../hooks/usePacks';
 import { useSpaces } from '../hooks/useSpaces';
-import { usePacksStore, selectFilteredPacks } from '../stores/packsStore';
+import { usePacksStore } from '../stores/packsStore';
+import { useShallow } from 'zustand/react/shallow';
 import { useNotifications } from '../stores/uiStore';
 import type { Pack, PackInsert, PackUpdate, PricingProductType, ClientPurchase } from '../types/database';
 import styles from './Packs.module.css';
@@ -80,17 +81,18 @@ export function Packs() {
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
   const [selectedPack, setSelectedPack] = useState<Pack | null>(null);
 
-  // Store
+  // Store - only use for filters (UI state), not for data
   const {
-    packs,
-    setPacks,
     packFilters,
     setPackFilters,
     resetPackFilters,
-    purchases,
-    setPurchases,
-  } = usePacksStore();
-  const filteredPacks = usePacksStore(selectFilteredPacks);
+  } = usePacksStore(
+    useShallow((state) => ({
+      packFilters: state.packFilters,
+      setPackFilters: state.setPackFilters,
+      resetPackFilters: state.resetPackFilters,
+    }))
+  );
 
   // Notifications
   const { success: showSuccess, error: showError } = useNotifications();
@@ -116,18 +118,33 @@ export function Packs() {
   const resumeSubscriptionMutation = useResumeSubscription();
   const updateStatusMutation = useUpdatePurchaseStatus();
 
-  // Sync data with store
-  useEffect(() => {
-    if (packsData) {
-      setPacks(packsData);
-    }
-  }, [packsData, setPacks]);
+  // Filter packs based on search, type, and active status
+  const filteredPacks = useMemo(() => {
+    const hasSearchFilter = packFilters.searchQuery !== '';
+    const hasTypeFilter = packFilters.type !== 'all';
+    const hasActiveFilter = packFilters.isActive !== 'all';
 
-  useEffect(() => {
-    if (purchasesData) {
-      setPurchases(purchasesData);
+    if (!hasSearchFilter && !hasTypeFilter && !hasActiveFilter) {
+      return packsData;
     }
-  }, [purchasesData, setPurchases]);
+
+    return packsData.filter((pack) => {
+      if (hasSearchFilter) {
+        const query = packFilters.searchQuery.toLowerCase();
+        if (!pack.name.toLowerCase().includes(query) &&
+            !(pack.description && pack.description.toLowerCase().includes(query))) {
+          return false;
+        }
+      }
+      if (hasTypeFilter && pack.type !== packFilters.type) {
+        return false;
+      }
+      if (hasActiveFilter && pack.is_active !== packFilters.isActive) {
+        return false;
+      }
+      return true;
+    });
+  }, [packsData, packFilters]);
 
   // Filtered packs based on active tab
   const displayedPacks = useMemo(() => {
@@ -390,7 +407,7 @@ export function Packs() {
         {/* Client Subscriptions Tab */}
         {activeTab === 'clients' && (
           <ClientSubscriptions
-            purchases={purchases}
+            purchases={purchasesData}
             isLoading={isLoadingPurchases}
             onPause={handlePauseSubscription}
             onResume={handleResumeSubscription}
@@ -401,8 +418,8 @@ export function Packs() {
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
           <PackAnalytics
-            packs={packs}
-            purchases={purchases}
+            packs={packsData}
+            purchases={purchasesData}
             currency="$"
           />
         )}
