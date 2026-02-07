@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Save, Download, RotateCcw } from 'lucide-react';
 import { Header } from '../components/layout/Header';
@@ -113,6 +113,12 @@ export function WidgetBuilder() {
   // Preview state
   const [device, setDevice] = useState<DeviceType>('desktop');
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+  const previewTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(previewTimerRef.current);
+  }, []);
 
   // Saved configs state
   const [savedConfigs, setSavedConfigs] = useState<WidgetConfig[]>([]);
@@ -124,7 +130,8 @@ export function WidgetBuilder() {
     setWidgetType(type);
     setIsPreviewLoading(true);
     // Simulate preview reload
-    setTimeout(() => setIsPreviewLoading(false), 500);
+    clearTimeout(previewTimerRef.current);
+    previewTimerRef.current = setTimeout(() => setIsPreviewLoading(false), 500);
   }, []);
 
   const handleAppearanceChange = useCallback((updates: Partial<WidgetAppearance>) => {

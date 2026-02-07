@@ -79,8 +79,6 @@ export function generateMockAvailability(date: string, serviceId: string): Avail
     });
   }
 
-  console.log('[Rooom Mock] Generated slots for', date, ':', slots.filter(s => s.available).length, 'available');
-
   return { date, slots };
 }
 

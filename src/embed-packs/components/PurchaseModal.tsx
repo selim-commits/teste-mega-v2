@@ -4,6 +4,15 @@ import { usePacksStore } from '../store/packsStore';
 import { packsApi } from '../services/packsApi';
 import type { PurchaseRequest } from '../types';
 
+const isValidPaymentUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 interface PurchaseModalProps {
   currency?: string;
 }
@@ -133,8 +142,13 @@ export function PurchaseModal({ currency = 'EUR' }: PurchaseModalProps) {
     }
 
     if (result.data?.paymentUrl) {
-      // Redirect to Stripe checkout
-      window.location.href = result.data.paymentUrl;
+      if (isValidPaymentUrl(result.data.paymentUrl)) {
+        // Redirect to validated HTTPS Stripe checkout
+        window.location.href = result.data.paymentUrl;
+      } else {
+        setError('URL de paiement invalide ou non securisee');
+        return;
+      }
     } else {
       // Payment completed (mock)
       setPurchaseResult(result.data!);

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { equipmentService } from '../services';
 import { queryKeys } from '../lib/queryClient';
-import { isDemoMode } from '../lib/supabase';
+import { isDemoMode, withDemoMode } from '../lib/supabase';
 import { mockEquipment, getMockMaintenanceEquipment } from '../lib/mockData';
 import type { Equipment, EquipmentInsert, EquipmentUpdate, EquipmentStatus } from '../types/database';
 
@@ -55,12 +55,9 @@ export function useAvailableEquipment(studioId: string) {
 export function useMaintenanceNeeded(studioId: string) {
   return useQuery({
     queryKey: [...queryKeys.equipment.list({ studioId }), 'maintenance'],
-    queryFn: (): Promise<Equipment[]> => {
-      if (isDemoMode) {
-        return Promise.resolve(getMockMaintenanceEquipment() as Equipment[]);
-      }
-      return equipmentService.getMaintenanceNeeded(studioId);
-    },
+    queryFn: withDemoMode(getMockMaintenanceEquipment() as Equipment[])(
+      () => equipmentService.getMaintenanceNeeded(studioId)
+    ),
     enabled: !!studioId,
   });
 }
@@ -121,6 +118,9 @@ export function useCreateEquipment() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -135,6 +135,9 @@ export function useUpdateEquipment() {
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -146,6 +149,9 @@ export function useDeleteEquipment() {
     mutationFn: (id: string) => equipmentService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -161,6 +167,9 @@ export function useUpdateEquipmentStatus() {
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -173,6 +182,9 @@ export function useUpdateEquipmentCondition() {
       equipmentService.updateCondition(id, condition),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.detail(variables.id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -187,6 +199,9 @@ export function useUpdateEquipmentLocation() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -200,6 +215,9 @@ export function useRetireEquipment() {
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.detail(id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -212,6 +230,9 @@ export function useSetEquipmentForMaintenance() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.equipment.detail(id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }

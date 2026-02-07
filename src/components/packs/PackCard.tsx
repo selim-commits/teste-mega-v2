@@ -90,7 +90,7 @@ export function PackCard({
             )}
             <Dropdown
               trigger={
-                <button className={styles.packMenu}>
+                <button className={styles.packMenu} aria-label="Plus d'options">
                   <MoreVertical size={16} />
                 </button>
               }

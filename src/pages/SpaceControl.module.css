@@ -72,7 +72,7 @@
   align-items: center;
   justify-content: center;
   height: 28px;
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-tertiary);
   text-transform: uppercase;
@@ -110,13 +110,13 @@
 
 .miniCalendarDay.selected {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--color-white);
   font-weight: 600;
 }
 
 .miniCalendarDay.selected.today {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--color-white);
 }
 
 /* Space Filters */
@@ -378,7 +378,7 @@
   align-items: flex-start;
   justify-content: flex-end;
   padding: 0 var(--space-2);
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--text-tertiary);
   position: relative;
   top: -6px;
@@ -436,7 +436,7 @@
 }
 
 .bookingTime {
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-tertiary);
 }
@@ -527,7 +527,7 @@
 
 .weekDayNumber.todayNumber {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--color-white);
 }
 
 .weekBody {
@@ -573,14 +573,14 @@
 }
 
 .weekBookingTime {
-  font-size: 10px;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--text-tertiary);
   display: block;
 }
 
 .weekBookingTitle {
-  font-size: 11px;
+  font-size: var(--text-xs);
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
@@ -666,7 +666,7 @@
 
 .monthDayNumber.todayNumber {
   background-color: var(--accent-primary);
-  color: white;
+  color: var(--color-white);
   font-weight: 600;
 }
 
@@ -685,7 +685,7 @@
   padding: 2px var(--space-2);
   border-left: 3px solid;
   border-radius: var(--radius-sm);
-  font-size: 11px;
+  font-size: var(--text-xs);
   overflow: hidden;
 }
 
@@ -703,7 +703,7 @@
 }
 
 .monthMoreBookings {
-  font-size: 11px;
+  font-size: var(--text-xs);
   color: var(--accent-primary);
   padding: 2px var(--space-2);
   cursor: pointer;

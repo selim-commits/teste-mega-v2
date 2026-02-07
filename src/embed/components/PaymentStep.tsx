@@ -1,9 +1,19 @@
 // src/embed/components/PaymentStep.tsx
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useEmbedStore } from '../store/embedStore';
 
+const isValidPaymentUrl = (url: string): boolean => {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+
 export function PaymentStep() {
-  const { bookingResult, goToStep } = useEmbedStore();
+  const { bookingResult, goToStep, setError } = useEmbedStore();
+  const [paymentError, setPaymentError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!bookingResult) {
@@ -11,13 +21,30 @@ export function PaymentStep() {
     }
 
     if (bookingResult.paymentUrl) {
-      // Redirect to payment URL
-      window.location.href = bookingResult.paymentUrl;
+      if (isValidPaymentUrl(bookingResult.paymentUrl)) {
+        // Redirect to validated HTTPS payment URL
+        window.location.href = bookingResult.paymentUrl;
+      } else {
+        // Invalid or non-HTTPS payment URL
+        const errorMsg = 'URL de paiement invalide ou non securisee';
+        setPaymentError(errorMsg);
+        setError(errorMsg);
+      }
     } else {
       // No payment required, skip to confirmation
       goToStep('confirmation');
     }
-  }, [bookingResult, goToStep]);
+  }, [bookingResult, goToStep, setError]);
+
+  if (paymentError) {
+    return (
+      <div style={styles.container}>
+        <span style={{ ...styles.text, color: 'var(--state-error, #ef4444)' }}>
+          {paymentError}
+        </span>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>

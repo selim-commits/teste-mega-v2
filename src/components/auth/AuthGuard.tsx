@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import { useAuthContext } from '../../contexts/AuthContext'
+import { isDemoMode } from '../../lib/supabase'
 
 interface AuthGuardProps {
   children: ReactNode
@@ -44,6 +45,11 @@ export function AuthGuard({
 }: AuthGuardProps) {
   const { user, initialized, loading } = useAuthContext()
   const location = useLocation()
+
+  // In demo mode, skip auth checks entirely
+  if (isDemoMode) {
+    return <>{children}</>
+  }
 
   // Show loading state while auth is initializing
   if (!initialized || loading) {

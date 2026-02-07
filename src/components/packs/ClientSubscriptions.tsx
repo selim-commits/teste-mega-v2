@@ -180,7 +180,7 @@ export function ClientSubscriptions({
       render: (purchase: ClientPurchase) => (
         <Dropdown
           trigger={
-            <button className={styles.actionBtn}>
+            <button className={styles.actionBtn} aria-label="Plus d'options">
               <MoreVertical size={16} />
             </button>
           }

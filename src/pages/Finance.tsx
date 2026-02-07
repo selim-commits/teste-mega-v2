@@ -54,10 +54,8 @@ import { useFinanceStore } from '../stores/financeStore';
 import { useNotifications } from '../stores/uiStore';
 import type { Invoice, InvoiceStatus, InvoiceInsert, Client, PaymentMethod, PaymentInsert } from '../types/database';
 import { formatCurrency, formatDate } from '../lib/utils';
+import { DEMO_STUDIO_ID as STUDIO_ID } from '../stores/authStore';
 import styles from './Finance.module.css';
-
-// Studio ID - in production, this would come from useAuthStore or context
-const STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 // Invoice line item type
 interface LineItem {
@@ -454,7 +452,7 @@ export function Finance() {
       showSuccess('Facture creee', 'La facture a ete creee avec succes');
       setIsCreateModalOpen(false);
       setFormData(defaultFormData);
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de creer la facture');
     }
   }, [formData, validateForm, generatedInvoiceNumber, subtotal, taxAmount, total, createMutation, showSuccess, showError]);
@@ -482,7 +480,7 @@ export function Finance() {
           await updateStatusMutation.mutateAsync({ id: invoice.id, status: newStatus });
           showSuccess('Statut mis a jour', `Le statut de la facture a ete mis a jour`);
       }
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de mettre a jour le statut');
     }
   }, [markAsSentMutation, markAsPaidMutation, markAsOverdueMutation, cancelMutation, updateStatusMutation, showSuccess, showError]);
@@ -554,7 +552,7 @@ export function Finance() {
       setIsPaymentModalOpen(false);
       setInvoiceForPayment(null);
       setPaymentFormData(defaultPaymentFormData);
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible d\'enregistrer le paiement');
     }
   }, [paymentFormData, validatePaymentForm, invoiceForPayment, createPaymentMutation, markAsPaidMutation, showSuccess, showError]);
@@ -568,7 +566,7 @@ export function Finance() {
       setIsDeleteConfirmOpen(false);
       setInvoiceToDelete(null);
       setIsDetailModalOpen(false);
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de supprimer la facture');
     }
   }, [invoiceToDelete, deleteMutation, showSuccess, showError]);
@@ -636,7 +634,7 @@ export function Finance() {
       render: (invoice: Invoice) => (
         <Dropdown
           trigger={
-            <button className={styles.invoiceMenu}>
+            <button className={styles.invoiceMenu} aria-label="Plus d'options">
               <MoreVertical size={16} />
             </button>
           }

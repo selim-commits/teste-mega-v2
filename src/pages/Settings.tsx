@@ -11,7 +11,6 @@ import {
   Upload,
   Link2,
   ExternalLink,
-  Loader2,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -21,7 +20,15 @@ import { Select } from '../components/ui/Select';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
 import { useToast } from '../components/ui/Toast';
 import { DEMO_STUDIO_ID } from '../stores/authStore';
-import { useStudioSettings, useUpdateProfile } from '../hooks/useSettings';
+import {
+  useStudioSettings,
+  useSettings,
+  useUpdateProfile,
+  useUpdateBusinessHours,
+  useUpdateBookingSettings,
+  useUpdateNotificationSettings,
+  useUpdateBillingSettings,
+} from '../hooks/useSettings';
 import type { StudioSettings } from '../services/settings';
 import styles from './Settings.module.css';
 
@@ -150,9 +157,6 @@ const defaultNotificationSettings: NotificationSettings = {
 
 export function Settings() {
   const [activeTab, setActiveTab] = useState('profile');
-
-  // Use DEMO_STUDIO_ID for now (reserved for future API integration)
-  void DEMO_STUDIO_ID;
 
   return (
     <div className={styles.page}>
@@ -294,7 +298,7 @@ function StudioProfileSection() {
               <div className={styles.logoUploadContainer}>
                 <div className={styles.uploadAreaSmall}>
                   {profile.logoUrl ? (
-                    <img src={profile.logoUrl} alt="Logo" className={styles.logoPreview} />
+                    <img src={profile.logoUrl} alt="Logo du studio" className={styles.logoPreview} />
                   ) : (
                     <div className={styles.uploadPlaceholder}>
                       <Upload size={20} />
@@ -316,7 +320,7 @@ function StudioProfileSection() {
               <div className={styles.logoUploadContainer}>
                 <div className={styles.uploadAreaSmall}>
                   {profile.coverUrl ? (
-                    <img src={profile.coverUrl} alt="Cover" className={styles.logoPreview} />
+                    <img src={profile.coverUrl} alt="Image de couverture du studio" className={styles.logoPreview} />
                   ) : (
                     <div className={styles.uploadPlaceholder}>
                       <Upload size={20} />
@@ -482,8 +486,29 @@ function StudioProfileSection() {
 
 function BusinessHoursSection() {
   const { addToast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const [hours, setHours] = useState<BusinessHours>(defaultBusinessHours);
+  const { data: studioSettings } = useSettings(DEMO_STUDIO_ID);
+  const updateBusinessHours = useUpdateBusinessHours(DEMO_STUDIO_ID);
+
+  useEffect(() => {
+    if (studioSettings?.businessHours) {
+      const bh = studioSettings.businessHours;
+      const mapped = { ...defaultBusinessHours };
+      for (const day of Object.keys(mapped) as Array<keyof BusinessHours>) {
+        if (bh[day]) {
+          mapped[day] = {
+            enabled: bh[day].enabled ?? mapped[day].enabled,
+            openTime: bh[day].openTime ?? mapped[day].openTime,
+            closeTime: bh[day].closeTime ?? mapped[day].closeTime,
+            splitEnabled: bh[day].splitEnabled ?? false,
+            splitStartTime: bh[day].splitStartTime ?? '',
+            splitEndTime: bh[day].splitEndTime ?? '',
+          };
+        }
+      }
+      setHours(mapped);
+    }
+  }, [studioSettings]);
 
   const dayLabels: Record<keyof BusinessHours, string> = {
     monday: 'Lundi',
@@ -503,9 +528,8 @@ function BusinessHoursSection() {
   };
 
   const handleSave = async () => {
-    setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updateBusinessHours.mutateAsync({ ...hours } as StudioSettings['businessHours']);
       addToast({
         title: 'Horaires mis a jour',
         description: 'Les heures d\'ouverture ont ete enregistrees.',
@@ -519,10 +543,10 @@ function BusinessHoursSection() {
         variant: 'error',
         duration: 5000,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const isLoading = updateBusinessHours.isPending;
 
   return (
     <motion.div
@@ -623,8 +647,22 @@ function BusinessHoursSection() {
 
 function BookingSettingsSection() {
   const { addToast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const [settings, setSettings] = useState<BookingSettings>(defaultBookingSettings);
+  const { data: studioSettings } = useSettings(DEMO_STUDIO_ID);
+  const updateBookingSettings = useUpdateBookingSettings(DEMO_STUDIO_ID);
+
+  useEffect(() => {
+    if (studioSettings?.booking) {
+      const b = studioSettings.booking;
+      setSettings({
+        defaultDuration: b.defaultDuration?.toString() ?? defaultBookingSettings.defaultDuration,
+        bufferTime: b.bufferTime?.toString() ?? defaultBookingSettings.bufferTime,
+        minAdvanceTime: b.minAdvanceTime?.toString() ?? defaultBookingSettings.minAdvanceTime,
+        maxAdvanceTime: b.maxAdvanceTime?.toString() ?? defaultBookingSettings.maxAdvanceTime,
+        cancellationPolicy: b.cancellationPolicy ?? defaultBookingSettings.cancellationPolicy,
+      });
+    }
+  }, [studioSettings]);
 
   const durationOptions = [
     { value: '30', label: '30 minutes' },
@@ -659,9 +697,14 @@ function BookingSettingsSection() {
   ];
 
   const handleSave = async () => {
-    setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updateBookingSettings.mutateAsync({
+        defaultDuration: parseInt(settings.defaultDuration),
+        bufferTime: parseInt(settings.bufferTime),
+        minAdvanceTime: parseInt(settings.minAdvanceTime),
+        maxAdvanceTime: parseInt(settings.maxAdvanceTime),
+        cancellationPolicy: settings.cancellationPolicy,
+      });
       addToast({
         title: 'Parametres mis a jour',
         description: 'Les parametres de reservation ont ete enregistres.',
@@ -675,10 +718,10 @@ function BookingSettingsSection() {
         variant: 'error',
         duration: 5000,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const isLoading = updateBookingSettings.isPending;
 
   return (
     <motion.div
@@ -761,13 +804,29 @@ function BookingSettingsSection() {
 
 function NotificationsSection() {
   const { addToast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const [settings, setSettings] = useState<NotificationSettings>(defaultNotificationSettings);
+  const { data: studioSettings } = useSettings(DEMO_STUDIO_ID);
+  const updateNotificationSettings = useUpdateNotificationSettings(DEMO_STUDIO_ID);
+
+  useEffect(() => {
+    if (studioSettings?.notifications) {
+      const n = studioSettings.notifications;
+      setSettings({
+        emailEnabled: n.emailEnabled ?? defaultNotificationSettings.emailEnabled,
+        smsEnabled: n.smsEnabled ?? defaultNotificationSettings.smsEnabled,
+        reminder24h: n.reminder24h ?? defaultNotificationSettings.reminder24h,
+        reminder48h: n.reminder48h ?? defaultNotificationSettings.reminder48h,
+        reminder1Week: n.reminder1Week ?? defaultNotificationSettings.reminder1Week,
+        newBookingAlert: n.newBookingAlert ?? defaultNotificationSettings.newBookingAlert,
+        cancellationAlert: n.cancellationAlert ?? defaultNotificationSettings.cancellationAlert,
+        paymentAlert: n.paymentAlert ?? defaultNotificationSettings.paymentAlert,
+      });
+    }
+  }, [studioSettings]);
 
   const handleSave = async () => {
-    setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updateNotificationSettings.mutateAsync(settings);
       addToast({
         title: 'Notifications mises a jour',
         description: 'Vos preferences de notifications ont ete enregistrees.',
@@ -781,10 +840,10 @@ function NotificationsSection() {
         variant: 'error',
         duration: 5000,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const isLoading = updateNotificationSettings.isPending;
 
   return (
     <motion.div
@@ -1097,8 +1156,22 @@ const defaultBillingSettings: BillingSettings = {
 
 function BillingSection() {
   const { addToast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const [settings, setSettings] = useState<BillingSettings>(defaultBillingSettings);
+  const { data: studioSettings } = useSettings(DEMO_STUDIO_ID);
+  const updateBillingSettings = useUpdateBillingSettings(DEMO_STUDIO_ID);
+
+  useEffect(() => {
+    if (studioSettings?.billing) {
+      const b = studioSettings.billing;
+      setSettings({
+        vatRate: b.vatRate ?? defaultBillingSettings.vatRate,
+        paymentTerms: b.paymentTerms ?? defaultBillingSettings.paymentTerms,
+        legalMentions: b.legalMentions ?? defaultBillingSettings.legalMentions,
+        siret: b.siret ?? defaultBillingSettings.siret,
+        vatNumber: b.vatNumber ?? defaultBillingSettings.vatNumber,
+      });
+    }
+  }, [studioSettings]);
 
   const vatRateOptions = [
     { value: '0', label: '0% (Exonere)' },
@@ -1108,9 +1181,14 @@ function BillingSection() {
   ];
 
   const handleSave = async () => {
-    setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updateBillingSettings.mutateAsync({
+        vatRate: settings.vatRate,
+        vatNumber: settings.vatNumber,
+        siret: settings.siret,
+        paymentTerms: settings.paymentTerms,
+        legalMentions: settings.legalMentions,
+      });
       addToast({
         title: 'Facturation mise a jour',
         description: 'Les informations de facturation ont ete enregistrees.',
@@ -1124,10 +1202,10 @@ function BillingSection() {
         variant: 'error',
         duration: 5000,
       });
-    } finally {
-      setIsLoading(false);
     }
   };
+
+  const isLoading = updateBillingSettings.isPending;
 
   return (
     <motion.div

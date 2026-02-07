@@ -1,4 +1,4 @@
-import { forwardRef, useState, type InputHTMLAttributes, type ReactNode } from 'react';
+import { forwardRef, useId, useState, type InputHTMLAttributes, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import styles from './Input.module.css';
@@ -31,16 +31,21 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       disabled,
       className,
       type = 'text',
+      id: externalId,
       ...props
     },
     ref
   ) => {
     const [isFocused, setIsFocused] = useState(false);
+    const generatedId = useId();
+    const inputId = externalId || generatedId;
+    const messageId = `${inputId}-message`;
+    const hasMessage = !!(error || hint);
 
     return (
       <div className={cn(styles.wrapper, fullWidth && styles.fullWidth)}>
         {label && (
-          <label className={styles.label}>{label}</label>
+          <label className={styles.label} htmlFor={inputId}>{label}</label>
         )}
         <motion.div
           className={cn(
@@ -60,12 +65,15 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           }}
           transition={{ duration: 0.15 }}
         >
-          {icon && <span className={styles.icon}>{icon}</span>}
+          {icon && <span className={styles.icon} aria-hidden="true">{icon}</span>}
           <input
             ref={ref}
+            id={inputId}
             type={type}
             disabled={disabled}
             className={cn(styles.input, className)}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={hasMessage ? messageId : undefined}
             onFocus={(e) => {
               setIsFocused(true);
               props.onFocus?.(e);
@@ -76,10 +84,10 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             }}
             {...props}
           />
-          {iconRight && <span className={styles.iconRight}>{iconRight}</span>}
+          {iconRight && <span className={styles.iconRight} aria-hidden="true">{iconRight}</span>}
         </motion.div>
-        {(error || hint) && (
-          <span className={cn(styles.message, error && styles.errorMessage)}>
+        {hasMessage && (
+          <span id={messageId} className={cn(styles.message, error && styles.errorMessage)}>
             {error || hint}
           </span>
         )}

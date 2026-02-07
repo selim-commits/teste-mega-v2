@@ -28,7 +28,7 @@ export function ColorPicker({ label, value, onChange, presets = defaultPresets }
   }, [value]);
 
   const handleHexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let hex = e.target.value;
+    const hex = e.target.value;
     setHexValue(hex);
 
     // Validate and update if valid hex

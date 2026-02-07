@@ -48,11 +48,9 @@ import {
 } from '../hooks/useClients';
 import { useBookings } from '../hooks/useBookings';
 import { useNotifications } from '../stores/uiStore';
+import { DEMO_STUDIO_ID } from '../stores/authStore';
 import type { Client, ClientTier, ClientInsert, ClientUpdate, Booking } from '../types/database';
 import styles from './Clients.module.css';
-
-// Studio ID - configured for Rooom OS
-const DEMO_STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 interface ClientFormData {
   name: string;
@@ -300,7 +298,7 @@ export function Clients() {
       showSuccess('Client créé', 'Le client a été créé avec succès');
       setIsCreateModalOpen(false);
       setFormData(defaultFormData);
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de créer le client');
     }
   }, [formData, validateForm, createMutation, showSuccess, showError]);
@@ -328,7 +326,7 @@ export function Clients() {
       showSuccess('Client modifié', 'Le client a été modifié avec succès');
       setIsEditModalOpen(false);
       setSelectedClientId(null);
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de modifier le client');
     }
   }, [selectedClientId, formData, validateForm, updateMutation, showSuccess, showError]);
@@ -342,7 +340,7 @@ export function Clients() {
       setIsDeleteConfirmOpen(false);
       setIsDetailSidebarOpen(false);
       setSelectedClientId(null);
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de supprimer le client');
     }
   }, [selectedClientId, deleteMutation, showSuccess, showError]);
@@ -356,7 +354,7 @@ export function Clients() {
         await activateMutation.mutateAsync(client.id);
         showSuccess('Client activé', `${client.name} a été activé`);
       }
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de modifier le statut du client');
     }
   }, [activateMutation, deactivateMutation, showSuccess, showError]);
@@ -504,7 +502,7 @@ export function Clients() {
       render: (client: Client) => (
         <Dropdown
           trigger={
-            <button className={styles.clientMenu}>
+            <button className={styles.clientMenu} aria-label="Plus d'options">
               <MoreVertical size={16} />
             </button>
           }

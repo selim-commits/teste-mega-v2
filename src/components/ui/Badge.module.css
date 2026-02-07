@@ -16,7 +16,7 @@
 .sm {
   height: 20px;
   padding: 0 var(--space-2);
-  font-size: 10px;
+  font-size: var(--text-xs);
 }
 
 .md {
@@ -61,6 +61,6 @@
 .dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   background-color: currentColor;
 }

@@ -361,9 +361,21 @@ export function PacksApp({ config }: PacksAppProps) {
     setLoading(false);
   };
 
+  const getParentOrigin = (): string => {
+    try {
+      if (document.referrer) {
+        return new URL(document.referrer).origin;
+      }
+    } catch {
+      // Invalid referrer URL
+    }
+    // Ne pas utiliser '*' - utiliser l'origin du document comme fallback securise
+    return window.location.origin;
+  };
+
   const notifyParent = (type: string, payload: unknown) => {
     if (window.parent !== window) {
-      window.parent.postMessage({ type, payload }, '*');
+      window.parent.postMessage({ type, payload }, getParentOrigin());
     }
   };
 

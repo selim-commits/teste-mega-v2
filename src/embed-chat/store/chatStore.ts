@@ -80,8 +80,6 @@ interface ChatState {
   reset: () => void;
 }
 
-const generateId = () => Math.random().toString(36).substring(2, 15);
-
 export const useChatStore = create<ChatState>((set, get) => ({
   // Initial state
   config: null,
@@ -211,11 +209,20 @@ export const useChatStore = create<ChatState>((set, get) => ({
     }),
 }));
 
+// AudioContext singleton to avoid creating a new context on every notification
+let sharedAudioContext: AudioContext | null = null;
+
+function getAudioContext(): AudioContext {
+  if (!sharedAudioContext) {
+    sharedAudioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+  }
+  return sharedAudioContext;
+}
+
 // Helper function to play notification sound
 function playNotificationSound() {
   try {
-    // Create a simple notification sound using Web Audio API
-    const audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+    const audioContext = getAudioContext();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 

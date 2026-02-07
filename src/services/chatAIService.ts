@@ -154,7 +154,7 @@ export const chatAIService = {
 
     // Generate response based on intent
     let responseContent: string;
-    let suggestedActions: AIResponse['suggestedActions'] = [];
+    const suggestedActions: AIResponse['suggestedActions'] = [];
 
     switch (intentResult.intent) {
       case 'greeting':
@@ -165,7 +165,7 @@ export const chatAIService = {
         responseContent = this.generateFarewellResponse(studioContext);
         break;
 
-      case 'availability_check':
+      case 'availability_check': {
         const availabilityResponse = await this.getAvailabilityResponse(
           studioContext.studioId,
           message,
@@ -180,8 +180,9 @@ export const chatAIService = {
           });
         }
         break;
+      }
 
-      case 'pricing_question':
+      case 'pricing_question': {
         const pricingResponse = await this.getPricingResponse(
           studioContext.studioId,
           undefined,
@@ -193,14 +194,16 @@ export const chatAIService = {
           label: 'Book Now',
         });
         break;
+      }
 
-      case 'pack_inquiry':
+      case 'pack_inquiry': {
         const packResponse = await this.getPacksResponse(
           studioContext.studioId,
           studioContext
         );
         responseContent = packResponse.message;
         break;
+      }
 
       case 'booking_inquiry':
         responseContent = this.generateBookingInquiryResponse(studioContext);
@@ -600,7 +603,7 @@ export const chatAIService = {
    */
   async generateConversationSummary(
     messages: ChatMessage[],
-    studioContext?: StudioContext
+    _studioContext?: StudioContext
   ): Promise<string> {
     if (messages.length === 0) return 'No messages in conversation.';
 

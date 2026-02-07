@@ -46,11 +46,9 @@ import {
   useSetEquipmentForMaintenance,
 } from '../hooks/useEquipment';
 import { useEquipmentStore, selectFilteredEquipment } from '../stores/equipmentStore';
+import { DEMO_STUDIO_ID as STUDIO_ID } from '../stores/authStore';
 import type { Equipment, EquipmentInsert, EquipmentStatus } from '../types/database';
 import styles from './Inventory.module.css';
-
-// Studio ID for Rooom OS
-const STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 interface EquipmentFormData {
   name: string;
@@ -505,7 +503,7 @@ export function Inventory() {
       render: (item: Equipment) => (
         <Dropdown
           trigger={
-            <button className={styles.actionBtn}>
+            <button className={styles.actionBtn} aria-label="Plus d'options">
               <MoreVertical size={16} />
             </button>
           }
@@ -767,7 +765,7 @@ export function Inventory() {
                         <h4 className={styles.itemName}>{item.name}</h4>
                         <Dropdown
                           trigger={
-                            <button className={styles.itemMenu}>
+                            <button className={styles.itemMenu} aria-label="Plus d'options">
                               <MoreVertical size={16} />
                             </button>
                           }

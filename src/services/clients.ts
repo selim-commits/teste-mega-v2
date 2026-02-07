@@ -1,8 +1,9 @@
 import { supabase } from '../lib/supabase';
 import type { Client, ClientInsert, ClientUpdate, ClientTier } from '../types/database';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
+const sanitizeSearchQuery = (query: string): string => {
+  return query.trim().slice(0, 100).replace(/[%_\\]/g, '\\$&');
+};
 
 export interface ClientFilters {
   studioId?: string;
@@ -14,7 +15,7 @@ export interface ClientFilters {
 
 export const clientService = {
   async getAll(filters?: ClientFilters): Promise<Client[]> {
-    let query = db.from('clients').select('*');
+    let query = supabase.from('clients').select('*');
 
     if (filters?.studioId) {
       query = query.eq('studio_id', filters.studioId);
@@ -29,7 +30,8 @@ export const clientService = {
       query = query.overlaps('tags', filters.tags);
     }
     if (filters?.search) {
-      query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,company.ilike.%${filters.search}%`);
+      const s = sanitizeSearchQuery(filters.search);
+      query = query.or(`name.ilike.%${s}%,email.ilike.%${s}%,company.ilike.%${s}%`);
     }
 
     const { data, error } = await query.order('name', { ascending: true });
@@ -69,7 +71,7 @@ export const clientService = {
   },
 
   async delete(id: string): Promise<void> {
-    const { error } = await db.from('clients').delete().eq('id', id);
+    const { error } = await supabase.from('clients').delete().eq('id', id);
     if (error) throw error;
   },
 
@@ -95,11 +97,12 @@ export const clientService = {
   },
 
   async search(studioId: string, query: string): Promise<Client[]> {
+    const s = sanitizeSearchQuery(query);
     const { data, error } = await supabase
       .from('clients')
       .select('*')
       .eq('studio_id', studioId)
-      .or(`name.ilike.%${query}%,email.ilike.%${query}%,company.ilike.%${query}%,phone.ilike.%${query}%`)
+      .or(`name.ilike.%${s}%,email.ilike.%${s}%,company.ilike.%${s}%,phone.ilike.%${s}%`)
       .order('name', { ascending: true });
     if (error) throw error;
     return (data as Client[]) || [];

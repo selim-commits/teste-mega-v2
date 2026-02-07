@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentService } from '../services/payments';
 import { queryKeys } from '../lib/queryClient';
-import { isDemoMode } from '../lib/supabase';
+import { withDemoMode } from '../lib/supabase';
 import { mockPayments } from '../lib/mockData';
 import type { Payment, PaymentInsert, PaymentUpdate, PaymentMethod } from '../types/database';
 
@@ -64,32 +64,28 @@ export function usePaymentWithInvoice(id: string) {
 
 // Get recent payments
 export function useRecentPayments(studioId: string, limit: number = 10) {
+  const sortedMock = [...mockPayments].sort((a, b) =>
+    new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime()
+  ).slice(0, limit) as Payment[];
+
   return useQuery({
     queryKey: [...queryKeys.payments.all, 'recent', studioId, limit],
-    queryFn: (): Promise<Payment[]> => {
-      if (isDemoMode) {
-        const sorted = [...mockPayments].sort((a, b) =>
-          new Date(b.payment_date).getTime() - new Date(a.payment_date).getTime()
-        );
-        return Promise.resolve(sorted.slice(0, limit) as Payment[]);
-      }
-      return paymentService.getRecentPayments(studioId, limit);
-    },
+    queryFn: withDemoMode(sortedMock)(
+      () => paymentService.getRecentPayments(studioId, limit)
+    ),
     enabled: !!studioId,
   });
 }
 
 // Get total received
 export function useTotalReceived(studioId: string, startDate?: string, endDate?: string) {
+  const mockTotal = mockPayments.reduce((sum, p) => sum + p.amount, 0);
+
   return useQuery({
     queryKey: [...queryKeys.payments.all, 'totalReceived', studioId, startDate, endDate],
-    queryFn: (): Promise<number> => {
-      if (isDemoMode) {
-        const total = mockPayments.reduce((sum, p) => sum + p.amount, 0);
-        return Promise.resolve(total);
-      }
-      return paymentService.getTotalReceived(studioId, startDate, endDate);
-    },
+    queryFn: withDemoMode(mockTotal)(
+      () => paymentService.getTotalReceived(studioId, startDate, endDate)
+    ),
     enabled: !!studioId,
   });
 }
@@ -107,6 +103,9 @@ export function useCreatePayment() {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(variables.invoice_id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.stats.all });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -122,6 +121,9 @@ export function useUpdatePayment() {
       queryClient.invalidateQueries({ queryKey: queryKeys.payments.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -135,6 +137,9 @@ export function useDeletePayment() {
       queryClient.invalidateQueries({ queryKey: queryKeys.payments.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.stats.all });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }

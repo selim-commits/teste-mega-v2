@@ -19,7 +19,7 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
 
       <div className={styles.right}>
         {/* Help Button */}
-        <button className={styles.helpBtn}>
+        <button className={styles.helpBtn} aria-label="Aide">
           <HelpCircle size={20} />
         </button>
 

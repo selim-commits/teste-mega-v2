@@ -94,7 +94,7 @@ export function Calendar({
   return (
     <div className={cn(styles.calendar, className)}>
       <div className={styles.header}>
-        <button className={styles.navBtn} onClick={goToPreviousMonth}>
+        <button className={styles.navBtn} onClick={goToPreviousMonth} aria-label="Mois precedent">
           <ChevronLeft size={18} />
         </button>
         <div className={styles.monthYear}>
@@ -110,7 +110,7 @@ export function Calendar({
             </motion.span>
           </AnimatePresence>
         </div>
-        <button className={styles.navBtn} onClick={goToNextMonth}>
+        <button className={styles.navBtn} onClick={goToNextMonth} aria-label="Mois suivant">
           <ChevronRight size={18} />
         </button>
       </div>

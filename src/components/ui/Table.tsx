@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import type { ReactNode, KeyboardEvent } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import styles from './Table.module.css';
@@ -83,6 +83,14 @@ export function Table<T extends { id: string }>({
               key={item.id}
               className={cn(styles.tr, onRowClick && styles.clickable)}
               onClick={() => onRowClick?.(item)}
+              tabIndex={onRowClick ? 0 : undefined}
+              role={onRowClick ? "button" : undefined}
+              onKeyDown={onRowClick ? (e: KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onRowClick(item);
+                }
+              } : undefined}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.02 }}

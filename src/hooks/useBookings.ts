@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { bookingService } from '../services';
 import { queryKeys } from '../lib/queryClient';
-import { isDemoMode } from '../lib/supabase';
+import { isDemoMode, withDemoMode } from '../lib/supabase';
 import { mockBookings, getMockTodayBookings } from '../lib/mockData';
 import type { Booking, BookingInsert, BookingUpdate, BookingStatus } from '../types/database';
 
@@ -95,12 +95,9 @@ export function useUpcomingBookings(studioId: string, limit: number = 10) {
 export function useTodayBookings(studioId: string) {
   return useQuery({
     queryKey: [...queryKeys.bookings.list({ studioId }), 'today'],
-    queryFn: (): Promise<Booking[]> => {
-      if (isDemoMode) {
-        return Promise.resolve(getMockTodayBookings() as Booking[]);
-      }
-      return bookingService.getToday(studioId);
-    },
+    queryFn: withDemoMode(getMockTodayBookings() as Booking[])(
+      () => bookingService.getToday(studioId)
+    ),
     enabled: !!studioId,
   });
 }
@@ -114,6 +111,9 @@ export function useCreateBooking() {
       bookingService.create(booking),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -129,6 +129,9 @@ export function useUpdateBooking() {
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -140,6 +143,9 @@ export function useDeleteBooking() {
     mutationFn: (id: string) => bookingService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -154,6 +160,9 @@ export function useUpdateBookingStatus() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.bookings.detail(variables.id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }

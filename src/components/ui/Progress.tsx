@@ -31,7 +31,14 @@ export function Progress({
           {showLabel && <span className={styles.percentage}>{Math.round(percentage)}%</span>}
         </div>
       )}
-      <div className={cn(styles.track, styles[size])}>
+      <div
+        className={cn(styles.track, styles[size])}
+        role="progressbar"
+        aria-valuenow={value}
+        aria-valuemin={0}
+        aria-valuemax={max}
+        aria-label={label || undefined}
+      >
         <motion.div
           className={cn(styles.bar, styles[variant])}
           initial={{ width: 0 }}
@@ -68,8 +75,15 @@ export function CircularProgress({
   const offset = circumference - (percentage / 100) * circumference;
 
   return (
-    <div className={cn(styles.circular, className)} style={{ width: size, height: size }}>
-      <svg width={size} height={size}>
+    <div
+      className={cn(styles.circular, className)}
+      style={{ width: size, height: size }}
+      role="progressbar"
+      aria-valuenow={value}
+      aria-valuemin={0}
+      aria-valuemax={max}
+    >
+      <svg width={size} height={size} aria-hidden="true">
         <circle
           className={styles.circleTrack}
           cx={size / 2}

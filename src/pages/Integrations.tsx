@@ -6,7 +6,6 @@ import {
   X,
   ExternalLink,
   Settings,
-  RefreshCw,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';

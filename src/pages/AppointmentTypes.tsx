@@ -6,7 +6,6 @@ import {
   Search,
   Clock,
   DollarSign,
-  Users,
   Edit2,
   Trash2,
   MoreVertical,
@@ -172,7 +171,7 @@ export function AppointmentTypes() {
                         cursor: 'pointer',
                         padding: 'var(--space-2)',
                         color: 'var(--text-muted)',
-                      }}>
+                      }} aria-label="Plus d'options">
                         <MoreVertical size={16} />
                       </button>
                     }

@@ -1,17 +1,12 @@
 // src/embed/components/BookingForm.tsx
-import { useState, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useEmbedStore } from '../store/embedStore';
 import { embedApi } from '../services/embedApi';
+import { embedBookingSchema } from '../../lib/validations';
+import { useFormValidation } from '../../hooks/useFormValidation';
 import type { BookingFormData } from '../types';
-
-interface FormErrors {
-  clientName?: string;
-  clientEmail?: string;
-  clientPhone?: string;
-  acceptTerms?: string;
-}
 
 export function BookingForm() {
   const {
@@ -28,146 +23,8 @@ export function BookingForm() {
     isLoading,
   } = useEmbedStore();
 
-  const [errors, setErrors] = useState<FormErrors>({});
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-
-  // Format price using studio currency or default to EUR
-  const formatPrice = useCallback(
-    (price: number) => {
-      return new Intl.NumberFormat('fr-FR', {
-        style: 'currency',
-        currency: studio?.currency || 'EUR',
-      }).format(price);
-    },
-    [studio?.currency]
-  );
-
-  // Format the selected date and time
-  const formattedDateTime = useMemo(() => {
-    if (!selectedDate || !selectedSlot) return null;
-
-    const date = new Date(selectedDate);
-    const formattedDate = format(date, "EEEE d MMMM yyyy", { locale: fr });
-
-    const startTime = new Date(selectedSlot.start);
-    const endTime = new Date(selectedSlot.end);
-    const formattedStart = format(startTime, 'HH:mm', { locale: fr });
-    const formattedEnd = format(endTime, 'HH:mm', { locale: fr });
-
-    return {
-      date: formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1),
-      time: `${formattedStart} - ${formattedEnd}`,
-    };
-  }, [selectedDate, selectedSlot]);
-
-  // Validate email format
-  const isValidEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  // Validate phone format (basic validation)
-  const isValidPhone = (phone: string): boolean => {
-    const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/;
-    return phone.length >= 8 && phoneRegex.test(phone);
-  };
-
-  // Validate form
-  const validateForm = useCallback((): FormErrors => {
-    const newErrors: FormErrors = {};
-
-    if (!formData.clientName?.trim()) {
-      newErrors.clientName = 'Le nom est requis';
-    }
-
-    if (!formData.clientEmail?.trim()) {
-      newErrors.clientEmail = "L'email est requis";
-    } else if (!isValidEmail(formData.clientEmail)) {
-      newErrors.clientEmail = "Format d'email invalide";
-    }
-
-    if (!formData.clientPhone?.trim()) {
-      newErrors.clientPhone = 'Le telephone est requis';
-    } else if (!isValidPhone(formData.clientPhone)) {
-      newErrors.clientPhone = 'Format de telephone invalide';
-    }
-
-    if (!formData.acceptTerms) {
-      newErrors.acceptTerms = 'Vous devez accepter les conditions';
-    }
-
-    return newErrors;
-  }, [formData]);
-
-  // Validate single field
-  const validateField = useCallback(
-    (field: keyof FormErrors): string | undefined => {
-      switch (field) {
-        case 'clientName':
-          if (!formData.clientName?.trim()) return 'Le nom est requis';
-          break;
-        case 'clientEmail':
-          if (!formData.clientEmail?.trim()) return "L'email est requis";
-          if (!isValidEmail(formData.clientEmail)) return "Format d'email invalide";
-          break;
-        case 'clientPhone':
-          if (!formData.clientPhone?.trim()) return 'Le telephone est requis';
-          if (!isValidPhone(formData.clientPhone)) return 'Format de telephone invalide';
-          break;
-        case 'acceptTerms':
-          if (!formData.acceptTerms) return 'Vous devez accepter les conditions';
-          break;
-      }
-      return undefined;
-    },
-    [formData]
-  );
-
-  // Handle field blur for validation
-  const handleBlur = (field: keyof FormErrors) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    const error = validateField(field);
-    setErrors((prev) => ({ ...prev, [field]: error }));
-  };
-
-  // Handle input change
-  const handleChange = (field: keyof BookingFormData, value: string | boolean) => {
-    updateFormData({ [field]: value });
-
-    // Clear error if field is touched and now valid
-    if (touched[field]) {
-      const error = validateField(field as keyof FormErrors);
-      setErrors((prev) => ({ ...prev, [field]: error }));
-    }
-  };
-
-  // Post message to parent window
-  const postMessageToParent = (type: string, payload?: unknown) => {
-    if (window.parent !== window) {
-      window.parent.postMessage({ type, payload }, '*');
-    }
-  };
-
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate all fields
-    const formErrors = validateForm();
-    setErrors(formErrors);
-    setTouched({
-      clientName: true,
-      clientEmail: true,
-      clientPhone: true,
-      acceptTerms: true,
-    });
-
-    // If there are errors, don't submit
-    if (Object.keys(formErrors).length > 0) {
-      return;
-    }
-
-    // Ensure we have all required data
+  // Zod validation via hook
+  const submitBooking = useCallback(async () => {
     if (!config?.studioId || !selectedService || !selectedDate || !selectedSlot) {
       setError('Donnees de reservation incompletes');
       return;
@@ -209,6 +66,64 @@ export function BookingForm() {
     } finally {
       setLoading(false);
     }
+  }, [config, selectedService, selectedDate, selectedSlot, formData, setLoading, setError, setBookingResult]);
+
+  const { errors, touched, handleBlur, handleSubmit } = useFormValidation({
+    schema: embedBookingSchema,
+    onSubmit: submitBooking,
+  });
+
+  // Format price using studio currency or default to EUR
+  const formatPrice = useCallback(
+    (price: number) => {
+      return new Intl.NumberFormat('fr-FR', {
+        style: 'currency',
+        currency: studio?.currency || 'EUR',
+      }).format(price);
+    },
+    [studio?.currency]
+  );
+
+  // Format the selected date and time
+  const formattedDateTime = useMemo(() => {
+    if (!selectedDate || !selectedSlot) return null;
+
+    const date = new Date(selectedDate);
+    const formattedDate = format(date, "EEEE d MMMM yyyy", { locale: fr });
+
+    const startTime = new Date(selectedSlot.start);
+    const endTime = new Date(selectedSlot.end);
+    const formattedStart = format(startTime, 'HH:mm', { locale: fr });
+    const formattedEnd = format(endTime, 'HH:mm', { locale: fr });
+
+    return {
+      date: formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1),
+      time: `${formattedStart} - ${formattedEnd}`,
+    };
+  }, [selectedDate, selectedSlot]);
+
+  // Handle input change
+  const handleChange = (field: keyof BookingFormData, value: string | boolean) => {
+    updateFormData({ [field]: value });
+  };
+
+  // Post message to parent window with secure origin
+  const getParentOrigin = (): string => {
+    try {
+      if (document.referrer) {
+        return new URL(document.referrer).origin;
+      }
+    } catch {
+      // Invalid referrer URL
+    }
+    // Ne pas utiliser '*' - utiliser l'origin du document comme fallback securise
+    return window.location.origin;
+  };
+
+  const postMessageToParent = (type: string, payload?: unknown) => {
+    if (window.parent !== window) {
+      window.parent.postMessage({ type, payload }, getParentOrigin());
+    }
   };
 
   return (
@@ -248,7 +163,7 @@ export function BookingForm() {
       </div>
 
       {/* Booking Form */}
-      <form onSubmit={handleSubmit} style={styles.form}>
+      <form onSubmit={(e) => handleSubmit(e, formData)} style={styles.form}>
         <h2 style={styles.formTitle}>Vos informations</h2>
 
         {/* Client Name Field */}
@@ -262,7 +177,7 @@ export function BookingForm() {
             name="clientName"
             value={formData.clientName || ''}
             onChange={(e) => handleChange('clientName', e.target.value)}
-            onBlur={() => handleBlur('clientName')}
+            onBlur={() => handleBlur('clientName', formData)}
             placeholder="Jean Dupont"
             style={{
               ...styles.input,
@@ -286,7 +201,7 @@ export function BookingForm() {
             name="clientEmail"
             value={formData.clientEmail || ''}
             onChange={(e) => handleChange('clientEmail', e.target.value)}
-            onBlur={() => handleBlur('clientEmail')}
+            onBlur={() => handleBlur('clientEmail', formData)}
             placeholder="jean.dupont@email.com"
             style={{
               ...styles.input,
@@ -310,7 +225,7 @@ export function BookingForm() {
             name="clientPhone"
             value={formData.clientPhone || ''}
             onChange={(e) => handleChange('clientPhone', e.target.value)}
-            onBlur={() => handleBlur('clientPhone')}
+            onBlur={() => handleBlur('clientPhone', formData)}
             placeholder="+33 6 12 34 56 78"
             style={{
               ...styles.input,
@@ -349,7 +264,7 @@ export function BookingForm() {
               name="acceptTerms"
               checked={formData.acceptTerms || false}
               onChange={(e) => handleChange('acceptTerms', e.target.checked)}
-              onBlur={() => handleBlur('acceptTerms')}
+              onBlur={() => handleBlur('acceptTerms', formData)}
               style={styles.checkbox}
               disabled={isLoading}
             />

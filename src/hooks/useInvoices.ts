@@ -131,6 +131,9 @@ export function useCreateInvoice() {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.stats.all });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -145,6 +148,9 @@ export function useUpdateInvoice() {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -157,6 +163,9 @@ export function useDeleteInvoice() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.stats.all });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -171,6 +180,9 @@ export function useUpdateInvoiceStatus() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(variables.id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -187,6 +199,9 @@ export function useMarkInvoiceAsPaid() {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.stats.all });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -199,6 +214,9 @@ export function useMarkInvoiceAsSent() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -213,6 +231,9 @@ export function useMarkInvoiceAsOverdue() {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -225,6 +246,9 @@ export function useCancelInvoice() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -239,6 +263,9 @@ export function useUpdatePaidAmount() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.invoices.detail(variables.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.stats.all });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }

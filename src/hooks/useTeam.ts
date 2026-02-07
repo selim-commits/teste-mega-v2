@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { teamService } from '../services';
 import { queryKeys } from '../lib/queryClient';
-import { isDemoMode } from '../lib/supabase';
+import { withDemoMode } from '../lib/supabase';
 import { mockTeamMembers } from '../lib/mockData';
 import type { TeamMember, TeamMemberInsert, TeamMemberUpdate, TeamRole, Json } from '../types/database';
 
@@ -54,13 +54,9 @@ export function useTeamMember(id: string) {
 export function useTeamMembersByUser(userId: string) {
   return useQuery({
     queryKey: queryKeys.team.byUser(userId),
-    queryFn: (): Promise<TeamMember[]> => {
-      if (isDemoMode) {
-        // Return the first mock team member (admin) for demo mode
-        return Promise.resolve((mockTeamMembers as TeamMember[]).slice(0, 1));
-      }
-      return teamService.getByUserId(userId);
-    },
+    queryFn: withDemoMode((mockTeamMembers as TeamMember[]).slice(0, 1))(
+      () => teamService.getByUserId(userId)
+    ),
     enabled: !!userId,
   });
 }
@@ -130,6 +126,9 @@ export function useCreateTeamMember() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.team.all });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -144,6 +143,9 @@ export function useUpdateTeamMember() {
       queryClient.invalidateQueries({ queryKey: queryKeys.team.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.team.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -155,6 +157,9 @@ export function useDeleteTeamMember() {
     mutationFn: (id: string) => teamService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.team.all });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -170,6 +175,9 @@ export function useUpdateTeamMemberRole() {
       queryClient.invalidateQueries({ queryKey: queryKeys.team.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.team.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -182,6 +190,9 @@ export function useUpdateTeamMemberPermissions() {
       teamService.updatePermissions(id, permissions),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.team.detail(variables.id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -196,6 +207,9 @@ export function useDeactivateTeamMember() {
       queryClient.invalidateQueries({ queryKey: queryKeys.team.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.team.detail(id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -208,6 +222,9 @@ export function useActivateTeamMember() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.team.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.team.detail(id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }

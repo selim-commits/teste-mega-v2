@@ -1,8 +1,9 @@
 import { supabase } from '../lib/supabase';
 import type { Equipment, EquipmentInsert, EquipmentUpdate, EquipmentStatus } from '../types/database';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
+const sanitizeSearchQuery = (query: string): string => {
+  return query.trim().slice(0, 100).replace(/[%_\\]/g, '\\$&');
+};
 
 export interface EquipmentFilters {
   studioId?: string;
@@ -13,7 +14,7 @@ export interface EquipmentFilters {
 
 export const equipmentService = {
   async getAll(filters?: EquipmentFilters): Promise<Equipment[]> {
-    let query = db.from('equipment').select('*');
+    let query = supabase.from('equipment').select('*');
 
     if (filters?.studioId) {
       query = query.eq('studio_id', filters.studioId);
@@ -25,7 +26,8 @@ export const equipmentService = {
       query = query.eq('category', filters.category);
     }
     if (filters?.search) {
-      query = query.or(`name.ilike.%${filters.search}%,brand.ilike.%${filters.search}%,model.ilike.%${filters.search}%`);
+      const s = sanitizeSearchQuery(filters.search);
+      query = query.or(`name.ilike.%${s}%,brand.ilike.%${s}%,model.ilike.%${s}%`);
     }
 
     const { data, error } = await query.order('name', { ascending: true });
@@ -65,7 +67,7 @@ export const equipmentService = {
   },
 
   async delete(id: string): Promise<void> {
-    const { error } = await db.from('equipment').delete().eq('id', id);
+    const { error } = await supabase.from('equipment').delete().eq('id', id);
     if (error) throw error;
   },
 
@@ -106,11 +108,12 @@ export const equipmentService = {
   },
 
   async search(studioId: string, query: string): Promise<Equipment[]> {
+    const s = sanitizeSearchQuery(query);
     const { data, error } = await supabase
       .from('equipment')
       .select('*')
       .eq('studio_id', studioId)
-      .or(`name.ilike.%${query}%,brand.ilike.%${query}%,model.ilike.%${query}%,serial_number.ilike.%${query}%`)
+      .or(`name.ilike.%${s}%,brand.ilike.%${s}%,model.ilike.%${s}%,serial_number.ilike.%${s}%`)
       .order('name', { ascending: true });
     if (error) throw error;
     return (data as Equipment[]) || [];

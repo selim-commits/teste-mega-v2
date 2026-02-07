@@ -46,15 +46,7 @@ export function DateTimeSelection() {
   // Fetch availability when date changes
   const fetchAvailability = useCallback(
     async (date: string) => {
-      console.log('[Rooom Debug] fetchAvailability called', {
-        date,
-        config: config,
-        studioId: config?.studioId,
-        selectedService: selectedService,
-        serviceId: selectedService?.id,
-      });
       if (!config?.studioId || !selectedService?.id) {
-        console.log('[Rooom Debug] Missing config or service, returning', { hasConfig: !!config, hasService: !!selectedService });
         return;
       }
 
@@ -84,7 +76,7 @@ export function DateTimeSelection() {
         } else {
           setAvailability(date, []);
         }
-      } catch (err) {
+      } catch {
         setSlotsError('Erreur lors du chargement des créneaux');
       } finally {
         setIsLoadingSlots(false);

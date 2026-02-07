@@ -50,11 +50,9 @@ import {
 } from '../hooks/useTeam';
 import { useTeamStore } from '../stores/teamStore';
 import { useNotifications } from '../stores/uiStore';
+import { DEMO_STUDIO_ID } from '../stores/authStore';
 import type { TeamMember, TeamRole, TeamMemberInsert, TeamMemberUpdate } from '../types/database';
 import styles from './Team.module.css';
-
-// Demo studioId - in production, this would come from useAuthStore or context
-const DEMO_STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 interface TeamMemberFormData {
   name: string;
@@ -245,7 +243,7 @@ export function Team() {
       showSuccess('Membre ajoute', 'Le membre a ete ajoute avec succes');
       setIsCreateModalOpen(false);
       setFormData(defaultFormData);
-    } catch (error) {
+    } catch {
       showError('Erreur', "Impossible d'ajouter le membre");
     }
   }, [formData, validateForm, createMutation, showSuccess, showError]);
@@ -268,7 +266,7 @@ export function Team() {
       showSuccess('Membre modifie', 'Le membre a ete modifie avec succes');
       setIsEditModalOpen(false);
       setSelectedMemberId(null);
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de modifier le membre');
     }
   }, [selectedMemberId, formData, validateForm, updateMutation, showSuccess, showError]);
@@ -282,7 +280,7 @@ export function Team() {
       setIsDeleteConfirmOpen(false);
       setIsDetailSidebarOpen(false);
       setSelectedMemberId(null);
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de supprimer le membre');
     }
   }, [selectedMemberId, deleteMutation, showSuccess, showError]);
@@ -296,7 +294,7 @@ export function Team() {
         await activateMutation.mutateAsync(member.id);
         showSuccess('Membre active', `${member.name} a ete active`);
       }
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de modifier le statut du membre');
     }
   }, [activateMutation, deactivateMutation, showSuccess, showError]);
@@ -308,7 +306,7 @@ export function Team() {
       await updateRoleMutation.mutateAsync({ id: selectedMemberId, role: newRole });
       showSuccess('Role modifie', 'Le role a ete modifie avec succes');
       setIsRoleChangeModalOpen(false);
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de modifier le role');
     }
   }, [selectedMemberId, newRole, updateRoleMutation, showSuccess, showError]);
@@ -427,7 +425,7 @@ export function Team() {
       render: (member: TeamMember) => (
         <Dropdown
           trigger={
-            <button className={styles.memberMenu}>
+            <button className={styles.memberMenu} aria-label="Plus d'options">
               <MoreVertical size={16} />
             </button>
           }

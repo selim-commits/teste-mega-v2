@@ -54,7 +54,6 @@ export const embedApi = {
     const result = await fetchApi<EmbedStudio>(`/embed/config?studioId=${studioId}`);
     // Fall back to mock if error
     if (result.error) {
-      console.log('[Rooom] Using mock studio data');
       return { data: mockStudio };
     }
     return result;
@@ -68,7 +67,6 @@ export const embedApi = {
     }
     const result = await fetchApi<EmbedService[]>(`/embed/services?${params}`);
     if (result.error) {
-      console.log('[Rooom] Using mock services data');
       let services = mockServices;
       if (serviceIds?.length) {
         services = services.filter(s => serviceIds.includes(s.id));
@@ -93,7 +91,6 @@ export const embedApi = {
     });
     const result = await fetchApi<AvailabilityResponse[]>(`/embed/availability?${params}`);
     if (result.error) {
-      console.log('[Rooom] Using mock availability data');
       // Generate mock availability for each day in range
       const availability: AvailabilityResponse[] = [];
       const current = new Date(startDate);
@@ -115,7 +112,6 @@ export const embedApi = {
       body: JSON.stringify({ studioId, ...data }),
     });
     if (result.error) {
-      console.log('[Rooom] Using mock booking response');
       const service = mockServices.find(s => s.id === data.serviceId);
       // Calculate hours
       const start = new Date(data.startTime);

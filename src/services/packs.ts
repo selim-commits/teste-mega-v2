@@ -6,12 +6,10 @@ import type {
   ClientPurchase,
   ClientPurchaseInsert,
   ClientPurchaseUpdate,
+  ClientPurchaseWithRelations,
   PricingProductType,
   SubscriptionStatus
 } from '../types/database';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
 
 export interface PackFilters {
   studioId?: string;
@@ -29,7 +27,7 @@ export interface ClientPurchaseFilters {
 export const packService = {
   // Pack/Pricing Product CRUD
   async getAll(filters?: PackFilters): Promise<Pack[]> {
-    let query = db.from('pricing_products').select('*');
+    let query = supabase.from('pricing_products').select('*');
 
     if (filters?.studioId) {
       query = query.eq('studio_id', filters.studioId);
@@ -47,7 +45,7 @@ export const packService = {
   },
 
   async getById(id: string): Promise<Pack | null> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('pricing_products')
       .select('*')
       .eq('id', id)
@@ -57,7 +55,7 @@ export const packService = {
   },
 
   async create(pack: PackInsert): Promise<Pack> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('pricing_products')
       .insert(pack)
       .select()
@@ -67,7 +65,7 @@ export const packService = {
   },
 
   async update(id: string, pack: PackUpdate): Promise<Pack> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('pricing_products')
       .update({ ...pack, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -78,12 +76,12 @@ export const packService = {
   },
 
   async delete(id: string): Promise<void> {
-    const { error } = await db.from('pricing_products').delete().eq('id', id);
+    const { error } = await supabase.from('pricing_products').delete().eq('id', id);
     if (error) throw error;
   },
 
   async getByStudioId(studioId: string): Promise<Pack[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('pricing_products')
       .select('*')
       .eq('studio_id', studioId)
@@ -93,7 +91,7 @@ export const packService = {
   },
 
   async getActiveByStudioId(studioId: string): Promise<Pack[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('pricing_products')
       .select('*')
       .eq('studio_id', studioId)
@@ -104,7 +102,7 @@ export const packService = {
   },
 
   async getByType(studioId: string, type: PricingProductType): Promise<Pack[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('pricing_products')
       .select('*')
       .eq('studio_id', studioId)
@@ -115,7 +113,7 @@ export const packService = {
   },
 
   async toggleActive(id: string, isActive: boolean): Promise<Pack> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('pricing_products')
       .update({ is_active: isActive, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -126,7 +124,7 @@ export const packService = {
   },
 
   async toggleFeatured(id: string, isFeatured: boolean): Promise<Pack> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('pricing_products')
       .update({ is_featured: isFeatured, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -137,7 +135,7 @@ export const packService = {
   },
 
   async updateDisplayOrder(id: string, displayOrder: number): Promise<Pack> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('pricing_products')
       .update({ display_order: displayOrder, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -151,7 +149,7 @@ export const packService = {
 export const clientPurchaseService = {
   // Client Purchase/Subscription CRUD
   async getAll(filters?: ClientPurchaseFilters): Promise<ClientPurchase[]> {
-    let query = db.from('client_purchases').select(`
+    let query = supabase.from('client_purchases').select(`
       *,
       client:clients(*),
       product:pricing_products(*)
@@ -176,7 +174,7 @@ export const clientPurchaseService = {
   },
 
   async getById(id: string): Promise<ClientPurchase | null> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('client_purchases')
       .select(`
         *,
@@ -190,7 +188,7 @@ export const clientPurchaseService = {
   },
 
   async create(purchase: ClientPurchaseInsert): Promise<ClientPurchase> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('client_purchases')
       .insert(purchase)
       .select()
@@ -200,7 +198,7 @@ export const clientPurchaseService = {
   },
 
   async update(id: string, purchase: ClientPurchaseUpdate): Promise<ClientPurchase> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('client_purchases')
       .update({ ...purchase, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -211,7 +209,7 @@ export const clientPurchaseService = {
   },
 
   async getByClientId(clientId: string): Promise<ClientPurchase[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('client_purchases')
       .select(`
         *,
@@ -224,7 +222,7 @@ export const clientPurchaseService = {
   },
 
   async getActiveByClientId(clientId: string): Promise<ClientPurchase[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('client_purchases')
       .select(`
         *,
@@ -243,7 +241,7 @@ export const clientPurchaseService = {
       ...(status === 'cancelled' && { cancelled_at: new Date().toISOString() }),
     };
 
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('client_purchases')
       .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
@@ -254,7 +252,7 @@ export const clientPurchaseService = {
   },
 
   async pauseSubscription(id: string, pauseEndsAt?: string): Promise<ClientPurchase> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('client_purchases')
       .update({
         status: 'paused',
@@ -270,7 +268,7 @@ export const clientPurchaseService = {
   },
 
   async resumeSubscription(id: string): Promise<ClientPurchase> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('client_purchases')
       .update({
         status: 'active',
@@ -286,7 +284,7 @@ export const clientPurchaseService = {
   },
 
   async getByStudioId(studioId: string): Promise<ClientPurchase[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('client_purchases')
       .select(`
         *,
@@ -300,7 +298,7 @@ export const clientPurchaseService = {
   },
 
   async getActiveSubscriptions(studioId: string): Promise<ClientPurchase[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('client_purchases')
       .select(`
         *,
@@ -327,8 +325,8 @@ export const packStatsService = {
     const totalSold = purchases.length;
     const activeSubscriptions = purchases.filter(p => p.status === 'active').length;
     const totalRevenue = purchases.reduce((sum, p) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const product = (p as any).product as Pack | undefined;
+      const purchaseWithRelations = p as ClientPurchaseWithRelations;
+      const product = purchaseWithRelations.product;
       return sum + (product?.price || 0);
     }, 0);
 
@@ -338,8 +336,8 @@ export const packStatsService = {
     const monthlyRevenue = purchases
       .filter(p => new Date(p.purchased_at) >= startOfMonth)
       .reduce((sum, p) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const product = (p as any).product as Pack | undefined;
+        const purchaseWithRelations = p as ClientPurchaseWithRelations;
+        const product = purchaseWithRelations.product;
         return sum + (product?.price || 0);
       }, 0);
 

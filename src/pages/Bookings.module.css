@@ -398,7 +398,7 @@
 /* Mobile Styles */
 @media (max-width: 768px) {
   .content {
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .layout {
@@ -455,7 +455,7 @@
 
 @media (max-width: 480px) {
   .content {
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   .calendarCard,

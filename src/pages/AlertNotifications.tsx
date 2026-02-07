@@ -7,7 +7,6 @@ import {
   Mail,
   Smartphone,
   Check,
-  Settings,
   Calendar,
   CreditCard,
   Users,
@@ -17,7 +16,6 @@ import {
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-import { Badge } from '../components/ui/Badge';
 import { Switch } from '../components/ui/Checkbox';
 import styles from './SettingsPage.module.css';
 

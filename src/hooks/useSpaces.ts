@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { spaceService } from '../services/spaces';
-import { isDemoMode } from '../lib/supabase';
+import { withDemoMode } from '../lib/supabase';
 import { mockSpaces } from '../lib/mockData';
 import type { Space, SpaceInsert, SpaceUpdate } from '../types/database';
 
@@ -41,12 +41,9 @@ export function useSpaces(filters?: SpaceFilters) {
 export function useActiveSpaces(studioId: string) {
   return useQuery({
     queryKey: [...spaceQueryKeys.list({ studioId }), 'active'],
-    queryFn: (): Promise<Space[]> => {
-      if (isDemoMode) {
-        return Promise.resolve((mockSpaces as Space[]).filter(s => s.is_active));
-      }
-      return spaceService.getActiveByStudioId(studioId);
-    },
+    queryFn: withDemoMode((mockSpaces as Space[]).filter(s => s.is_active))(
+      () => spaceService.getActiveByStudioId(studioId)
+    ),
     enabled: !!studioId,
   });
 }
@@ -70,6 +67,9 @@ export function useCreateSpace() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: spaceQueryKeys.all });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -84,6 +84,9 @@ export function useUpdateSpace() {
       queryClient.invalidateQueries({ queryKey: spaceQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: spaceQueryKeys.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -95,6 +98,9 @@ export function useDeleteSpace() {
     mutationFn: (id: string) => spaceService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: spaceQueryKeys.all });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -109,6 +115,9 @@ export function useToggleSpaceActive() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: spaceQueryKeys.all });
       queryClient.invalidateQueries({ queryKey: spaceQueryKeys.detail(variables.id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }

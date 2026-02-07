@@ -1,73 +1,77 @@
-# React + TypeScript + Vite
+# Rooom OS
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SaaS de gestion de studios photo/video. Interface premium, minimaliste, Apple-inspired.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Frontend**: React 19 + TypeScript 5.9 + Vite 7
+- **Backend**: Supabase (Auth, Database, Realtime)
+- **State**: Zustand 5 (UI) + React Query 5 (server state)
+- **Style**: CSS Modules + Design System custom
+- **Animation**: Framer Motion
 
-## React Compiler
+## Demarrage rapide
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+# Cloner et installer
+git clone <repo-url>
+cd teste-mega-v2
+npm install
 
-## Expanding the ESLint configuration
+# Configuration (optionnel - l'app tourne en mode demo sans)
+cp .env.example .env
+# Editer .env avec vos credentials Supabase
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Lancer le dev server
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Scripts
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+| Commande | Description |
+|----------|-------------|
+| `npm run dev` | Serveur de developpement (Vite) |
+| `npm run build` | Build production (tsc + Vite) |
+| `npm run lint` | ESLint |
+| `npm run test` | Tests unitaires (Vitest) |
+| `npm run test:ci` | Tests en mode CI |
+| `npm run preview` | Preview du build |
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Architecture
+
 ```
+src/
+├── components/     # Composants reutilisables
+│   ├── ui/         # Design system (Button, Card, Modal, etc.)
+│   ├── layout/     # Layout (Header, Sidebar, AppLayout)
+│   └── packs/      # Composants packs
+├── pages/          # 22 pages de l'application
+├── hooks/          # React Query hooks (donnees serveur)
+├── services/       # Couche d'acces Supabase
+├── stores/         # Zustand stores (etat UI)
+├── lib/            # Utilitaires (utils, validations, mockData)
+├── types/          # Types TypeScript
+├── styles/         # Design system CSS
+├── contexts/       # React contexts (Auth)
+├── embed/          # Widget booking (standalone)
+├── embed-chat/     # Widget chat (standalone)
+└── embed-packs/    # Widget packs (standalone)
+```
+
+## Mode Demo
+
+Sans variables d'environnement Supabase, l'app tourne automatiquement en mode demo avec des donnees fictives. Ideal pour le developpement et les demos.
+
+## Widgets Embed
+
+3 widgets independants integrables via iframe:
+- **Booking** (`/src/embed/`) - Reservation en ligne
+- **Chat** (`/src/embed-chat/`) - Chat client/studio
+- **Packs** (`/src/embed-packs/`) - Achat de forfaits
+
+## Conventions
+
+- **CSS**: Variables du design system obligatoires (`var(--text-primary)`)
+- **Composants**: CSS Modules (`.module.css`)
+- **Commits**: `type(scope): description`
+- **Locale**: FR par defaut (`fr-FR`)

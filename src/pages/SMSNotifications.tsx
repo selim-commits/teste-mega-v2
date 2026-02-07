@@ -4,7 +4,6 @@ import {
   MessageSquare,
   Send,
   Edit2,
-  Check,
   Clock,
   AlertCircle,
   Plus,

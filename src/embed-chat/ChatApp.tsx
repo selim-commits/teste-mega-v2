@@ -14,7 +14,6 @@ interface ChatAppProps {
 export function ChatApp({ config }: ChatAppProps) {
   const {
     windowState,
-    conversationId,
     setConfig,
     setConversationId,
     addMessages,
@@ -79,10 +78,22 @@ export function ChatApp({ config }: ChatAppProps) {
     });
   };
 
-  // Notify parent window
+  // Notify parent window with secure origin
+  const getParentOrigin = (): string => {
+    try {
+      if (document.referrer) {
+        return new URL(document.referrer).origin;
+      }
+    } catch {
+      // Invalid referrer URL
+    }
+    // Ne pas utiliser '*' - utiliser l'origin du document comme fallback securise
+    return window.location.origin;
+  };
+
   const notifyParent = (type: string, payload: unknown) => {
     if (window.parent !== window) {
-      window.parent.postMessage({ type, payload }, '*');
+      window.parent.postMessage({ type, payload }, getParentOrigin());
     }
   };
 

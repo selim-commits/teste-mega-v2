@@ -213,7 +213,6 @@ export const packsApi = {
   getStudioConfig: async (studioId: string): Promise<ApiResponse<PacksStudio>> => {
     const result = await fetchApi<PacksStudio>(`/packs/config?studioId=${studioId}`);
     if (result.error) {
-      console.log('[Rooom Packs] Using mock studio data');
       return { data: mockStudio };
     }
     return result;
@@ -223,7 +222,6 @@ export const packsApi = {
   getPacks: async (studioId: string): Promise<ApiResponse<HourPack[]>> => {
     const result = await fetchApi<HourPack[]>(`/packs/list?studioId=${studioId}`);
     if (result.error) {
-      console.log('[Rooom Packs] Using mock packs data');
       return { data: mockPacks };
     }
     return result;
@@ -233,7 +231,6 @@ export const packsApi = {
   getSubscriptions: async (studioId: string): Promise<ApiResponse<Subscription[]>> => {
     const result = await fetchApi<Subscription[]>(`/packs/subscriptions?studioId=${studioId}`);
     if (result.error) {
-      console.log('[Rooom Packs] Using mock subscriptions data');
       return { data: mockSubscriptions };
     }
     return result;
@@ -243,7 +240,6 @@ export const packsApi = {
   getGiftCertificates: async (studioId: string): Promise<ApiResponse<GiftCertificate[]>> => {
     const result = await fetchApi<GiftCertificate[]>(`/packs/gifts?studioId=${studioId}`);
     if (result.error) {
-      console.log('[Rooom Packs] Using mock gift certificates data');
       return { data: mockGiftCertificates };
     }
     return result;
@@ -263,7 +259,6 @@ export const packsApi = {
       },
     });
     if (result.error) {
-      console.log('[Rooom Packs] Using mock wallet data');
       // Return mock wallet for demo
       return { data: mockClientWallet };
     }
@@ -285,7 +280,6 @@ export const packsApi = {
       }
     );
     if (result.error) {
-      console.log('[Rooom Packs] Mock promo validation');
       // Mock: SAVE10 gives 10% off
       if (code.toUpperCase() === 'SAVE10') {
         return { data: { valid: true, discount_percent: 10 } };
@@ -316,7 +310,6 @@ export const packsApi = {
     });
 
     if (result.error) {
-      console.log('[Rooom Packs] Using mock purchase response');
       // Generate mock response
       let itemName = '';
       let amount = 0;

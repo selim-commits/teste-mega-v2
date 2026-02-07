@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { cn } from '../../lib/utils';
 import styles from './Badge.module.css';
 
@@ -13,7 +13,7 @@ interface BadgeProps {
   className?: string;
 }
 
-export function Badge({
+export const Badge = memo(function Badge({
   variant = 'default',
   size = 'md',
   dot = false,
@@ -26,4 +26,4 @@ export function Badge({
       {children}
     </span>
   );
-}
+});

@@ -8,6 +8,10 @@ export function AppLayout() {
 
   return (
     <div className={styles.layout}>
+      <a href="#main-content" className={styles.skipLink}>
+        Aller au contenu principal
+      </a>
+
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       {/* Mobile Header with Hamburger */}
@@ -24,7 +28,7 @@ export function AppLayout() {
         <span className={styles.mobileLogoText}>acuity:scheduling</span>
       </div>
 
-      <main className={styles.main}>
+      <main id="main-content" className={styles.main}>
         <Outlet />
       </main>
     </div>

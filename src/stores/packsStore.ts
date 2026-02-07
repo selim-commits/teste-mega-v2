@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Pack, ClientPurchase, PricingProductType } from '../types/database';
+import type { Pack, ClientPurchase, ClientPurchaseWithRelations, PricingProductType } from '../types/database';
 
 export type PackTabType = 'packs' | 'subscriptions' | 'certificates' | 'clients';
 
@@ -160,10 +160,9 @@ export const selectFilteredPurchases = (state: PacksState): ClientPurchase[] => 
     // Apply search filter
     if (hasSearchFilter) {
       const query = purchaseFilters.searchQuery.toLowerCase();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const client = (purchase as any).client;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const product = (purchase as any).product;
+      const purchaseWithRelations = purchase as ClientPurchaseWithRelations;
+      const client = purchaseWithRelations.client;
+      const product = purchaseWithRelations.product;
       if (!(client?.name && client.name.toLowerCase().includes(query)) &&
           !(client?.email && client.email.toLowerCase().includes(query)) &&
           !(product?.name && product.name.toLowerCase().includes(query))) {

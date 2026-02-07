@@ -4,8 +4,6 @@ import {
   Clock,
   Calendar,
   Plus,
-  Edit2,
-  Trash2,
   Copy,
   Check,
 } from 'lucide-react';

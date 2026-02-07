@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { clientService } from '../services';
 import { queryKeys } from '../lib/queryClient';
-import { isDemoMode } from '../lib/supabase';
+import { isDemoMode, withDemoMode } from '../lib/supabase';
 import { mockClients } from '../lib/mockData';
 import type { Client, ClientInsert, ClientUpdate, ClientTier } from '../types/database';
 
@@ -52,12 +52,9 @@ export function useClients(filters?: ClientFilters) {
 export function useActiveClients(studioId: string) {
   return useQuery({
     queryKey: [...queryKeys.clients.list({ studioId }), 'active'],
-    queryFn: (): Promise<Client[]> => {
-      if (isDemoMode) {
-        return Promise.resolve((mockClients as Client[]).filter(c => c.is_active));
-      }
-      return clientService.getActiveByStudioId(studioId);
-    },
+    queryFn: withDemoMode((mockClients as Client[]).filter(c => c.is_active))(
+      () => clientService.getActiveByStudioId(studioId)
+    ),
     enabled: !!studioId,
   });
 }
@@ -100,6 +97,9 @@ export function useCreateClient() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -114,6 +114,9 @@ export function useUpdateClient() {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -125,6 +128,9 @@ export function useDeleteClient() {
     mutationFn: (id: string) => clientService.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -140,6 +146,9 @@ export function useUpdateClientTier() {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -152,6 +161,9 @@ export function useUpdateClientScore() {
       clientService.updateScore(id, score),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(variables.id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }
@@ -167,6 +179,9 @@ export function useAddClientTags() {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -181,6 +196,9 @@ export function useRemoveClientTags() {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(variables.id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -194,6 +212,9 @@ export function useDeactivateClient() {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(id) });
     },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
+    },
   });
 }
 
@@ -206,6 +227,9 @@ export function useActivateClient() {
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.clients.detail(id) });
+    },
+    onError: (error: Error) => {
+      console.error('Mutation failed:', error.message);
     },
   });
 }

@@ -1,18 +1,15 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
-import { queryKeys } from '../lib/queryClient';
 import {
   chatService,
   type ChatConversation,
   type ChatMessage,
   type ConversationFilters,
   type ConversationWithMessages,
-  type ConversationWithRelations,
   type VisitorData,
   type ChatMessageInsert,
-  type ConversationStatus,
 } from '../services/chatService';
 import {
   chatAIService,
@@ -168,7 +165,7 @@ export function useStudioConversations(
           table: 'chat_conversations',
           filter: `studio_id=eq.${studioId}`,
         },
-        (payload) => {
+        (_payload) => {
           // Invalidate and refetch the list
           queryClient.invalidateQueries({
             queryKey: chatQueryKeys.conversationList(studioId, filters),
@@ -285,7 +282,6 @@ export function useSendMessage() {
  * Send a message with AI response
  */
 export function useSendMessageWithAI() {
-  const sendMessage = useSendMessage();
   const queryClient = useQueryClient();
 
   return useMutation({

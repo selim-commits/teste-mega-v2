@@ -1,4 +1,4 @@
-import { useState, type ImgHTMLAttributes } from 'react';
+import { memo, useState, type ImgHTMLAttributes } from 'react';
 import { motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
 import styles from './Avatar.module.css';
@@ -39,7 +39,7 @@ function getColorFromName(name: string): string {
   return colors[Math.abs(hash) % colors.length];
 }
 
-export function Avatar({
+export const Avatar = memo(function Avatar({
   size = 'md',
   variant = 'circle',
   name,
@@ -82,7 +82,7 @@ export function Avatar({
       )}
     </motion.div>
   );
-}
+});
 
 interface AvatarGroupProps {
   children: React.ReactNode;

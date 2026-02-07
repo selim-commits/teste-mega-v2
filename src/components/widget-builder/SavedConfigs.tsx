@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { X, Trash2, Calendar, MessageCircle, Package } from 'lucide-react';
+import { Trash2, Calendar, MessageCircle, Package } from 'lucide-react';
 import { Modal, ModalHeader, ModalBody } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { formatDate } from '../../lib/utils';

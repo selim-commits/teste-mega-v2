@@ -2,9 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   CalendarSync as CalendarSyncIcon,
-  Calendar,
   Check,
-  X,
   RefreshCw,
   Plus,
   Settings,
@@ -63,16 +61,6 @@ const providerNames = {
 
 export function CalendarSync() {
   const [calendars, setCalendars] = useState(syncedCalendars);
-
-  const formatLastSync = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleString('fr-FR', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   const toggleTwoWaySync = (id: string) => {
     setCalendars((prev) =>

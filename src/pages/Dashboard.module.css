@@ -527,39 +527,39 @@
 /* Mobile Styles */
 @media (max-width: 768px) {
   .content {
-    padding: 16px;
+    padding: var(--space-4);
   }
 
   .kpiValue {
-    font-size: 24px;
+    font-size: var(--text-2xl);
   }
 
   .scheduleItem {
-    padding: 12px;
-    gap: 12px;
+    padding: var(--space-3);
+    gap: var(--space-3);
   }
 
   .scheduleTime {
     min-width: 70px;
-    font-size: 12px;
+    font-size: var(--text-sm);
   }
 
   .aiTitle {
-    font-size: 18px;
+    font-size: var(--text-xl);
   }
 
   .aiText {
-    font-size: 13px;
+    font-size: var(--text-sm);
   }
 
   .statValue {
-    font-size: 20px;
+    font-size: var(--text-lg);
   }
 }
 
 @media (max-width: 480px) {
   .content {
-    padding: 12px;
+    padding: var(--space-3);
   }
 
   .bentoGrid {

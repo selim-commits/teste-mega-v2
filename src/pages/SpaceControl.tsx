@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   format,
@@ -204,7 +204,7 @@ export function SpaceControl() {
   const { data: clients = [], isLoading: clientsLoading } = useActiveClients(studioId || '');
 
   // Initialize visible spaces when spaces load
-  useMemo(() => {
+  useEffect(() => {
     if (spaces.length > 0 && visibleSpaces.size === 0) {
       setVisibleSpaces(new Set(spaces.map(s => s.id)));
     }

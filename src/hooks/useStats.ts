@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase, isDemoMode } from '../lib/supabase';
+import { supabase, isDemoMode, withDemoMode } from '../lib/supabase';
 import { queryKeys } from '../lib/queryClient';
 import { calculateMockDashboardStats } from '../lib/mockData';
 import type { Invoice, Booking, Space } from '../types/database';
@@ -41,25 +41,25 @@ function calculateGrowth(current: number, previous: number): number {
   return Math.round(((current - previous) / previous) * 100);
 }
 
+// Build demo dashboard stats
+function getDemoDashboardStats(): DashboardStats {
+  const mockStats = calculateMockDashboardStats();
+  return {
+    totalRevenue: mockStats.totalRevenue,
+    totalBookings: mockStats.totalBookings,
+    activeClients: 5,
+    pendingInvoices: 2,
+    revenueGrowth: mockStats.revenueGrowth,
+    bookingsGrowth: mockStats.bookingsGrowth,
+    clientsGrowth: mockStats.clientsGrowth,
+  };
+}
+
 // Get dashboard statistics
 export function useDashboardStats(studioId: string, startDate?: string, endDate?: string) {
   return useQuery({
     queryKey: queryKeys.stats.dashboard(studioId, startDate, endDate),
-    queryFn: async (): Promise<DashboardStats> => {
-      // Return mock data in demo mode
-      if (isDemoMode) {
-        const mockStats = calculateMockDashboardStats();
-        return {
-          totalRevenue: mockStats.totalRevenue,
-          totalBookings: mockStats.totalBookings,
-          activeClients: 5,
-          pendingInvoices: 2,
-          revenueGrowth: mockStats.revenueGrowth,
-          bookingsGrowth: mockStats.bookingsGrowth,
-          clientsGrowth: mockStats.clientsGrowth,
-        };
-      }
-
+    queryFn: withDemoMode(getDemoDashboardStats())(async (): Promise<DashboardStats> => {
       const now = new Date();
       const currentMonthStart = startDate || new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const currentMonthEnd = endDate || now.toISOString();
@@ -135,7 +135,7 @@ export function useDashboardStats(studioId: string, startDate?: string, endDate?
         bookingsGrowth: calculateGrowth(bookings.count || 0, prevBookings.count || 0),
         clientsGrowth: calculateGrowth(clients.count || 0, prevClients.count || 0),
       };
-    },
+    }),
     enabled: !!studioId,
     staleTime: 1000 * 60 * 2, // 2 minutes - stats can be slightly stale
   });

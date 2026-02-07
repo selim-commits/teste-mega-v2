@@ -40,11 +40,9 @@ import { useSpaces } from '../hooks/useSpaces';
 import { usePacksStore } from '../stores/packsStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useNotifications } from '../stores/uiStore';
+import { DEMO_STUDIO_ID as STUDIO_ID } from '../stores/authStore';
 import type { Pack, PackInsert, PackUpdate, PricingProductType, ClientPurchase } from '../types/database';
 import styles from './Packs.module.css';
-
-// Studio ID for Rooom OS
-const STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 type TabType = 'packs' | 'subscriptions' | 'certificates' | 'clients' | 'analytics';
 
@@ -182,7 +180,7 @@ export function Packs() {
       showSuccess('Pack cree', 'Le pack a ete cree avec succes');
       setIsCreateModalOpen(false);
       refetchPacks();
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de creer le pack');
     }
   }, [createMutation, showSuccess, showError, refetchPacks]);
@@ -196,7 +194,7 @@ export function Packs() {
       setIsEditModalOpen(false);
       setSelectedPack(null);
       refetchPacks();
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de modifier le pack');
     }
   }, [selectedPack, updateMutation, showSuccess, showError, refetchPacks]);
@@ -210,7 +208,7 @@ export function Packs() {
       setIsDeleteModalOpen(false);
       setSelectedPack(null);
       refetchPacks();
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de supprimer le pack');
     }
   }, [selectedPack, deleteMutation, showSuccess, showError, refetchPacks]);
@@ -223,7 +221,7 @@ export function Packs() {
         `${pack.name} a ete ${pack.is_active ? 'desactive' : 'active'}`
       );
       refetchPacks();
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de modifier le statut du pack');
     }
   }, [toggleActiveMutation, showSuccess, showError, refetchPacks]);
@@ -236,7 +234,7 @@ export function Packs() {
         `${pack.name} ${pack.is_featured ? 'a ete retire des favoris' : 'est maintenant mis en avant'}`
       );
       refetchPacks();
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de modifier le statut du pack');
     }
   }, [toggleFeaturedMutation, showSuccess, showError, refetchPacks]);
@@ -256,7 +254,7 @@ export function Packs() {
       await pauseSubscriptionMutation.mutateAsync({ id: purchase.id });
       showSuccess('Abonnement mis en pause', 'L\'abonnement a ete mis en pause');
       refetchPurchases();
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de mettre en pause l\'abonnement');
     }
   }, [pauseSubscriptionMutation, showSuccess, showError, refetchPurchases]);
@@ -266,7 +264,7 @@ export function Packs() {
       await resumeSubscriptionMutation.mutateAsync(purchase.id);
       showSuccess('Abonnement reactive', 'L\'abonnement a ete reactive');
       refetchPurchases();
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible de reactiver l\'abonnement');
     }
   }, [resumeSubscriptionMutation, showSuccess, showError, refetchPurchases]);
@@ -276,7 +274,7 @@ export function Packs() {
       await updateStatusMutation.mutateAsync({ id: purchase.id, status: 'cancelled' });
       showSuccess('Abonnement annule', 'L\'abonnement a ete annule');
       refetchPurchases();
-    } catch (error) {
+    } catch {
       showError('Erreur', 'Impossible d\'annuler l\'abonnement');
     }
   }, [updateStatusMutation, showSuccess, showError, refetchPurchases]);

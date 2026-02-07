@@ -1,8 +1,10 @@
-import { useEffect, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useId, useCallback, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { cn } from '../../lib/utils';
 import styles from './Modal.module.css';
+
+const ModalContext = createContext<string | null>(null);
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | 'full';
 
@@ -16,6 +18,9 @@ interface ModalProps {
   className?: string;
 }
 
+const FOCUSABLE_SELECTOR =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function Modal({
   isOpen,
   onClose,
@@ -25,30 +30,64 @@ export function Modal({
   children,
   className,
 }: ModalProps) {
-  useEffect(() => {
-    if (!closeOnEscape) return;
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const titleId = useId();
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape' && isOpen) {
+  // Focus trap
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && closeOnEscape) {
         onClose();
+        return;
       }
-    };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose, closeOnEscape]);
+      if (event.key !== 'Tab' || !modalRef.current) return;
+
+      const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
+      if (focusableElements.length === 0) return;
+
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey) {
+        if (document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    },
+    [closeOnEscape, onClose]
+  );
 
   useEffect(() => {
     if (isOpen) {
+      previousFocusRef.current = document.activeElement as HTMLElement;
       document.body.style.overflow = 'hidden';
+      document.addEventListener('keydown', handleKeyDown);
+
+      // Focus first focusable element after animation
+      requestAnimationFrame(() => {
+        if (modalRef.current) {
+          const focusable = modalRef.current.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+          focusable?.focus();
+        }
+      });
     } else {
       document.body.style.overflow = '';
+      previousFocusRef.current?.focus();
     }
 
     return () => {
       document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen]);
+  }, [isOpen, handleKeyDown]);
 
   const handleOverlayClick = (event: React.MouseEvent) => {
     if (closeOnOverlayClick && event.target === event.currentTarget) {
@@ -69,6 +108,7 @@ export function Modal({
             onClick={handleOverlayClick}
           >
             <motion.div
+              ref={modalRef}
               className={cn(styles.modal, styles[size], className)}
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -76,8 +116,11 @@ export function Modal({
               transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
               role="dialog"
               aria-modal="true"
+              aria-labelledby={titleId}
             >
-              {children}
+              <ModalContext.Provider value={titleId}>
+                {children}
+              </ModalContext.Provider>
             </motion.div>
           </motion.div>
         </div>
@@ -103,10 +146,12 @@ export function ModalHeader({
   children,
   className,
 }: ModalHeaderProps) {
+  const titleId = useContext(ModalContext);
+
   return (
     <div className={cn(styles.header, className)}>
       <div className={styles.headerContent}>
-        <h2 className={styles.title}>{title}</h2>
+        <h2 id={titleId || undefined} className={styles.title}>{title}</h2>
         {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
       </div>
       {children}

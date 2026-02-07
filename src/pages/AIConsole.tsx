@@ -16,10 +16,8 @@ import { Header } from '../components/layout/Header';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { supabase, isDemoMode } from '../lib/supabase';
+import { DEMO_STUDIO_ID as STUDIO_ID } from '../stores/authStore';
 import styles from './AIConsole.module.css';
-
-// Studio ID for now (will be dynamic later)
-const STUDIO_ID = '11111111-1111-1111-1111-111111111111';
 
 // Agent definitions
 type AgentId = 'yoda' | 'nexus' | 'nova' | 'sentinel';
@@ -168,39 +166,58 @@ const generateTitle = (message: string): string => {
   return words.length > 30 ? words.substring(0, 30) + '...' : words;
 };
 
-// Simple markdown renderer
+// Safe inline text parser - returns React elements instead of HTML strings (no XSS risk)
+const parseInlineFormatting = (text: string, keyPrefix: string): React.ReactNode[] => {
+  const result: React.ReactNode[] = [];
+  const regex = /(\*\*(.+?)\*\*|\*(.+?)\*|`(.+?)`)/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      result.push(text.slice(lastIndex, match.index));
+    }
+    if (match[2] !== undefined) {
+      result.push(<strong key={`${keyPrefix}-b-${match.index}`}>{match[2]}</strong>);
+    } else if (match[3] !== undefined) {
+      result.push(<em key={`${keyPrefix}-i-${match.index}`}>{match[3]}</em>);
+    } else if (match[4] !== undefined) {
+      result.push(<code key={`${keyPrefix}-c-${match.index}`}>{match[4]}</code>);
+    }
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    result.push(text.slice(lastIndex));
+  }
+
+  return result.length > 0 ? result : [text];
+};
+
+// Safe markdown renderer - no dangerouslySetInnerHTML
 const renderMarkdown = (text: string): React.ReactElement => {
   const lines = text.split('\n');
 
   return (
     <>
       {lines.map((line, index) => {
-        // Bold text
-        let processedLine = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        // Italic text
-        processedLine = processedLine.replace(/\*(.+?)\*/g, '<em>$1</em>');
-        // Inline code
-        processedLine = processedLine.replace(/`(.+?)`/g, '<code>$1</code>');
-
-        // Headers
+        // Headers (parse raw line, not formatted)
         if (line.startsWith('### ')) {
-          return <h4 key={index} className={styles.markdownH4}>{line.substring(4)}</h4>;
+          return <h4 key={index} className={styles.markdownH4}>{parseInlineFormatting(line.substring(4), `h4-${index}`)}</h4>;
         }
         if (line.startsWith('## ')) {
-          return <h3 key={index} className={styles.markdownH3}>{line.substring(3)}</h3>;
+          return <h3 key={index} className={styles.markdownH3}>{parseInlineFormatting(line.substring(3), `h3-${index}`)}</h3>;
         }
         if (line.startsWith('# ')) {
-          return <h2 key={index} className={styles.markdownH2}>{line.substring(2)}</h2>;
+          return <h2 key={index} className={styles.markdownH2}>{parseInlineFormatting(line.substring(2), `h2-${index}`)}</h2>;
         }
 
         // List items
         if (line.startsWith('- ') || line.startsWith('* ')) {
           return (
-            <div
-              key={index}
-              className={styles.listItem}
-              dangerouslySetInnerHTML={{ __html: '&bull; ' + processedLine.substring(2) }}
-            />
+            <div key={index} className={styles.listItem}>
+              &bull; {parseInlineFormatting(line.substring(2), `li-${index}`)}
+            </div>
           );
         }
 
@@ -208,11 +225,9 @@ const renderMarkdown = (text: string): React.ReactElement => {
         const numberedMatch = line.match(/^(\d+)\.\s(.+)/);
         if (numberedMatch) {
           return (
-            <div
-              key={index}
-              className={styles.listItem}
-              dangerouslySetInnerHTML={{ __html: numberedMatch[1] + '. ' + processedLine.substring(numberedMatch[0].indexOf(' ') + 1) }}
-            />
+            <div key={index} className={styles.listItem}>
+              {numberedMatch[1]}. {parseInlineFormatting(numberedMatch[2], `nl-${index}`)}
+            </div>
           );
         }
 
@@ -228,11 +243,9 @@ const renderMarkdown = (text: string): React.ReactElement => {
 
         // Regular paragraph
         return (
-          <p
-            key={index}
-            className={styles.markdownP}
-            dangerouslySetInnerHTML={{ __html: processedLine }}
-          />
+          <p key={index} className={styles.markdownP}>
+            {parseInlineFormatting(line, `p-${index}`)}
+          </p>
         );
       })}
     </>
@@ -247,6 +260,12 @@ export function AIConsole() {
   const [isTyping, setIsTyping] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const aiResponseTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Cleanup AI response timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(aiResponseTimerRef.current);
+  }, []);
 
   const currentAgent = agents.find((a) => a.id === selectedAgent)!;
   const activeConversation = conversations.find((c) => c.id === activeConversationId);
@@ -401,7 +420,8 @@ export function AIConsole() {
     setIsTyping(true);
 
     // Simulate AI response delay
-    setTimeout(() => {
+    clearTimeout(aiResponseTimerRef.current);
+    aiResponseTimerRef.current = setTimeout(() => {
       const aiResponse = getMockResponse(selectedAgent, messageContent);
 
       const newAssistantMessage: Message = {

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, type ReactNode } from 'react';
+import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -9,11 +9,13 @@ interface DropdownProps {
   children: ReactNode;
   align?: 'start' | 'center' | 'end';
   className?: string;
+  label?: string;
 }
 
-export function Dropdown({ trigger, children, align = 'start', className }: DropdownProps) {
+export function Dropdown({ trigger, children, align = 'start', className, label }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -26,13 +28,51 @@ export function Dropdown({ trigger, children, align = 'start', className }: Drop
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      setIsOpen(false);
+      return;
+    }
+    if ((event.key === 'Enter' || event.key === ' ' || event.key === 'ArrowDown') && !isOpen) {
+      event.preventDefault();
+      setIsOpen(true);
+      requestAnimationFrame(() => {
+        const firstItem = menuRef.current?.querySelector<HTMLElement>('button:not([disabled])');
+        firstItem?.focus();
+      });
+      return;
+    }
+    if (isOpen && menuRef.current) {
+      const items = Array.from(menuRef.current.querySelectorAll<HTMLElement>('button:not([disabled])'));
+      const currentIndex = items.indexOf(document.activeElement as HTMLElement);
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        items[(currentIndex + 1) % items.length]?.focus();
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        items[(currentIndex - 1 + items.length) % items.length]?.focus();
+      }
+    }
+  }, [isOpen]);
+
   return (
-    <div ref={dropdownRef} className={cn(styles.dropdown, className)}>
-      <div onClick={() => setIsOpen(!isOpen)}>{trigger}</div>
+    <div ref={dropdownRef} className={cn(styles.dropdown, className)} onKeyDown={handleKeyDown}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        role="button"
+        tabIndex={0}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        aria-label={label}
+      >
+        {trigger}
+      </div>
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            ref={menuRef}
             className={cn(styles.menu, styles[align])}
+            role="menu"
             initial={{ opacity: 0, y: -8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.95 }}
@@ -71,6 +111,7 @@ export function DropdownItem({
         destructive && styles.destructive,
         selected && styles.selected
       )}
+      role="menuitem"
       onClick={onClick}
       disabled={disabled}
     >
@@ -82,7 +123,7 @@ export function DropdownItem({
 }
 
 export function DropdownDivider() {
-  return <div className={styles.divider} />;
+  return <div className={styles.divider} role="separator" />;
 }
 
 export function DropdownLabel({ children }: { children: ReactNode }) {

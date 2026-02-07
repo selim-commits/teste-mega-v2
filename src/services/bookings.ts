@@ -1,9 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { Booking, BookingInsert, BookingUpdate, BookingStatus } from '../types/database';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 export interface BookingFilters {
   studioId?: string;
   spaceId?: string;
@@ -16,7 +13,7 @@ export interface BookingFilters {
 
 export const bookingService = {
   async getAll(filters?: BookingFilters): Promise<Booking[]> {
-    let query = db.from('bookings').select('*');
+    let query = supabase.from('bookings').select('*');
 
     if (filters?.studioId) {
       query = query.eq('studio_id', filters.studioId);
@@ -78,7 +75,7 @@ export const bookingService = {
   },
 
   async delete(id: string): Promise<void> {
-    const { error } = await db.from('bookings').delete().eq('id', id);
+    const { error } = await supabase.from('bookings').delete().eq('id', id);
     if (error) throw error;
   },
 

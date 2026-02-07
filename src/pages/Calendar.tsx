@@ -7,9 +7,7 @@ import {
   differenceInMinutes,
   setHours,
   setMinutes,
-  isToday,
 } from 'date-fns';
-import { fr } from 'date-fns/locale';
 import {
   ChevronLeft,
   ChevronRight,
@@ -33,7 +31,6 @@ const TIME_SLOTS = Array.from({ length: 14 }, (_, i) => {
 export function Calendar() {
   const { studioId } = useAuthStore();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<'day' | 'week'>('day');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Calculate date range
@@ -49,7 +46,7 @@ export function Calendar() {
   }, [selectedDate]);
 
   // Queries
-  const { data: bookings = [], isLoading: bookingsLoading } = useBookings({
+  const { data: bookings = [] } = useBookings({
     studioId: studioId || undefined,
     startDate: dateRange.startDate,
     endDate: dateRange.endDate,
@@ -130,13 +127,13 @@ export function Calendar() {
       {/* Filter Bar */}
       <div className={styles.filterBar}>
         <div className={styles.filterLeft}>
-          <button className={styles.navBtn} onClick={goPrev}>
+          <button className={styles.navBtn} onClick={goPrev} aria-label="Periode precedente">
             <ChevronLeft size={20} />
           </button>
           <button className={styles.todayBtn} onClick={goToToday}>
             AUJOURD'HUI
           </button>
-          <button className={styles.navBtn} onClick={goNext}>
+          <button className={styles.navBtn} onClick={goNext} aria-label="Periode suivante">
             <ChevronRight size={20} />
           </button>
 
@@ -173,7 +170,7 @@ export function Calendar() {
               className={styles.searchInput}
             />
           </div>
-          <button className={styles.iconBtn}>
+          <button className={styles.iconBtn} aria-label="Imprimer">
             <Printer size={20} />
           </button>
         </div>

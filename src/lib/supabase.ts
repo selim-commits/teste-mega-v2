@@ -1,16 +1,13 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '../types/database'
+import { env, isDemoMode as _isDemoMode } from './env'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-// Demo mode when Supabase is not configured
-export const isDemoMode = !supabaseUrl || !supabaseAnonKey
+// Re-export isDemoMode from env.ts (single source of truth)
+export const isDemoMode = _isDemoMode
 
 let supabaseClient: SupabaseClient<Database>
 
 if (isDemoMode) {
-  console.warn('Running in demo mode - Supabase not configured')
   // Create a mock client that won't make real API calls
   supabaseClient = createClient<Database>(
     'https://demo.supabase.co',
@@ -23,7 +20,7 @@ if (isDemoMode) {
     }
   )
 } else {
-  supabaseClient = createClient<Database>(supabaseUrl, supabaseAnonKey, {
+  supabaseClient = createClient<Database>(env.VITE_SUPABASE_URL!, env.VITE_SUPABASE_ANON_KEY!, {
     auth: {
       autoRefreshToken: true,
       persistSession: true,
@@ -52,6 +49,14 @@ export async function getCurrentSession() {
     return null
   }
   return session
+}
+
+// Helper to centralize demo mode check in query functions
+export function withDemoMode<T>(demoData: T): (queryFn: () => Promise<T>) => () => Promise<T> {
+  return (queryFn) => async () => {
+    if (isDemoMode) return demoData;
+    return queryFn();
+  };
 }
 
 export default supabase

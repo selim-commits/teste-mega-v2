@@ -1,9 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { Space, SpaceInsert, SpaceUpdate } from '../types/database';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 export interface SpaceFilters {
   studioId?: string;
   isActive?: boolean;
@@ -11,7 +8,7 @@ export interface SpaceFilters {
 
 export const spaceService = {
   async getAll(filters?: SpaceFilters): Promise<Space[]> {
-    let query = db.from('spaces').select('*');
+    let query = supabase.from('spaces').select('*');
 
     if (filters?.studioId) {
       query = query.eq('studio_id', filters.studioId);
@@ -36,7 +33,7 @@ export const spaceService = {
   },
 
   async create(space: SpaceInsert): Promise<Space> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('spaces')
       .insert(space)
       .select()
@@ -46,7 +43,7 @@ export const spaceService = {
   },
 
   async update(id: string, space: SpaceUpdate): Promise<Space> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('spaces')
       .update(space)
       .eq('id', id)
@@ -57,7 +54,7 @@ export const spaceService = {
   },
 
   async delete(id: string): Promise<void> {
-    const { error } = await db.from('spaces').delete().eq('id', id);
+    const { error } = await supabase.from('spaces').delete().eq('id', id);
     if (error) throw error;
   },
 
@@ -83,7 +80,7 @@ export const spaceService = {
   },
 
   async toggleActive(id: string, isActive: boolean): Promise<Space> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('spaces')
       .update({ is_active: isActive })
       .eq('id', id)

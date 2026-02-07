@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   Plus,
   Calendar as CalendarIcon,
@@ -50,6 +50,12 @@ export function Bookings() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<BookingFormData>(initialFormData);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const loadingSlotsTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => clearTimeout(loadingSlotsTimerRef.current);
+  }, []);
 
   // Fetch data
   const { data: bookings = [] } = useBookings({ studioId: studioId || '' });
@@ -109,7 +115,8 @@ export function Bookings() {
     setSelectedSlot(null);
     setIsLoadingSlots(true);
     // Simulate loading for UX
-    setTimeout(() => setIsLoadingSlots(false), 300);
+    clearTimeout(loadingSlotsTimerRef.current);
+    loadingSlotsTimerRef.current = setTimeout(() => setIsLoadingSlots(false), 300);
   }, []);
 
   // Handle slot selection

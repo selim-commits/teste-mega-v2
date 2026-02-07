@@ -1,9 +1,6 @@
 import { supabase } from '../lib/supabase';
 import type { Invoice, InvoiceInsert, InvoiceUpdate, InvoiceStatus } from '../types/database';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
-
 export interface InvoiceFilters {
   studioId?: string;
   clientId?: string;
@@ -14,7 +11,7 @@ export interface InvoiceFilters {
 
 export const invoiceService = {
   async getAll(filters?: InvoiceFilters): Promise<Invoice[]> {
-    let query = db.from('invoices').select('*');
+    let query = supabase.from('invoices').select('*');
 
     if (filters?.studioId) {
       query = query.eq('studio_id', filters.studioId);
@@ -69,7 +66,7 @@ export const invoiceService = {
   },
 
   async delete(id: string): Promise<void> {
-    const { error } = await db.from('invoices').delete().eq('id', id);
+    const { error } = await supabase.from('invoices').delete().eq('id', id);
     if (error) throw error;
   },
 

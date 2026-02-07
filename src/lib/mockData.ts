@@ -1,7 +1,7 @@
 // Mock data for demo mode when Supabase is not configured
 // Using 'as const' and explicit types to ensure compatibility
 
-const DEMO_STUDIO_ID = '11111111-1111-1111-1111-111111111111';
+import { DEMO_STUDIO_ID } from '../stores/authStore';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type MockData = any;

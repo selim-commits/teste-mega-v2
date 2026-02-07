@@ -14,8 +14,12 @@ export function createBaseService<T extends { id: string }>(tableName: TableName
       return (data as T[]) || [];
     },
 
-    async getById(id: string): Promise<T | null> {
-      const { data, error } = await db.from(tableName).select('*').eq('id', id).single();
+    async getById(id: string, studioId?: string): Promise<T | null> {
+      let query = db.from(tableName).select('*').eq('id', id);
+      if (studioId) {
+        query = query.eq('studio_id', studioId);
+      }
+      const { data, error } = await query.single();
       if (error) throw error;
       return data as T;
     },
@@ -33,8 +37,12 @@ export async function fetchAll<T>(tableName: string): Promise<T[]> {
   return (data as T[]) || [];
 }
 
-export async function fetchById<T>(tableName: string, id: string): Promise<T | null> {
-  const { data, error } = await db.from(tableName).select('*').eq('id', id).single();
+export async function fetchById<T>(tableName: string, id: string, studioId?: string): Promise<T | null> {
+  let query = db.from(tableName).select('*').eq('id', id);
+  if (studioId) {
+    query = query.eq('studio_id', studioId);
+  }
+  const { data, error } = await query.single();
   if (error) throw error;
   return data as T;
 }

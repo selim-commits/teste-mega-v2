@@ -324,8 +324,8 @@ export const chatApi = {
 
   // Book a slot
   async bookSlot(
-    conversationId: string,
-    slot: BookingSlot
+    _conversationId: string,
+    _slot: BookingSlot
   ): Promise<ApiResponse<{ success: boolean; bookingId: string }>> {
     await delay(800);
 
@@ -339,7 +339,7 @@ export const chatApi = {
 
   // Select a pack
   async selectPack(
-    conversationId: string,
+    _conversationId: string,
     pack: Pack
   ): Promise<ApiResponse<{ success: boolean; redirectUrl: string }>> {
     await delay(500);
@@ -354,7 +354,7 @@ export const chatApi = {
 
   // Request human agent
   async requestHumanAgent(
-    conversationId: string
+    _conversationId: string
   ): Promise<ApiResponse<{ estimatedWaitTime: number }>> {
     await delay(500);
 

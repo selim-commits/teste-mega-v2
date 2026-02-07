@@ -1,6 +1,9 @@
 import { supabase } from '../lib/supabase';
 import type { Json } from '../types/database';
 
+// Note: chatService uses custom types that don't match the DB schema exactly
+// (e.g. 'waiting_for_human' vs DB's 'waiting_human'). Using `as any` until
+// the local types are aligned with the generated DB types.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
 

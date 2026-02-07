@@ -149,10 +149,10 @@ function MiniCalendar() {
           <ChevronDown size={14} />
         </button>
         <div className={styles.calendarNav}>
-          <button onClick={prevMonth} className={styles.calendarNavBtn}>
+          <button onClick={prevMonth} className={styles.calendarNavBtn} aria-label="Mois precedent">
             <ChevronLeft size={18} />
           </button>
-          <button onClick={nextMonth} className={styles.calendarNavBtn}>
+          <button onClick={nextMonth} className={styles.calendarNavBtn} aria-label="Mois suivant">
             <ChevronRight size={18} />
           </button>
         </div>

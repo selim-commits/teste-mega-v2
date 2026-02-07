@@ -109,7 +109,7 @@ export function MessageInput() {
         const result = await chatApi.uploadAttachment(
           conversationId,
           file,
-          (progress) => {
+          () => {
             // Could update progress here if needed
           }
         );

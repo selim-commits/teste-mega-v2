@@ -1,8 +1,9 @@
 import { supabase } from '../lib/supabase';
 import type { TeamMember, TeamMemberInsert, TeamMemberUpdate, TeamRole, Json } from '../types/database';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
+const sanitizeSearchQuery = (query: string): string => {
+  return query.trim().slice(0, 100).replace(/[%_\\]/g, '\\$&');
+};
 
 export interface TeamFilters {
   studioId?: string;
@@ -13,7 +14,7 @@ export interface TeamFilters {
 
 export const teamService = {
   async getAll(filters?: TeamFilters): Promise<TeamMember[]> {
-    let query = db.from('team_members').select('*');
+    let query = supabase.from('team_members').select('*');
 
     if (filters?.studioId) {
       query = query.eq('studio_id', filters.studioId);
@@ -25,7 +26,8 @@ export const teamService = {
       query = query.eq('is_active', filters.isActive);
     }
     if (filters?.search) {
-      query = query.or(`name.ilike.%${filters.search}%,email.ilike.%${filters.search}%,job_title.ilike.%${filters.search}%`);
+      const s = sanitizeSearchQuery(filters.search);
+      query = query.or(`name.ilike.%${s}%,email.ilike.%${s}%,job_title.ilike.%${s}%`);
     }
 
     const { data, error } = await query.order('name', { ascending: true });
@@ -34,7 +36,7 @@ export const teamService = {
   },
 
   async getById(id: string): Promise<TeamMember | null> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('id', id)
@@ -44,7 +46,7 @@ export const teamService = {
   },
 
   async create(teamMember: TeamMemberInsert): Promise<TeamMember> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .insert(teamMember)
       .select()
@@ -54,7 +56,7 @@ export const teamService = {
   },
 
   async update(id: string, teamMember: TeamMemberUpdate): Promise<TeamMember> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .update(teamMember)
       .eq('id', id)
@@ -65,12 +67,12 @@ export const teamService = {
   },
 
   async delete(id: string): Promise<void> {
-    const { error } = await db.from('team_members').delete().eq('id', id);
+    const { error } = await supabase.from('team_members').delete().eq('id', id);
     if (error) throw error;
   },
 
   async getByStudioId(studioId: string): Promise<TeamMember[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('studio_id', studioId)
@@ -80,7 +82,7 @@ export const teamService = {
   },
 
   async getActiveByStudioId(studioId: string): Promise<TeamMember[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('studio_id', studioId)
@@ -91,7 +93,7 @@ export const teamService = {
   },
 
   async getByUserId(userId: string): Promise<TeamMember[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('user_id', userId);
@@ -100,7 +102,7 @@ export const teamService = {
   },
 
   async getByStudioAndUser(studioId: string, userId: string): Promise<TeamMember | null> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('studio_id', studioId)
@@ -111,7 +113,7 @@ export const teamService = {
   },
 
   async getByRole(studioId: string, role: TeamRole): Promise<TeamMember[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('studio_id', studioId)
@@ -122,7 +124,7 @@ export const teamService = {
   },
 
   async getByEmail(studioId: string, email: string): Promise<TeamMember | null> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('studio_id', studioId)
@@ -133,18 +135,19 @@ export const teamService = {
   },
 
   async search(studioId: string, query: string): Promise<TeamMember[]> {
-    const { data, error } = await db
+    const s = sanitizeSearchQuery(query);
+    const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('studio_id', studioId)
-      .or(`name.ilike.%${query}%,email.ilike.%${query}%,job_title.ilike.%${query}%`)
+      .or(`name.ilike.%${s}%,email.ilike.%${s}%,job_title.ilike.%${s}%`)
       .order('name', { ascending: true });
     if (error) throw error;
     return (data as TeamMember[]) || [];
   },
 
   async updateRole(id: string, role: TeamRole): Promise<TeamMember> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .update({ role })
       .eq('id', id)
@@ -155,7 +158,7 @@ export const teamService = {
   },
 
   async updatePermissions(id: string, permissions: Json): Promise<TeamMember> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .update({ permissions })
       .eq('id', id)
@@ -166,7 +169,7 @@ export const teamService = {
   },
 
   async deactivate(id: string): Promise<TeamMember> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .update({ is_active: false })
       .eq('id', id)
@@ -177,7 +180,7 @@ export const teamService = {
   },
 
   async activate(id: string): Promise<TeamMember> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .update({ is_active: true })
       .eq('id', id)
@@ -188,7 +191,7 @@ export const teamService = {
   },
 
   async getOwner(studioId: string): Promise<TeamMember | null> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('studio_id', studioId)
@@ -199,7 +202,7 @@ export const teamService = {
   },
 
   async getAdmins(studioId: string): Promise<TeamMember[]> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('team_members')
       .select('*')
       .eq('studio_id', studioId)

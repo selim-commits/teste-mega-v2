@@ -53,14 +53,14 @@ export interface StudioSettings {
   billing?: {
     companyName?: string;
     vatNumber?: string;
+    vatRate?: string;
+    siret?: string;
     billingEmail?: string;
     invoicePrefix?: string;
-    paymentTerms?: number;
+    paymentTerms?: string;
+    legalMentions?: string;
   };
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const db = supabase as any;
 
 export const settingsService = {
   // Get studio with settings
@@ -87,7 +87,7 @@ export const settingsService = {
 
   // Update entire settings
   async updateSettings(studioId: string, settings: StudioSettings): Promise<Studio> {
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('studios')
       .update({ settings: settings as Json, updated_at: new Date().toISOString() })
       .eq('id', studioId)
@@ -136,7 +136,7 @@ export const settingsService = {
     };
 
     // Update studio with columns and settings
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('studios')
       .update({
         ...studioColumns,
@@ -162,7 +162,7 @@ export const settingsService = {
       businessHours,
     };
 
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('studios')
       .update({ settings: newSettings as Json, updated_at: new Date().toISOString() })
       .eq('id', studioId)
@@ -184,7 +184,7 @@ export const settingsService = {
       booking,
     };
 
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('studios')
       .update({ settings: newSettings as Json, updated_at: new Date().toISOString() })
       .eq('id', studioId)
@@ -206,7 +206,7 @@ export const settingsService = {
       notifications,
     };
 
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('studios')
       .update({ settings: newSettings as Json, updated_at: new Date().toISOString() })
       .eq('id', studioId)
@@ -228,7 +228,7 @@ export const settingsService = {
       billing,
     };
 
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('studios')
       .update({ settings: newSettings as Json, updated_at: new Date().toISOString() })
       .eq('id', studioId)
@@ -250,7 +250,7 @@ export const settingsService = {
       integrations,
     };
 
-    const { data, error } = await db
+    const { data, error } = await supabase
       .from('studios')
       .update({ settings: newSettings as Json, updated_at: new Date().toISOString() })
       .eq('id', studioId)

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { widgetConfigService, type WidgetTheme, type WidgetType } from '../services/widgetConfig';
-import type { WidgetConfig, WidgetConfigInsert, Json } from '../types/database';
+import type { Json } from '../types/database';
 
 // Type for creating widget configs
 interface CreateWidgetConfigInput {
