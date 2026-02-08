@@ -199,36 +199,48 @@ export function Login() {
   return (
     <div className={styles.page}>
 
-      {/* ===== HERO - 100vh background image ===== */}
+      {/* ===== HERO - Split screen ===== */}
       <section className={styles.hero}>
-        <img
-          src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=1920&q=85"
-          alt=""
-          className={styles.heroBg}
-        />
-        <div className={styles.heroOverlay} />
-
         <header className={styles.header}>
           <span className={styles.logo}>Rooom</span>
-          <button className={styles.headerCta} onClick={() => openModal('signup')}>
-            Commencer
-          </button>
+          <nav className={styles.headerNav}>
+            <button className={styles.headerLink} onClick={() => openModal('login')}>
+              Se connecter
+            </button>
+            <button className={styles.headerCta} onClick={() => openModal('signup')}>
+              Commencer
+            </button>
+          </nav>
         </header>
 
-        <div className={styles.heroContent}>
-          <h1 className={styles.heroHeadline}>
-            L&apos;image est tout.
-          </h1>
-          <p className={styles.heroTagline}>
-            La plateforme tout-en-un pour gerer votre studio creatif. Reservations, clients, finances — <strong>simplifie.</strong>
-          </p>
-          <button className={styles.ctaButton} onClick={() => openModal('signup')}>
-            Essayer gratuitement
-          </button>
-        </div>
+        <div className={styles.heroSplit}>
+          <div className={styles.heroText}>
+            <span className={styles.heroBadge}>Nouveau — Widgets embed personnalisables</span>
+            <h1 className={styles.heroHeadline}>
+              Gerez votre studio creatif, <em>simplement.</em>
+            </h1>
+            <p className={styles.heroTagline}>
+              Reservations, clients, facturation et analytics — tout reunis dans une plateforme pensee pour les photographes et videoastes.
+            </p>
+            <div className={styles.heroCtas}>
+              <button className={`${styles.ctaButton} ${styles.ctaButtonDark}`} onClick={() => openModal('signup')}>
+                Essayer gratuitement
+              </button>
+              <button className={styles.ctaButtonGhost} onClick={() => openModal('login')}>
+                Voir la demo
+              </button>
+            </div>
+          </div>
 
-        <div className={styles.scrollIndicator} aria-hidden="true">
-          <div className={styles.scrollLine} />
+          <div className={styles.heroVisual}>
+            <div className={styles.heroMockup}>
+              <img
+                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=85"
+                alt="Dashboard Rooom OS"
+                className={styles.heroMockupImg}
+              />
+            </div>
+          </div>
         </div>
       </section>
 

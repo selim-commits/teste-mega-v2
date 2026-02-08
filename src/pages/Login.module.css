@@ -27,136 +27,154 @@
 .reveal:nth-child(2) { transition-delay: 0.1s; }
 .reveal:nth-child(3) { transition-delay: 0.2s; }
 
-/* ===== HERO - 100vh ===== */
+/* ===== HERO - Split screen ===== */
 
 .hero {
-  position: relative;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  background: #FAFAF8;
   overflow: hidden;
-}
-
-.heroBg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 120%;
-  object-fit: cover;
-  object-position: 50% 40%;
-  animation: kenBurns 20s ease-in-out infinite alternate;
-}
-
-@keyframes kenBurns {
-  from { transform: scale(1); }
-  to { transform: scale(1.05); }
-}
-
-.heroOverlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    180deg,
-    rgba(0, 0, 0, 0.15) 0%,
-    rgba(0, 0, 0, 0.05) 40%,
-    rgba(0, 0, 0, 0.3) 100%
-  );
-  z-index: 1;
 }
 
 /* --- Header / Nav --- */
 
 .header {
-  position: relative;
-  z-index: 3;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 48px 48px 0;
+  padding: 32px 48px;
 }
 
 .logo {
   font-family: 'Bodoni Moda', 'Playfair Display', Georgia, serif;
   font-size: 1.625rem;
   font-weight: 500;
-  color: #FFFFFF;
+  color: #1A1A1A;
   letter-spacing: 0.02em;
 }
 
+.headerNav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.headerLink {
+  background: none;
+  border: none;
+  font-family: 'Jost', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #6B6B6B;
+  cursor: pointer;
+  transition: color 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.headerLink:hover {
+  color: #1A1A1A;
+}
+
 .headerCta {
-  height: 48px;
-  padding: 0 32px;
-  background: transparent;
-  color: #FAFAFA;
+  height: 44px;
+  padding: 0 28px;
+  background: #1A1A1A;
+  color: #FFFFFF;
   font-family: 'Jost', sans-serif;
   font-size: 13px;
   font-weight: 400;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  border: 1px solid rgba(255, 255, 255, 0.4);
+  border: none;
   cursor: pointer;
-  transition: background 0.3s, border-color 0.3s;
+  transition: background 0.3s, transform 0.3s;
 }
 
 .headerCta:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.7);
+  background: #000000;
+  transform: translateY(-1px);
 }
 
-/* --- Hero content --- */
+/* --- Hero split layout --- */
 
-.heroContent {
-  position: relative;
-  z-index: 2;
+.heroSplit {
   flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 64px;
+  padding: 0 48px 48px;
+  max-width: 1360px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.heroText {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 0 24px 120px;
-  max-width: 720px;
-  margin: 0 auto;
+  gap: 24px;
+  max-width: 540px;
+}
+
+.heroBadge {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 6px 16px;
+  background: #FFFFFF;
+  border: 1px solid #EBEBEB;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: #6B6B6B;
+  border-radius: 100px;
 }
 
 .heroHeadline {
   font-family: 'Bodoni Moda', 'Playfair Display', Georgia, serif;
-  font-size: clamp(48px, 8vw, 110px);
+  font-size: clamp(40px, 4.5vw, 64px);
   font-weight: 400;
-  font-style: italic;
-  color: #FAFAFA;
-  letter-spacing: -0.01em;
-  line-height: 0.95;
-  margin: 0 0 28px 0;
+  color: #1A1A1A;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 0;
   text-wrap: balance;
+}
+
+.heroHeadline em {
+  font-style: italic;
+  color: #6B6B6B;
 }
 
 .heroTagline {
   font-family: 'Jost', sans-serif;
   font-size: 17px;
   font-weight: 300;
-  color: rgba(250, 250, 250, 0.85);
-  max-width: 420px;
-  line-height: 1.65;
-  margin: 0 0 40px 0;
+  color: #6B6B6B;
+  max-width: 440px;
+  line-height: 1.7;
+  margin: 0;
   letter-spacing: 0.01em;
 }
 
-.heroTagline strong {
-  font-weight: 500;
-  color: #FAFAFA;
+.heroCtas {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
 }
 
 .ctaButton {
   height: 52px;
-  padding: 0 40px;
+  padding: 0 36px;
   background: #FFFFFF;
   color: #1A1A1A;
   font-family: 'Jost', sans-serif;
   font-size: 13px;
   font-weight: 400;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   border: none;
   cursor: pointer;
@@ -166,7 +184,7 @@
 .ctaButton:hover {
   background: #F0F0F0;
   transform: translateY(-1px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
 .ctaButtonDark {
@@ -176,33 +194,52 @@
 
 .ctaButtonDark:hover {
   background: #000000;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
 }
 
-/* Scroll indicator */
-.scrollIndicator {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
+.ctaButtonGhost {
+  height: 52px;
+  padding: 0 24px;
+  background: transparent;
+  color: #1A1A1A;
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid #EBEBEB;
+  cursor: pointer;
+  transition: border-color 0.3s, background 0.3s;
+}
+
+.ctaButtonGhost:hover {
+  border-color: #1A1A1A;
+  background: #FFFFFF;
+}
+
+/* --- Hero visual / mockup --- */
+
+.heroVisual {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.5);
-  animation: scrollBounce 2s ease-in-out infinite;
+  justify-content: center;
 }
 
-.scrollLine {
-  width: 1px;
-  height: 40px;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), transparent);
+.heroMockup {
+  position: relative;
+  width: 100%;
+  max-width: 580px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
-@keyframes scrollBounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(8px); }
+.heroMockupImg {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 /* ===== LOGOS BAR ===== */
@@ -801,7 +838,8 @@
 
 /* Tablet */
 @media (max-width: 1024px) {
-  .header { padding: 32px 32px 0; }
+  .header { padding: 24px 32px; }
+  .heroSplit { gap: 40px; padding: 0 32px 32px; }
   .featGrid { gap: 48px; }
   .featSection { padding: 80px 32px; }
   .statsGrid { gap: 32px; }
@@ -814,13 +852,19 @@
 /* Mobile */
 @media (max-width: 768px) {
   .header { padding: 20px; }
+  .headerLink { display: none; }
+  .headerCta { height: 40px; padding: 0 20px; font-size: 11px; }
 
-  .headerCta { padding: 0 20px; height: 44px; font-size: 11px; }
-
-  .heroContent { padding: 0 20px 80px; }
-
-  .scrollIndicator { bottom: 24px; }
-  .scrollLine { height: 28px; }
+  .heroSplit {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 0 20px 40px;
+    text-align: center;
+  }
+  .heroText { max-width: 100%; align-items: center; }
+  .heroBadge { align-self: center; }
+  .heroCtas { justify-content: center; flex-wrap: wrap; }
+  .heroMockup { max-width: 100%; }
 
   .logosBar { padding: 20px; }
   .logosWrap { column-gap: 28px; row-gap: 16px; }
@@ -852,7 +896,11 @@
 
 @media (max-width: 480px) {
   .headerCta { height: 40px; font-size: 10px; padding: 0 16px; }
-  .ctaButton { height: 48px; padding: 0 28px; font-size: 12px; }
+  .ctaButton { height: 48px; padding: 0 24px; font-size: 12px; }
+  .ctaButtonGhost { height: 48px; padding: 0 20px; font-size: 12px; }
+  .heroCtas { flex-direction: column; width: 100%; }
+  .heroCtas .ctaButton,
+  .heroCtas .ctaButtonGhost { width: 100%; }
   .formSide { padding: 1.5rem 1rem; }
 }
 
@@ -860,13 +908,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .modal, .overlay { animation: none; }
-  .heroBg { animation: none; }
-  .scrollIndicator { animation: none; }
   .reveal {
     opacity: 1;
     transform: none;
     transition: none;
   }
   .featImage { transition: none; }
-  .ctaButton, .headerCta, .submitButton { transition: none; transform: none; }
+  .ctaButton, .ctaButtonGhost, .headerCta, .submitButton { transition: none; transform: none; }
 }
