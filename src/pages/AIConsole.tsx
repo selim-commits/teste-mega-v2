@@ -442,7 +442,7 @@ export function AIConsole() {
       );
       setIsTyping(false);
       saveConversation(finalConversation);
-    }, 1000 + Math.random() * 1000);
+    }, 1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 1000));
   };
 
   const handleQuickQuestion = (question: string) => {

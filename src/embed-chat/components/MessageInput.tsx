@@ -49,7 +49,7 @@ export function MessageInput() {
 
     // Add user message immediately
     const userMessage = {
-      id: Math.random().toString(36).substring(2, 15),
+      id: crypto.randomUUID(),
       type: 'text' as const,
       sender: 'user' as const,
       content: trimmedText,
@@ -77,7 +77,7 @@ export function MessageInput() {
       }
     } catch {
       addMessage({
-        id: Math.random().toString(36).substring(2, 15),
+        id: crypto.randomUUID(),
         type: 'text',
         sender: 'ai',
         content: `Desole, une erreur s'est produite. Veuillez reessayer.`,
@@ -95,7 +95,7 @@ export function MessageInput() {
     if (!files || !conversationId) return;
 
     for (const file of Array.from(files)) {
-      const attachmentId = Math.random().toString(36).substring(2, 15);
+      const attachmentId = crypto.randomUUID();
 
       addAttachment({
         id: attachmentId,

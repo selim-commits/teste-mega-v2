@@ -173,9 +173,10 @@ const mockClientWallet: ClientWallet = {
 
 function generateReference(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const randomValues = crypto.getRandomValues(new Uint32Array(6));
   let result = 'PCK-';
   for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+    result += chars.charAt(randomValues[i] % chars.length);
   }
   return result;
 }

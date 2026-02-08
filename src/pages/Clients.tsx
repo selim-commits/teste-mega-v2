@@ -1373,7 +1373,6 @@ export function Clients() {
                           placeholder="Ajouter une note..."
                           value={newNoteText}
                           onChange={(e) => setNewNoteText(e.target.value)}
-                          autoFocus
                         />
                         <div className={styles.noteFormActions}>
                           <Button

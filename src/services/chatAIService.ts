@@ -574,7 +574,7 @@ export const chatAIService = {
       `Hi there! Thanks for reaching out to ${context.studioName}. I can help you check availability, learn about our pricing, or answer any questions. What would you like to know?`,
       `Welcome to ${context.studioName}! I'm your virtual assistant. Feel free to ask me about availability, pricing, or our services. How may I help you?`,
     ];
-    return greetings[Math.floor(Math.random() * greetings.length)];
+    return greetings[crypto.getRandomValues(new Uint32Array(1))[0] % greetings.length];
   },
 
   generateFarewellResponse(context: StudioContext): string {
@@ -583,7 +583,7 @@ export const chatAIService = {
       `It was nice helping you! Don't hesitate to contact us again if you need anything. Take care!`,
       `Thanks for visiting ${context.studioName}! We look forward to seeing you. Have a wonderful day!`,
     ];
-    return farewells[Math.floor(Math.random() * farewells.length)];
+    return farewells[crypto.getRandomValues(new Uint32Array(1))[0] % farewells.length];
   },
 
   generateBookingInquiryResponse(context: StudioContext): string {

@@ -261,7 +261,7 @@ function formatRelativeTime(iso: string): string {
 }
 
 function generateId(): string {
-  return Math.random().toString(36).substring(2, 11);
+  return crypto.randomUUID();
 }
 
 // --- Component ---
@@ -707,11 +707,12 @@ export function Integrations() {
             <div className={styles.modalForm}>
               {/* API Key */}
               <div className={styles.formGroup}>
-                <label className={`${styles.formLabel} ${styles.formLabelRequired}`}>
+                <label htmlFor="integration-api-key" className={`${styles.formLabel} ${styles.formLabelRequired}`}>
                   Cle API
                 </label>
                 <div className={styles.maskedInputWrapper}>
                   <Input
+                    id="integration-api-key"
                     type={showApiKey ? 'text' : 'password'}
                     value={editSettings.apiKey}
                     onChange={(e) => {
@@ -738,8 +739,9 @@ export function Integrations() {
 
               {/* Webhook URL */}
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>URL du Webhook</label>
+                <label htmlFor="integration-webhook-url" className={styles.formLabel}>URL du Webhook</label>
                 <Input
+                  id="integration-webhook-url"
                   type="text"
                   value={editSettings.webhookUrl}
                   onChange={(e) => setEditSettings((prev) => ({ ...prev, webhookUrl: e.target.value }))}
@@ -751,8 +753,9 @@ export function Integrations() {
               {/* Sync Frequency & Direction */}
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Frequence de synchronisation</label>
+                  <label htmlFor="integration-sync-frequency" className={styles.formLabel}>Frequence de synchronisation</label>
                   <select
+                    id="integration-sync-frequency"
                     className={styles.formSelect}
                     value={editSettings.syncFrequency}
                     onChange={(e) =>
@@ -770,8 +773,9 @@ export function Integrations() {
                   </select>
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Direction de synchronisation</label>
+                  <label htmlFor="integration-sync-direction" className={styles.formLabel}>Direction de synchronisation</label>
                   <select
+                    id="integration-sync-direction"
                     className={styles.formSelect}
                     value={editSettings.syncDirection}
                     onChange={(e) =>

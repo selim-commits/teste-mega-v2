@@ -796,9 +796,10 @@ export function Payments() {
           {editMethodSettings && (
             <div className={styles.formGrid}>
               <div className={styles.formField}>
-                <label className={styles.formLabel}>Cl\u00E9 API</label>
+                <label htmlFor="payment-api-key" className={styles.formLabel}>Cl\u00E9 API</label>
                 <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                   <input
+                    id="payment-api-key"
                     type={showApiKey ? 'text' : 'password'}
                     className={`${styles.formInput} ${styles.formInputMasked}`}
                     style={{ flex: 1 }}
@@ -816,8 +817,9 @@ export function Payments() {
               </div>
 
               <div className={styles.formField}>
-                <label className={styles.formLabel}>URL Webhook</label>
+                <label htmlFor="payment-webhook-url" className={styles.formLabel}>URL Webhook</label>
                 <input
+                  id="payment-webhook-url"
                   type="url"
                   className={styles.formInput}
                   value={editMethodSettings.webhookUrl}
@@ -827,7 +829,8 @@ export function Payments() {
               </div>
 
               <div className={styles.formField}>
-                <label className={styles.formLabel}>Mode</label>
+                <label htmlFor="payment-mode" className={styles.formLabel}>Mode</label>
+                <input id="payment-mode" type="hidden" value={editMethodSettings.testMode ? 'test' : 'production'} />
                 <div className={styles.modeToggle}>
                   <button
                     type="button"
@@ -887,8 +890,9 @@ export function Payments() {
               </div>
 
               <div className={styles.formField}>
-                <label className={styles.formLabel}>Montant \u00E0 rembourser (\u20AC)</label>
+                <label htmlFor="refund-amount" className={styles.formLabel}>Montant \u00E0 rembourser (\u20AC)</label>
                 <input
+                  id="refund-amount"
                   type="number"
                   className={styles.formInput}
                   value={refundData.amount}
@@ -901,8 +905,9 @@ export function Payments() {
               </div>
 
               <div className={styles.formField}>
-                <label className={styles.formLabel}>Motif du remboursement</label>
+                <label htmlFor="refund-reason" className={styles.formLabel}>Motif du remboursement</label>
                 <textarea
+                  id="refund-reason"
                   className={styles.formTextarea}
                   value={refundData.reason}
                   placeholder="Indiquez la raison du remboursement..."

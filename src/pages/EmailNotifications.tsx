@@ -133,7 +133,7 @@ const DEFAULT_TEMPLATES: EmailTemplate[] = [
 ];
 
 function generateId(): string {
-  return `tpl-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  return `tpl-${crypto.randomUUID()}`;
 }
 
 function loadTemplates(): EmailTemplate[] {
@@ -561,8 +561,9 @@ export function EmailNotifications() {
 
               {/* Category */}
               <div className={styles.formField}>
-                <label className={styles.formLabel}>Categorie</label>
+                <label htmlFor="email-template-category" className={styles.formLabel}>Categorie</label>
                 <select
+                  id="email-template-category"
                   className={styles.formSelect}
                   value={formCategory}
                   onChange={(e) => setFormCategory(e.target.value as TemplateCategory)}
@@ -590,10 +591,11 @@ export function EmailNotifications() {
 
               {/* Body */}
               <div className={styles.formField}>
-                <label className={`${styles.formLabel} ${styles.formLabelRequired}`}>
+                <label htmlFor="email-template-body" className={`${styles.formLabel} ${styles.formLabelRequired}`}>
                   Contenu de l'email
                 </label>
                 <textarea
+                  id="email-template-body"
                   ref={bodyTextareaRef}
                   className={`${styles.textarea} ${formErrors.body ? styles.textareaError : ''}`}
                   value={formBody}

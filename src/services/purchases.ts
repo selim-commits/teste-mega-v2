@@ -337,10 +337,11 @@ export const purchaseService = {
   // Generate a random gift code
   generateGiftCode(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const randomValues = crypto.getRandomValues(new Uint32Array(12));
     let code = '';
     for (let i = 0; i < 12; i++) {
       if (i > 0 && i % 4 === 0) code += '-';
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
+      code += chars.charAt(randomValues[i] % chars.length);
     }
     return code;
   },

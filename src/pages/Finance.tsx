@@ -352,7 +352,7 @@ export function Finance() {
   }, [clients]);
 
   // CSV export handler
-  const handleExportCSV = useCallback(() => {
+  const handleExportCSV = () => {
     const headers = [
       'Numero',
       'Client',
@@ -421,7 +421,7 @@ export function Finance() {
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
     showSuccess('Export CSV', 'Le fichier CSV a ete telecharge avec succes');
-  }, [invoices, taxCalculations, agingBuckets, agingTotal, reconciliation, showSuccess, getClientName]);
+  };
 
   // Computed values
   const maxRevenue = useMemo(() => Math.max(...revenueData.map((d) => d.value), 1), [revenueData]);

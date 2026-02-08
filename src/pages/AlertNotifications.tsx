@@ -217,7 +217,7 @@ function applyPrefsToCategories(
 }
 
 function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  return crypto.randomUUID();
 }
 
 function formatTimestamp(iso: string): string {
@@ -871,8 +871,9 @@ export function AlertNotifications() {
           <div className={styles.modalForm}>
             {/* Trigger */}
             <div className={styles.formField}>
-              <label className={styles.formLabel}>Condition de déclenchement</label>
+              <label htmlFor="alert-rule-trigger" className={styles.formLabel}>Condition de déclenchement</label>
               <select
+                id="alert-rule-trigger"
                 className={styles.formSelect}
                 value={ruleTrigger}
                 onChange={(e) => setRuleTrigger(e.target.value)}
@@ -887,8 +888,9 @@ export function AlertNotifications() {
 
             {/* Channels */}
             <div className={styles.formField}>
-              <label className={styles.formLabel}>Canaux de notification</label>
-              <div className={styles.checkboxGroup}>
+              <label htmlFor="alert-rule-channels" className={styles.formLabel}>Canaux de notification</label>
+              <input id="alert-rule-channels" type="hidden" value={ruleChannels.join(',')} />
+              <div className={styles.checkboxGroup} role="group" aria-labelledby="alert-rule-channels-label">
                 <Checkbox
                   label="Email"
                   checked={ruleChannels.includes('email')}

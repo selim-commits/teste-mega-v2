@@ -411,7 +411,7 @@ export function Automations() {
     if (!newName.trim()) return;
 
     const newAutomation: Automation = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       name: newName.trim(),
       description: newDescription.trim(),
       active: newActive,
@@ -721,8 +721,9 @@ export function Automations() {
         />
         <ModalBody>
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Nom *</label>
+            <label htmlFor="automation-name" className={styles.formLabel}>Nom *</label>
             <input
+              id="automation-name"
               type="text"
               className={styles.formInput}
               placeholder="Ex: Confirmation de reservation"
@@ -732,8 +733,9 @@ export function Automations() {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Description</label>
+            <label htmlFor="automation-description" className={styles.formLabel}>Description</label>
             <textarea
+              id="automation-description"
               className={styles.formTextarea}
               placeholder="Decrivez ce que fait cette automation..."
               value={newDescription}
@@ -742,8 +744,9 @@ export function Automations() {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Declencheur</label>
+            <label htmlFor="automation-trigger" className={styles.formLabel}>Declencheur</label>
             <select
+              id="automation-trigger"
               className={styles.formSelect}
               value={newTrigger}
               onChange={(e) => setNewTrigger(e.target.value)}
@@ -757,8 +760,9 @@ export function Automations() {
           </div>
 
           <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Action</label>
+            <label htmlFor="automation-action" className={styles.formLabel}>Action</label>
             <select
+              id="automation-action"
               className={styles.formSelect}
               value={newAction}
               onChange={(e) => setNewAction(e.target.value)}

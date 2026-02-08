@@ -85,9 +85,10 @@ export function generateMockAvailability(date: string, serviceId: string): Avail
 // Generate reference number
 export function generateReference(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const randomValues = crypto.getRandomValues(new Uint32Array(6));
   let result = 'RB-';
   for (let i = 0; i < 6; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
+    result += chars.charAt(randomValues[i] % chars.length);
   }
   return result;
 }

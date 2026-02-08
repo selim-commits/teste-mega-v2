@@ -21,7 +21,7 @@ import { Input } from '../components/ui/Input';
 import { Dropdown, DropdownItem, DropdownDivider } from '../components/ui/Dropdown';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Modal';
 import { useNotifications } from '../stores/uiStore';
-import styles from './SettingsPage.module.css';
+import styles from './AppointmentTypes.module.css';
 
 interface AppointmentType {
   id: string;
@@ -125,7 +125,7 @@ function saveToStorage(data: AppointmentType[]): void {
 }
 
 function generateId(): string {
-  return `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+  return crypto.randomUUID();
 }
 
 export function AppointmentTypes() {
@@ -528,7 +528,7 @@ export function AppointmentTypes() {
               fullWidth
             />
             <div className={styles.formFullWidth}>
-              <label style={{
+              <label htmlFor="appointment-color-input" style={{
                 display: 'block',
                 fontSize: 'var(--text-sm)',
                 fontWeight: 500,
@@ -537,6 +537,7 @@ export function AppointmentTypes() {
               }}>
                 Couleur *
               </label>
+              <input id="appointment-color-input" type="hidden" value={formData.color} />
               {formErrors.color && (
                 <span style={{
                   fontSize: 'var(--text-xs)',

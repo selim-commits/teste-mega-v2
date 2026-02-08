@@ -288,7 +288,7 @@ export function CalendarSync() {
       ),
       stats: {
         ...prev.stats,
-        eventsSynced: prev.stats.eventsSynced + Math.floor(Math.random() * 5) + 1,
+        eventsSynced: prev.stats.eventsSynced + (crypto.getRandomValues(new Uint32Array(1))[0] % 5) + 1,
       },
     }));
     const provider = state.providers.find((p) => p.id === providerId);

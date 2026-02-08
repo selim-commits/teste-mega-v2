@@ -92,7 +92,7 @@ interface ToastContainerProps {
 
 function ToastContainer({ toasts, position, onRemove }: ToastContainerProps) {
   return (
-    <div className={cn(styles.container, styles[position])}>
+    <div className={cn(styles.container, styles[position])} aria-live="polite" aria-relevant="additions">
       <AnimatePresence mode="popLayout">
         {toasts.map((toast) => (
           <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />

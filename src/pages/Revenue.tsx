@@ -234,9 +234,10 @@ export function Revenue() {
 
   const handleGenerateCode = useCallback(() => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    const randomValues = crypto.getRandomValues(new Uint32Array(8));
     let code = '';
     for (let i = 0; i < 8; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
+      code += chars.charAt(randomValues[i] % chars.length);
     }
     setPromoForm((prev) => ({ ...prev, code }));
   }, []);

@@ -157,7 +157,7 @@ export function Inventory() {
       daily_rate: formData.daily_rate ? parseFloat(formData.daily_rate) : null,
       location: formData.location || null,
       image_url: formData.image_url || null,
-      qr_code: `EQ-${Date.now()}-${Math.random().toString(36).substring(7)}`,
+      qr_code: `EQ-${crypto.randomUUID()}`,
     };
 
     try {

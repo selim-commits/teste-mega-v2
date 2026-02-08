@@ -13,7 +13,7 @@ import { getCsrfToken } from '../../lib/csrf';
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Generate unique ID
-const generateId = () => Math.random().toString(36).substring(2, 15);
+const generateId = () => crypto.randomUUID();
 
 // Mock booking slots
 const mockBookingSlots: BookingSlot[] = [
@@ -300,7 +300,7 @@ export const chatApi = {
   ): Promise<ApiResponse<ChatMessage[]>> {
     // Simulate typing indicator
     onTypingStart?.();
-    await delay(1000 + Math.random() * 1500);
+    await delay(1000 + (crypto.getRandomValues(new Uint32Array(1))[0] % 1500));
     onTypingEnd?.();
 
     const responses = await generateAIResponse(message, studioName);
@@ -372,7 +372,7 @@ export const chatApi = {
 
     return {
       data: {
-        estimatedWaitTime: Math.floor(Math.random() * 5) + 1,
+        estimatedWaitTime: (crypto.getRandomValues(new Uint32Array(1))[0] % 5) + 1,
       },
     };
   },

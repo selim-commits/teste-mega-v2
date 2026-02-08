@@ -757,24 +757,25 @@ export function Tasks() {
             <div className={styles.formGrid}>
               {/* Title */}
               <div className={`${styles.formField} ${styles.formFullWidth}`}>
-                <label className={styles.formLabel}>
+                <label htmlFor="task-title" className={styles.formLabel}>
                   Titre <span style={{ color: 'var(--state-error)' }}>*</span>
                 </label>
                 <input
+                  id="task-title"
                   type="text"
                   className={styles.formInput}
                   placeholder="Ex: Nettoyer le studio apres le shooting"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   required
-                  autoFocus
                 />
               </div>
 
               {/* Description */}
               <div className={`${styles.formField} ${styles.formFullWidth}`}>
-                <label className={styles.formLabel}>Description</label>
+                <label htmlFor="task-description" className={styles.formLabel}>Description</label>
                 <textarea
+                  id="task-description"
                   className={styles.formTextarea}
                   placeholder="Details de la tache..."
                   value={formData.description}
@@ -785,8 +786,9 @@ export function Tasks() {
 
               {/* Type */}
               <div className={styles.formField}>
-                <label className={styles.formLabel}>Type</label>
+                <label htmlFor="task-type" className={styles.formLabel}>Type</label>
                 <select
+                  id="task-type"
                   className={styles.formSelect}
                   value={formData.type}
                   onChange={(e) => setFormData({ ...formData, type: e.target.value as TaskType })}
@@ -801,8 +803,9 @@ export function Tasks() {
 
               {/* Priority */}
               <div className={styles.formField}>
-                <label className={styles.formLabel}>Priorite</label>
+                <label htmlFor="task-priority" className={styles.formLabel}>Priorite</label>
                 <select
+                  id="task-priority"
                   className={styles.formSelect}
                   value={formData.priority}
                   onChange={(e) =>
@@ -819,8 +822,9 @@ export function Tasks() {
 
               {/* Assignee */}
               <div className={styles.formField}>
-                <label className={styles.formLabel}>Assigner a</label>
+                <label htmlFor="task-assignee" className={styles.formLabel}>Assigner a</label>
                 <select
+                  id="task-assignee"
                   className={styles.formSelect}
                   value={formData.assignee}
                   onChange={(e) => setFormData({ ...formData, assignee: e.target.value })}
@@ -835,8 +839,9 @@ export function Tasks() {
 
               {/* Space */}
               <div className={styles.formField}>
-                <label className={styles.formLabel}>Espace</label>
+                <label htmlFor="task-space" className={styles.formLabel}>Espace</label>
                 <select
+                  id="task-space"
                   className={styles.formSelect}
                   value={formData.space}
                   onChange={(e) => setFormData({ ...formData, space: e.target.value })}
@@ -851,8 +856,9 @@ export function Tasks() {
 
               {/* Due date */}
               <div className={styles.formField}>
-                <label className={styles.formLabel}>Date limite</label>
+                <label htmlFor="task-due-date" className={styles.formLabel}>Date limite</label>
                 <input
+                  id="task-due-date"
                   type="date"
                   className={styles.formInput}
                   value={formData.dueDate}

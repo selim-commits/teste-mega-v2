@@ -1,5 +1,9 @@
 import { supabase } from '../lib/supabase';
-import type { Json, ChatStatus, ChatSenderType } from '../types/database';
+import type { Database, Json, ChatStatus, ChatSenderType } from '../types/database';
+
+type DbConversationInsert = Database['public']['Tables']['chat_conversations']['Insert'];
+type DbConversationUpdate = Database['public']['Tables']['chat_conversations']['Update'];
+type DbMessageInsert = Database['public']['Tables']['chat_messages']['Insert'];
 
 // Re-export DB types for consumers
 export type ConversationStatus = ChatStatus;
@@ -134,8 +138,9 @@ export const chatService = {
     studioId: string,
     visitorData: VisitorData
   ): Promise<ChatConversation> {
-    const conversationData: ChatConversationInsert = {
+    const conversationData: DbConversationInsert = {
       studio_id: studioId,
+      visitor_id: visitorData.clientId || crypto.randomUUID(),
       visitor_name: visitorData.name || null,
       visitor_email: visitorData.email || null,
       visitor_phone: visitorData.phone || null,
@@ -145,8 +150,7 @@ export const chatService = {
       tags: [],
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('chat_conversations') as any)
+    const { data, error } = await supabase.from('chat_conversations')
       .insert(conversationData)
       .select()
       .single();
@@ -176,8 +180,7 @@ export const chatService = {
    * Get a conversation with all its messages
    */
   async getConversationWithMessages(id: string): Promise<ConversationWithMessages | null> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('chat_conversations') as any)
+    const { data, error } = await supabase.from('chat_conversations')
       .select('*, messages:chat_messages(*)')
       .eq('id', id)
       .single();
@@ -187,21 +190,22 @@ export const chatService = {
       throw error;
     }
 
-    if (data?.messages) {
-      data.messages.sort((a: ChatMessage, b: ChatMessage) =>
+    const result = data as unknown as ConversationWithMessages;
+
+    if (result?.messages) {
+      result.messages.sort((a: ChatMessage, b: ChatMessage) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
     }
 
-    return data as ConversationWithMessages;
+    return result;
   },
 
   /**
    * Get a conversation with related client and assigned team member
    */
   async getConversationWithRelations(id: string): Promise<ConversationWithRelations | null> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('chat_conversations') as any)
+    const { data, error } = await supabase.from('chat_conversations')
       .select('*, client:clients(id, name, email, avatar_url), assigned_team_member:team_members!chat_conversations_assigned_to_fkey(id, name, avatar_url)')
       .eq('id', id)
       .single();
@@ -210,7 +214,7 @@ export const chatService = {
       if (error.code === 'PGRST116') return null;
       throw error;
     }
-    return data as ConversationWithRelations;
+    return data as unknown as ConversationWithRelations;
   },
 
   /**
@@ -220,8 +224,7 @@ export const chatService = {
     studioId: string,
     filters?: Omit<ConversationFilters, 'studioId'>
   ): Promise<ConversationWithRelations[]> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let query = (supabase.from('chat_conversations') as any)
+    let query = supabase.from('chat_conversations')
       .select('*, client:clients(id, name, email, avatar_url), assigned_team_member:team_members!chat_conversations_assigned_to_fkey(id, name, avatar_url)')
       .eq('studio_id', studioId);
 
@@ -269,7 +272,7 @@ export const chatService = {
 
     const { data, error } = await query;
     if (error) throw error;
-    return (data as ConversationWithRelations[]) || [];
+    return (data as unknown as ConversationWithRelations[]) || [];
   },
 
   /**
@@ -279,9 +282,13 @@ export const chatService = {
     id: string,
     updates: ChatConversationUpdate
   ): Promise<ChatConversation> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('chat_conversations') as any)
-      .update({ ...updates, updated_at: new Date().toISOString() })
+    const dbUpdates: DbConversationUpdate = {
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase.from('chat_conversations')
+      .update(dbUpdates)
       .eq('id', id)
       .select()
       .single();
@@ -403,7 +410,7 @@ export const chatService = {
     conversationId: string,
     message: Omit<ChatMessageInsert, 'conversation_id'>
   ): Promise<ChatMessage> {
-    const messageData: ChatMessageInsert = {
+    const messageData: DbMessageInsert = {
       conversation_id: conversationId,
       sender_type: message.sender_type,
       sender_id: message.sender_id || null,
@@ -412,8 +419,7 @@ export const chatService = {
       read_at: message.sender_type !== 'visitor' ? new Date().toISOString() : null,
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase.from('chat_messages') as any)
+    const { data, error } = await supabase.from('chat_messages')
       .insert(messageData)
       .select()
       .single();

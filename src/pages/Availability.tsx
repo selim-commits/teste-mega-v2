@@ -16,7 +16,7 @@ import { Button } from '../components/ui/Button';
 import { Switch } from '../components/ui/Checkbox';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Modal';
 import { useNotifications } from '../stores/uiStore';
-import styles from './SettingsPage.module.css';
+import styles from './Availability.module.css';
 
 const STORAGE_KEY = 'rooom_availability_settings';
 
@@ -50,7 +50,7 @@ interface AvailabilityData {
   exceptions: DateException[];
 }
 
-const generateId = (): string => Math.random().toString(36).substring(2, 11);
+const generateId = (): string => crypto.randomUUID();
 
 const defaultSchedule: ScheduleDay[] = [
   { day: 'Lundi', enabled: true, start: '09:00', end: '18:00', breaks: [] },
@@ -588,6 +588,7 @@ export function Availability() {
             {/* Date */}
             <div>
               <label
+                htmlFor="exception-date"
                 style={{
                   display: 'block',
                   fontSize: 'var(--text-sm)',
@@ -599,6 +600,7 @@ export function Availability() {
                 Date
               </label>
               <input
+                id="exception-date"
                 type="date"
                 value={newException.date}
                 onChange={(e) =>
@@ -619,6 +621,7 @@ export function Availability() {
             {/* Label */}
             <div>
               <label
+                htmlFor="exception-label"
                 style={{
                   display: 'block',
                   fontSize: 'var(--text-sm)',
@@ -630,6 +633,7 @@ export function Availability() {
                 Libelle
               </label>
               <input
+                id="exception-label"
                 type="text"
                 value={newException.label}
                 onChange={(e) =>
@@ -651,6 +655,7 @@ export function Availability() {
             {/* Type */}
             <div>
               <label
+                htmlFor="exception-type"
                 style={{
                   display: 'block',
                   fontSize: 'var(--text-sm)',
@@ -661,6 +666,7 @@ export function Availability() {
               >
                 Type
               </label>
+              <input id="exception-type" type="hidden" value={newException.type} />
               <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
                 <button
                   type="button"
@@ -749,6 +755,7 @@ export function Availability() {
             {newException.type === 'special' && (
               <div>
                 <label
+                  htmlFor="exception-start-time"
                   style={{
                     display: 'block',
                     fontSize: 'var(--text-sm)',
@@ -767,6 +774,7 @@ export function Availability() {
                   }}
                 >
                   <input
+                    id="exception-start-time"
                     type="time"
                     value={newException.start}
                     onChange={(e) =>

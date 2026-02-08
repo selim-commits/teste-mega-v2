@@ -45,17 +45,19 @@ export async function fetchById<T>(tableName: TableName, id: string, studioId?: 
 }
 
 export async function createOne<T>(tableName: TableName, item: Partial<T>): Promise<T> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.from(tableName) as any).insert(item).select().single();
+  const { data, error } = await (supabase.from(tableName) as unknown as {
+    insert: (row: Partial<T>) => { select: () => { single: () => Promise<{ data: T | null; error: Error | null }> } };
+  }).insert(item).select().single();
   if (error) throw error;
-  return data as unknown as T;
+  return data as T;
 }
 
 export async function updateOne<T>(tableName: TableName, id: string, updates: Partial<T>): Promise<T> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.from(tableName) as any).update(updates).eq('id', id).select().single();
+  const { data, error } = await (supabase.from(tableName) as unknown as {
+    update: (row: Partial<T>) => { eq: (col: string, val: string) => { select: () => { single: () => Promise<{ data: T | null; error: Error | null }> } } };
+  }).update(updates).eq('id', id).select().single();
   if (error) throw error;
-  return data as unknown as T;
+  return data as T;
 }
 
 export async function deleteOne(tableName: TableName, id: string): Promise<void> {

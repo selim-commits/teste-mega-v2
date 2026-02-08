@@ -153,7 +153,7 @@ function replaceVariablesWithSample(text: string): string {
 }
 
 function generateId(): string {
-  return `tpl-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  return `tpl-${crypto.randomUUID()}`;
 }
 
 // ── Component ──────────────────────────────────────────────────────
@@ -577,10 +577,11 @@ export function SMSNotifications() {
 
           {/* Category */}
           <div className={styles.formField}>
-            <label className={`${styles.formLabel} ${styles.formLabelRequired}`}>
+            <label htmlFor="sms-template-category" className={`${styles.formLabel} ${styles.formLabelRequired}`}>
               Categorie
             </label>
             <select
+              id="sms-template-category"
               className={styles.formSelect}
               value={formCategory}
               onChange={(e) => setFormCategory(e.target.value as TemplateCategory)}
@@ -595,10 +596,11 @@ export function SMSNotifications() {
 
           {/* Message */}
           <div className={styles.formField}>
-            <label className={`${styles.formLabel} ${styles.formLabelRequired}`}>
+            <label htmlFor="sms-template-message" className={`${styles.formLabel} ${styles.formLabelRequired}`}>
               Message
             </label>
             <textarea
+              id="sms-template-message"
               ref={textareaRef}
               className={`${styles.formTextarea} ${
                 formErrors.message
