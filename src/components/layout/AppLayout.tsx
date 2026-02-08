@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
+import { InstallPrompt } from '../ui/InstallPrompt';
 import styles from './AppLayout.module.css';
 
 export function AppLayout() {
@@ -20,6 +21,8 @@ export function AppLayout() {
       <main id="main-content" className={styles.main}>
         <Outlet />
       </main>
+
+      <InstallPrompt />
     </div>
   );
 }

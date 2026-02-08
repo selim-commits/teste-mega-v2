@@ -7,6 +7,7 @@ import {
   FileDown,
   CheckCircle,
   XCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import { format, addDays, startOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -18,12 +19,14 @@ import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { BulkActionBar } from '../components/ui/BulkActionBar';
 import type { BulkAction } from '../components/ui/BulkActionBar';
+import { ConflictWarningModal } from '../components/ui/ConflictWarningModal';
 import { useAuthStore } from '../stores/authStore';
 import { useBookings, useCreateBooking, useUpdateBookingStatus, useDeleteBooking } from '../hooks/useBookings';
 import { useActiveSpaces } from '../hooks/useSpaces';
 import { useActiveClients } from '../hooks/useClients';
 import { useBulkSelection } from '../hooks/useBulkSelection';
 import { useNotifications } from '../stores/uiStore';
+import { useDoubleBookingPrevention, type ConflictMode } from '../hooks/useDoubleBookingPrevention';
 import type { BookingStatus, Booking } from '../types/database';
 
 // Import embed components
@@ -63,6 +66,7 @@ export function Bookings() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [formData, setFormData] = useState<BookingFormData>(initialFormData);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
   const loadingSlotsTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Cleanup timer on unmount
@@ -78,6 +82,17 @@ export function Bookings() {
   const updateBookingStatus = useUpdateBookingStatus();
   const deleteBooking = useDeleteBooking();
   const { success, error: showError } = useNotifications();
+
+  // Double booking prevention
+  const {
+    conflictMode,
+    conflicts,
+    alternativeSlots,
+    conflictCounts,
+    setConflictMode,
+    checkForConflicts,
+    clearConflicts,
+  } = useDoubleBookingPrevention(bookings);
 
   // Bulk selection
   const {
@@ -162,8 +177,8 @@ export function Bookings() {
     setIsModalOpen(true);
   }, [selectedDate, selectedSpace, spaces]);
 
-  // Handle form submission
-  const handleSubmit = async () => {
+  // Create booking (internal, no conflict check)
+  const performCreateBooking = useCallback(async () => {
     if (!studioId || !formData.space_id || !formData.client_id) return;
 
     try {
@@ -178,15 +193,84 @@ export function Bookings() {
         status: 'confirmed' as BookingStatus,
         notes: formData.notes,
         total_amount: 0,
-        created_by: '00000000-0000-0000-0000-000000000000', // System user for demo
+        created_by: '00000000-0000-0000-0000-000000000000',
       });
       setIsModalOpen(false);
+      setIsConflictModalOpen(false);
       setFormData(initialFormData);
       setSelectedSlot(null);
-    } catch (error) {
-      console.error('Failed to create booking:', error);
+      clearConflicts();
+      success('Reservation creee', 'La reservation a ete ajoutee avec succes');
+    } catch (err) {
+      console.error('Failed to create booking:', err);
+      showError('Erreur', 'Impossible de creer la reservation');
     }
+  }, [studioId, formData, createBooking, clearConflicts, success, showError]);
+
+  // Handle form submission with conflict checking
+  const handleSubmit = async () => {
+    if (!studioId || !formData.space_id || !formData.client_id) return;
+
+    // Build a temporary booking object for conflict checking
+    const tempBooking: Booking = {
+      id: crypto.randomUUID(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      studio_id: studioId,
+      space_id: formData.space_id,
+      client_id: formData.client_id,
+      title: formData.title || 'Nouvelle réservation',
+      description: formData.notes || null,
+      start_time: formData.start_time,
+      end_time: formData.end_time,
+      status: 'confirmed',
+      total_amount: 0,
+      paid_amount: 0,
+      notes: formData.notes || null,
+      internal_notes: null,
+      is_recurring: false,
+      recurrence_rule: null,
+      parent_booking_id: null,
+      created_by: '00000000-0000-0000-0000-000000000000',
+    };
+
+    const result = checkForConflicts(tempBooking);
+
+    if (result.hasConflicts) {
+      // Show conflict modal
+      setIsConflictModalOpen(true);
+      return;
+    }
+
+    // No conflicts: proceed
+    await performCreateBooking();
   };
+
+  // Handle force booking from conflict modal
+  const handleForceBooking = useCallback(async () => {
+    await performCreateBooking();
+  }, [performCreateBooking]);
+
+  // Handle selecting an alternative slot
+  const handleSelectAlternative = useCallback(
+    (slot: { start: string; end: string }) => {
+      setFormData((prev) => ({
+        ...prev,
+        start_time: slot.start,
+        end_time: slot.end,
+      }));
+      setIsConflictModalOpen(false);
+      clearConflicts();
+    },
+    [clearConflicts]
+  );
+
+  // Conflict mode options
+  const conflictModeOptions = [
+    { value: 'block', label: 'Bloquer (empecher les conflits)' },
+    { value: 'warn', label: 'Avertir (prevenir mais permettre)' },
+    { value: 'allow', label: 'Autoriser (pas de verification)' },
+  ];
 
   // Get bookings count for today
   const todayBookingsCount = useMemo(() => {
@@ -374,7 +458,13 @@ export function Bookings() {
         title="Reservations"
         subtitle="Gerez vos reservations et disponibilites"
         actions={
-          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <div style={{ display: 'flex', gap: 'var(--space-2)', alignItems: 'center' }}>
+            {conflictCounts.total > 0 && (
+              <div className={styles.conflictBadge}>
+                <AlertTriangle size={14} />
+                <span>{conflictCounts.total} conflit{conflictCounts.total > 1 ? 's' : ''}</span>
+              </div>
+            )}
             <Button
               variant={viewMode === 'calendar' ? 'primary' : 'ghost'}
               size="sm"
@@ -440,6 +530,39 @@ export function Bookings() {
                 </span>
                 <span className={styles.statLabel}>Reservations</span>
               </div>
+            </Card>
+
+            {/* Conflict Prevention Settings */}
+            <Card className={styles.filterCard}>
+              <h3 className={styles.filterTitle}>Prevention des conflits</h3>
+              <Select
+                options={conflictModeOptions}
+                value={conflictMode}
+                onChange={(value) => setConflictMode(value as ConflictMode)}
+                size="sm"
+              />
+              {conflictCounts.total > 0 && (
+                <div className={styles.conflictStats}>
+                  {conflictCounts.high > 0 && (
+                    <div className={styles.conflictStatRow}>
+                      <span className={`${styles.conflictDot} ${styles.conflictDotHigh}`} />
+                      <span>{conflictCounts.high} critique{conflictCounts.high > 1 ? 's' : ''}</span>
+                    </div>
+                  )}
+                  {conflictCounts.medium > 0 && (
+                    <div className={styles.conflictStatRow}>
+                      <span className={`${styles.conflictDot} ${styles.conflictDotMedium}`} />
+                      <span>{conflictCounts.medium} avertissement{conflictCounts.medium > 1 ? 's' : ''}</span>
+                    </div>
+                  )}
+                  {conflictCounts.low > 0 && (
+                    <div className={styles.conflictStatRow}>
+                      <span className={`${styles.conflictDot} ${styles.conflictDotLow}`} />
+                      <span>{conflictCounts.low} info{conflictCounts.low > 1 ? 's' : ''}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </Card>
           </aside>
 
@@ -719,6 +842,21 @@ export function Bookings() {
           </Button>
         </ModalFooter>
       </Modal>
+
+      {/* Conflict Warning Modal */}
+      <ConflictWarningModal
+        isOpen={isConflictModalOpen}
+        onClose={() => {
+          setIsConflictModalOpen(false);
+          clearConflicts();
+        }}
+        conflicts={conflicts}
+        alternativeSlots={alternativeSlots}
+        conflictMode={conflictMode}
+        onForceBooking={handleForceBooking}
+        onSelectAlternative={handleSelectAlternative}
+        getSpaceName={getSpaceName}
+      />
     </div>
   );
 }

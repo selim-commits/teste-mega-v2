@@ -1,0 +1,239 @@
+/* ConflictWarningModal Styles */
+
+.warningHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.warningIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
+  background-color: var(--state-warning-bg);
+  color: var(--state-warning);
+  flex-shrink: 0;
+}
+
+.warningIconHigh {
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.headerTitle {
+  font-family: var(--font-sans);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.headerSubtitle {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Conflict List */
+.conflictList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.conflictItem {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-secondary);
+}
+
+.conflictItemHigh {
+  border-color: var(--state-error);
+  background-color: var(--state-error-bg);
+}
+
+.conflictItemMedium {
+  border-color: var(--state-warning);
+  background-color: var(--state-warning-bg);
+}
+
+.conflictItemLow {
+  border-color: var(--state-info);
+  background-color: var(--state-info-bg);
+}
+
+.severityIndicator {
+  display: flex;
+  align-items: flex-start;
+  padding-top: var(--space-1);
+}
+
+.severityDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+
+.severityDotHigh {
+  background-color: var(--state-error);
+}
+
+.severityDotMedium {
+  background-color: var(--state-warning);
+}
+
+.severityDotLow {
+  background-color: var(--state-info);
+}
+
+.conflictDetails {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.conflictType {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--text-tertiary);
+}
+
+.conflictMessage {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  line-height: var(--leading-relaxed);
+}
+
+.conflictBookings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}
+
+.bookingInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.bookingInfo svg {
+  flex-shrink: 0;
+  color: var(--text-tertiary);
+}
+
+/* Alternatives Section */
+.alternativesSection {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--border-default);
+}
+
+.alternativesTitle {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.alternativesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.alternativeItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-primary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.alternativeItem:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-primary-light);
+}
+
+.alternativeTime {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.alternativeTime svg {
+  color: var(--state-success);
+}
+
+.alternativeAction {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--accent-primary);
+}
+
+.noAlternatives {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: var(--space-3);
+}
+
+/* Footer actions */
+.footerActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* Severity badge */
+.severityBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.severityBadgeHigh {
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
+}
+
+.severityBadgeMedium {
+  background-color: var(--state-warning-bg);
+  color: var(--state-warning);
+}
+
+.severityBadgeLow {
+  background-color: var(--state-info-bg);
+  color: var(--state-info);
+}

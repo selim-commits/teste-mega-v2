@@ -64,6 +64,7 @@ const navSections: NavSection[] = [
       { label: 'Automations', path: '/automations' },
       { label: 'AI Console', path: '/ai' },
       { label: 'Messages', path: '/chat' },
+      { label: 'Documentation API', path: '/api-docs' },
     ],
   },
   {

@@ -37,6 +37,7 @@ const Revenue = lazy(() => import('./pages/Revenue').then(m => ({ default: m.Rev
 const ClientPortal = lazy(() => import('./pages/ClientPortal').then(m => ({ default: m.ClientPortal })));
 const PhotoGallery = lazy(() => import('./pages/PhotoGallery').then(m => ({ default: m.PhotoGallery })));
 const Reviews = lazy(() => import('./pages/Reviews').then(m => ({ default: m.Reviews })));
+const ApiDocs = lazy(() => import('./pages/ApiDocs').then(m => ({ default: m.ApiDocs })));
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 
 // Minimal loading fallback for page transitions
@@ -96,6 +97,7 @@ function App() {
                     <Route path="/automations" element={<Automations />} />
                     <Route path="/ai" element={<AIConsole />} />
                     <Route path="/chat" element={<Chat />} />
+                    <Route path="/api-docs" element={<ApiDocs />} />
 
                     {/* Autres */}
                     <Route path="/team" element={<Team />} />
