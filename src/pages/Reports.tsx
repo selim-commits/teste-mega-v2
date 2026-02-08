@@ -13,10 +13,20 @@ import {
   CalendarCheck,
   FileSpreadsheet,
   FileText,
+  BarChart3,
+  PieChart,
+  LineChart,
+  Table,
+  Save,
+  Play,
+  Trash2,
+  Plus,
+  FolderOpen,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { Dropdown, DropdownItem, DropdownLabel } from '../components/ui/Dropdown';
 import { useNotifications } from '../stores/uiStore';
@@ -75,7 +85,96 @@ interface PeriodData {
   activities: ActivityItem[];
 }
 
-// ─── Period Options ─────────────────────────────────────
+// ─── Report Builder Types ─────────────────────────────
+
+type MetricKey = 'revenus' | 'reservations' | 'occupation' | 'clients' | 'depenses' | 'roi';
+type PeriodKey = 'semaine' | 'mois' | 'trimestre' | 'annee' | 'personnalise';
+type ChartType = 'barres' | 'donut' | 'ligne' | 'tableau';
+type ReportsTab = 'dashboard' | 'builder' | 'saved';
+
+interface MetricOption {
+  key: MetricKey;
+  label: string;
+}
+
+interface BuilderFormState {
+  name: string;
+  metrics: MetricKey[];
+  period: PeriodKey;
+  chartType: ChartType;
+}
+
+interface GeneratedDataPoint {
+  label: string;
+  value: number;
+  color: string;
+}
+
+interface GeneratedReport {
+  name: string;
+  metrics: MetricKey[];
+  period: PeriodKey;
+  chartType: ChartType;
+  data: GeneratedDataPoint[];
+}
+
+interface SavedReport {
+  id: string;
+  name: string;
+  metrics: MetricKey[];
+  period: PeriodKey;
+  chartType: ChartType;
+  data: GeneratedDataPoint[];
+  createdAt: string;
+}
+
+// ─── Constants ──────────────────────────────────────────
+
+const METRIC_OPTIONS: MetricOption[] = [
+  { key: 'revenus', label: 'Revenus' },
+  { key: 'reservations', label: 'Reservations' },
+  { key: 'occupation', label: "Taux d'occupation" },
+  { key: 'clients', label: 'Clients' },
+  { key: 'depenses', label: 'Depenses' },
+  { key: 'roi', label: 'ROI' },
+];
+
+const METRIC_LABELS: Record<MetricKey, string> = {
+  revenus: 'Revenus',
+  reservations: 'Reservations',
+  occupation: "Taux d'occupation",
+  clients: 'Clients',
+  depenses: 'Depenses',
+  roi: 'ROI',
+};
+
+const PERIOD_OPTIONS = [
+  { value: 'semaine' as PeriodKey, label: 'Semaine' },
+  { value: 'mois' as PeriodKey, label: 'Mois' },
+  { value: 'trimestre' as PeriodKey, label: 'Trimestre' },
+  { value: 'annee' as PeriodKey, label: 'Annee' },
+  { value: 'personnalise' as PeriodKey, label: 'Personnalise' },
+];
+
+const CHART_OPTIONS: { value: ChartType; label: string; icon: typeof BarChart3 }[] = [
+  { value: 'barres', label: 'Barres', icon: BarChart3 },
+  { value: 'donut', label: 'Donut', icon: PieChart },
+  { value: 'ligne', label: 'Ligne', icon: LineChart },
+  { value: 'tableau', label: 'Tableau', icon: Table },
+];
+
+const CHART_COLORS = [
+  'var(--accent-primary)',
+  'var(--state-info)',
+  'var(--state-success)',
+  'var(--state-warning)',
+  'var(--state-error)',
+  'var(--text-secondary)',
+];
+
+const STORAGE_KEY = 'rooom-saved-reports';
+
+// ─── Period Options (Dashboard) ─────────────────────────
 
 const periodOptions = [
   { value: '7d', label: '7 derniers jours' },
@@ -314,11 +413,245 @@ function getActivityIconClass(type: ActivityItem['type']): string {
   }
 }
 
+// ─── Report Builder Helpers ─────────────────────────────
+
+function generateMockData(metrics: MetricKey[], period: PeriodKey): GeneratedDataPoint[] {
+  const periodLabels: Record<PeriodKey, string[]> = {
+    semaine: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+    mois: ['S1', 'S2', 'S3', 'S4'],
+    trimestre: ['Mois 1', 'Mois 2', 'Mois 3'],
+    annee: ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aou', 'Sep', 'Oct', 'Nov', 'Dec'],
+    personnalise: ['P1', 'P2', 'P3', 'P4', 'P5', 'P6'],
+  };
+
+  const labels = periodLabels[period];
+  const baseValues: Record<MetricKey, { min: number; max: number }> = {
+    revenus: { min: 2000, max: 18000 },
+    reservations: { min: 10, max: 180 },
+    occupation: { min: 40, max: 95 },
+    clients: { min: 5, max: 60 },
+    depenses: { min: 800, max: 6000 },
+    roi: { min: 10, max: 45 },
+  };
+
+  // Use the first selected metric to generate values
+  const primaryMetric = metrics[0];
+  const range = baseValues[primaryMetric];
+
+  return labels.map((label, i) => ({
+    label,
+    value: Math.round(range.min + Math.random() * (range.max - range.min)),
+    color: CHART_COLORS[i % CHART_COLORS.length],
+  }));
+}
+
+function buildDonutConicGradient(data: GeneratedDataPoint[]): string {
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+  let accumulated = 0;
+  const stops: string[] = [];
+  for (const point of data) {
+    const start = accumulated;
+    const pct = (point.value / total) * 100;
+    accumulated += pct;
+    stops.push(`${point.color} ${start}% ${accumulated}%`);
+  }
+  return `conic-gradient(${stops.join(', ')})`;
+}
+
+function loadSavedReports(): SavedReport[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    return JSON.parse(raw) as SavedReport[];
+  } catch {
+    return [];
+  }
+}
+
+function persistSavedReports(reports: SavedReport[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
+}
+
+function formatDateFR(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function formatMetricValue(value: number, metric: MetricKey): string {
+  switch (metric) {
+    case 'revenus':
+    case 'depenses':
+      return formatEur(value);
+    case 'occupation':
+    case 'roi':
+      return `${value}%`;
+    default:
+      return new Intl.NumberFormat('fr-FR').format(value);
+  }
+}
+
+// ─── Sub-Components ─────────────────────────────────────
+
+function BarChartPreview({ data, metricKey }: { data: GeneratedDataPoint[]; metricKey: MetricKey }) {
+  const maxVal = Math.max(...data.map((d) => d.value));
+
+  return (
+    <div className={styles.reportChartWrapper}>
+      <div className={styles.builderBarChart}>
+        {data.map((point, i) => (
+          <div key={point.label} className={styles.builderBarColumn}>
+            <div className={styles.builderBarWrapper}>
+              <div
+                className={styles.builderBar}
+                style={{
+                  height: `${(point.value / maxVal) * 100}%`,
+                  backgroundColor: point.color,
+                  animationDelay: `${i * 50}ms`,
+                }}
+                data-value={formatMetricValue(point.value, metricKey)}
+              />
+            </div>
+            <span className={styles.builderBarLabel}>{point.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DonutChartPreview({ data, metricKey }: { data: GeneratedDataPoint[]; metricKey: MetricKey }) {
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+
+  return (
+    <div className={styles.reportChartWrapper}>
+      <div className={styles.builderDonutContainer}>
+        <div
+          className={styles.builderDonut}
+          style={{ background: buildDonutConicGradient(data) }}
+        >
+          <div className={styles.builderDonutHole}>
+            <span className={styles.builderDonutTotal}>{formatMetricValue(total, metricKey)}</span>
+            <span className={styles.builderDonutLabel}>Total</span>
+          </div>
+        </div>
+        <div className={styles.builderDonutLegend}>
+          {data.map((point) => (
+            <div key={point.label} className={styles.builderDonutLegendItem}>
+              <span
+                className={styles.builderDonutLegendDot}
+                style={{ backgroundColor: point.color }}
+              />
+              <span className={styles.builderDonutLegendName}>{point.label}</span>
+              <span className={styles.builderDonutLegendValue}>
+                {formatMetricValue(point.value, metricKey)}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LineChartPreview({ data, metricKey }: { data: GeneratedDataPoint[]; metricKey: MetricKey }) {
+  const maxVal = Math.max(...data.map((d) => d.value));
+
+  return (
+    <div className={styles.reportChartWrapper}>
+      <div className={styles.builderLineChart}>
+        {data.map((point) => {
+          const heightPercent = (point.value / maxVal) * 100;
+          return (
+            <div key={point.label} className={styles.builderLineColumn}>
+              <div
+                className={styles.builderLineFill}
+                style={{ height: `${heightPercent}%` }}
+              />
+              <div
+                className={styles.builderLinePoint}
+                style={{ bottom: `${heightPercent}%` }}
+                data-value={formatMetricValue(point.value, metricKey)}
+              />
+            </div>
+          );
+        })}
+      </div>
+      <div className={styles.builderLineLabels}>
+        {data.map((point) => (
+          <span key={point.label} className={styles.builderLineLabel}>{point.label}</span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TableChartPreview({ data, metricKey, reportName }: { data: GeneratedDataPoint[]; metricKey: MetricKey; reportName: string }) {
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+
+  return (
+    <div className={styles.reportChartWrapper}>
+      <table className={styles.builderTable}>
+        <thead>
+          <tr>
+            <th>Periode</th>
+            <th>{reportName}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((point) => (
+            <tr key={point.label}>
+              <td>{point.label}</td>
+              <td>{formatMetricValue(point.value, metricKey)}</td>
+            </tr>
+          ))}
+          <tr>
+            <td><strong>Total</strong></td>
+            <td><strong>{formatMetricValue(total, metricKey)}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ReportVisualization({ report }: { report: GeneratedReport }) {
+  const primaryMetric = report.metrics[0];
+
+  switch (report.chartType) {
+    case 'barres':
+      return <BarChartPreview data={report.data} metricKey={primaryMetric} />;
+    case 'donut':
+      return <DonutChartPreview data={report.data} metricKey={primaryMetric} />;
+    case 'ligne':
+      return <LineChartPreview data={report.data} metricKey={primaryMetric} />;
+    case 'tableau':
+      return <TableChartPreview data={report.data} metricKey={primaryMetric} reportName={report.name} />;
+  }
+}
+
 // ─── Component ──────────────────────────────────────────
 
 export function Reports() {
+  const [activeTab, setActiveTab] = useState<ReportsTab>('dashboard');
   const [period, setPeriod] = useState('30d');
 
+  // ─── Builder State ─────────────────────────────────
+  const [builderForm, setBuilderForm] = useState<BuilderFormState>({
+    name: '',
+    metrics: [],
+    period: 'mois',
+    chartType: 'barres',
+  });
+  const [generatedReport, setGeneratedReport] = useState<GeneratedReport | null>(null);
+
+  // ─── Saved Reports State ───────────────────────────
+  const [savedReports, setSavedReports] = useState<SavedReport[]>(() => loadSavedReports());
+  const [loadedReport, setLoadedReport] = useState<GeneratedReport | null>(null);
+
+  // ─── Dashboard Data ────────────────────────────────
   const data = useMemo(() => dataByPeriod[period] || dataByPeriod['30d'], [period]);
 
   const maxMonthlyRevenue = useMemo(
@@ -342,11 +675,9 @@ export function Reports() {
   );
 
   // ─── Notifications ──────────────────────────────────
-
-  const { success: notifySuccess } = useNotifications();
+  const { success: notifySuccess, error: notifyError, warning: notifyWarning } = useNotifications();
 
   // ─── Export Data ───────────────────────────────────
-
   const exportData: ReportExportData = useMemo(() => ({
     kpis: data.kpis.map((k) => ({ label: k.label, value: k.value, change: k.change })),
     monthlyRevenue: data.monthlyRevenue,
@@ -363,7 +694,6 @@ export function Reports() {
   }), [data]);
 
   // ─── Export Handlers ──────────────────────────────
-
   const handleExportCSV = useCallback(() => {
     exportCSV(exportData, period);
     notifySuccess('Export CSV', 'Le rapport a ete telecharge au format CSV.');
@@ -373,6 +703,82 @@ export function Reports() {
     exportPDF(exportData, period);
     notifySuccess('Export PDF', 'Le rapport a ete envoye a l\'impression.');
   }, [exportData, period, notifySuccess]);
+
+  // ─── Builder Handlers ─────────────────────────────
+  const handleMetricToggle = useCallback((metric: MetricKey) => {
+    setBuilderForm((prev) => ({
+      ...prev,
+      metrics: prev.metrics.includes(metric)
+        ? prev.metrics.filter((m) => m !== metric)
+        : [...prev.metrics, metric],
+    }));
+  }, []);
+
+  const handleGenerateReport = useCallback(() => {
+    if (!builderForm.name.trim()) {
+      notifyWarning('Nom requis', 'Veuillez saisir un nom pour le rapport.');
+      return;
+    }
+    if (builderForm.metrics.length === 0) {
+      notifyWarning('Metriques requises', 'Veuillez selectionner au moins une metrique.');
+      return;
+    }
+
+    const mockData = generateMockData(builderForm.metrics, builderForm.period);
+    const report: GeneratedReport = {
+      name: builderForm.name,
+      metrics: builderForm.metrics,
+      period: builderForm.period,
+      chartType: builderForm.chartType,
+      data: mockData,
+    };
+    setGeneratedReport(report);
+    notifySuccess('Rapport genere', `Le rapport "${builderForm.name}" a ete genere avec succes.`);
+  }, [builderForm, notifySuccess, notifyWarning]);
+
+  const handleSaveReport = useCallback(() => {
+    if (!generatedReport) return;
+
+    const newSaved: SavedReport = {
+      id: crypto.randomUUID(),
+      name: generatedReport.name,
+      metrics: generatedReport.metrics,
+      period: generatedReport.period,
+      chartType: generatedReport.chartType,
+      data: generatedReport.data,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updated = [newSaved, ...savedReports];
+    setSavedReports(updated);
+    persistSavedReports(updated);
+    notifySuccess('Rapport sauvegarde', `Le rapport "${generatedReport.name}" a ete sauvegarde.`);
+  }, [generatedReport, savedReports, notifySuccess]);
+
+  const handleLoadReport = useCallback((report: SavedReport) => {
+    const loaded: GeneratedReport = {
+      name: report.name,
+      metrics: report.metrics,
+      period: report.period,
+      chartType: report.chartType,
+      data: report.data,
+    };
+    setLoadedReport(loaded);
+    notifySuccess('Rapport charge', `Le rapport "${report.name}" a ete charge.`);
+  }, [notifySuccess]);
+
+  const handleDeleteReport = useCallback((id: string) => {
+    const updated = savedReports.filter((r) => r.id !== id);
+    setSavedReports(updated);
+    persistSavedReports(updated);
+    if (loadedReport) {
+      const deletedReport = savedReports.find((r) => r.id === id);
+      if (deletedReport && deletedReport.name === loadedReport.name) {
+        setLoadedReport(null);
+      }
+    }
+    notifyError('Rapport supprime', 'Le rapport a ete supprime.');
+  }, [savedReports, loadedReport, notifyError]);
 
   // ─── Render ─────────────────────────────────────────
 
@@ -384,241 +790,504 @@ export function Reports() {
       />
 
       <div className={styles.content}>
-        {/* Toolbar */}
-        <div className={styles.toolbar}>
-          <Select
-            options={periodOptions}
-            value={period}
-            onChange={setPeriod}
-          />
-          <div className={styles.toolbarActions}>
-            <Dropdown
-              trigger={
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  icon={<Download size={16} />}
-                >
-                  Exporter
-                </Button>
-              }
-              align="end"
-              label="Options d'export"
-            >
-              <DropdownLabel>Format d'export</DropdownLabel>
-              <DropdownItem
-                icon={<FileSpreadsheet size={16} />}
-                onClick={handleExportCSV}
-              >
-                Exporter en CSV
-              </DropdownItem>
-              <DropdownItem
-                icon={<FileText size={16} />}
-                onClick={handleExportPDF}
-              >
-                Imprimer / PDF
-              </DropdownItem>
-            </Dropdown>
-          </div>
+        {/* Tabs */}
+        <div className={styles.tabs}>
+          <button
+            className={`${styles.tab} ${activeTab === 'dashboard' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
+            Dashboard
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'builder' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('builder')}
+          >
+            Report Builder
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'saved' ? styles.tabActive : ''}`}
+            onClick={() => setActiveTab('saved')}
+          >
+            Mes Rapports
+          </button>
         </div>
 
-        {/* KPI Stats - 6 cards */}
-        <div className={styles.statsGrid}>
-          {data.kpis.map((kpi, index) => {
-            const isPositive = kpi.change >= 0;
-            // For cancel rate, down is good
-            const isGood = kpi.key === 'cancel' ? !isPositive : isPositive;
-
-            return (
-              <div
-                key={kpi.key}
-                className={styles.animateIn}
-                style={{ animationDelay: `${index * 60}ms` }}
-              >
-                <Card padding="md" className={styles.statCard}>
-                  <div className={styles.statHeader}>
-                    <span className={styles.statLabel}>{kpi.label}</span>
-                    <div
-                      className={styles.statIcon}
-                      style={{ backgroundColor: `color-mix(in srgb, ${kpi.color} 12%, transparent)` }}
+        {/* ═══════════════════════════════════════════
+            TAB: Dashboard (original content)
+            ═══════════════════════════════════════════ */}
+        {activeTab === 'dashboard' && (
+          <>
+            {/* Toolbar */}
+            <div className={styles.toolbar}>
+              <Select
+                options={periodOptions}
+                value={period}
+                onChange={setPeriod}
+              />
+              <div className={styles.toolbarActions}>
+                <Dropdown
+                  trigger={
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      icon={<Download size={16} />}
                     >
-                      <kpi.icon size={16} style={{ color: kpi.color }} />
-                    </div>
-                  </div>
-                  <span className={styles.statValue}>{kpi.value}</span>
-                  <span className={`${styles.statTrend} ${isGood ? styles.trendUp : styles.trendDown}`}>
-                    {isGood ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
-                    {isPositive ? '+' : ''}{kpi.change}%
-                  </span>
-                </Card>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Charts Row 1: Bar Chart + Donut Chart */}
-        <div className={styles.chartsGrid}>
-          {/* Bar Chart - Revenus par mois */}
-          <div className={styles.animateIn} style={{ animationDelay: '200ms' }}>
-            <Card padding="lg" className={styles.chartCard}>
-              <div className={styles.chartHeader}>
-                <h3 className={styles.chartTitle}>Revenus par mois</h3>
-                <span className={styles.chartSubtitle}>Annuel</span>
-              </div>
-              <div className={styles.barChart}>
-                {data.monthlyRevenue.map((m, i) => (
-                  <div key={m.month} className={styles.barChartColumn}>
-                    <div className={styles.barChartBarWrapper}>
-                      <div
-                        className={styles.barChartBar}
-                        style={{
-                          height: `${(m.value / maxMonthlyRevenue) * 100}%`,
-                          animationDelay: `${i * 50}ms`,
-                        }}
-                        data-value={formatEur(m.value)}
-                      />
-                    </div>
-                    <span className={styles.barChartLabel}>{m.month}</span>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-
-          {/* Donut Chart - Repartition par espace */}
-          <div className={styles.animateIn} style={{ animationDelay: '300ms' }}>
-            <Card padding="lg" className={styles.chartCard}>
-              <div className={styles.chartHeader}>
-                <h3 className={styles.chartTitle}>Repartition par espace</h3>
-                <span className={styles.chartSubtitle}>Reservations</span>
-              </div>
-              <div className={styles.donutChartContainer}>
-                <div
-                  className={styles.donutChart}
-                  style={{ background: buildConicGradient(data.spaces) }}
+                      Exporter
+                    </Button>
+                  }
+                  align="end"
+                  label="Options d'export"
                 >
-                  <div className={styles.donutChartHole}>
-                    <span className={styles.donutChartTotal}>{totalSpaceBookings}%</span>
-                    <span className={styles.donutChartTotalLabel}>Total</span>
-                  </div>
-                </div>
-                <div className={styles.donutLegend}>
-                  {data.spaces.map((space) => (
-                    <div key={space.name} className={styles.donutLegendItem}>
-                      <span
-                        className={styles.donutLegendDot}
-                        style={{ backgroundColor: space.color }}
-                      />
-                      <span className={styles.donutLegendLabel}>{space.name}</span>
-                      <span className={styles.donutLegendValue}>{space.percentage}%</span>
-                    </div>
-                  ))}
-                </div>
+                  <DropdownLabel>Format d'export</DropdownLabel>
+                  <DropdownItem
+                    icon={<FileSpreadsheet size={16} />}
+                    onClick={handleExportCSV}
+                  >
+                    Exporter en CSV
+                  </DropdownItem>
+                  <DropdownItem
+                    icon={<FileText size={16} />}
+                    onClick={handleExportPDF}
+                  >
+                    Imprimer / PDF
+                  </DropdownItem>
+                </Dropdown>
               </div>
-            </Card>
-          </div>
-        </div>
-
-        {/* Charts Row 2: Area Chart + Horizontal Bar Chart */}
-        <div className={styles.chartsGrid}>
-          {/* Area Chart - Tendance reservations */}
-          <div className={styles.animateIn} style={{ animationDelay: '400ms' }}>
-            <Card padding="lg" className={styles.chartCard}>
-              <div className={styles.chartHeader}>
-                <h3 className={styles.chartTitle}>Tendance reservations</h3>
-                <span className={styles.chartSubtitle}>Par semaine</span>
-              </div>
-              <div className={styles.areaChart}>
-                {data.weeklyBookings.map((w) => {
-                  const heightPercent = (w.value / maxWeeklyBooking) * 100;
-                  return (
-                    <div key={w.label} className={styles.areaChartColumn}>
-                      <div
-                        className={styles.areaChartFill}
-                        style={{ height: `${heightPercent}%` }}
-                      />
-                      <div
-                        className={styles.areaChartPoint}
-                        style={{ bottom: `${heightPercent}%` }}
-                        data-value={`${w.value} reservations`}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-              <div className={styles.areaChartLabels}>
-                {data.weeklyBookings.map((w) => (
-                  <span key={w.label} className={styles.areaChartLabel}>{w.label}</span>
-                ))}
-              </div>
-            </Card>
-          </div>
-
-          {/* Horizontal Bar Chart - Top 5 clients */}
-          <div className={styles.animateIn} style={{ animationDelay: '500ms' }}>
-            <Card padding="lg" className={styles.chartCard}>
-              <div className={styles.chartHeader}>
-                <h3 className={styles.chartTitle}>Top 5 clients</h3>
-                <span className={styles.chartSubtitle}>Par revenu</span>
-              </div>
-              <div className={styles.horizontalBars}>
-                {data.topClients.map((client, i) => (
-                  <div key={client.name} className={styles.horizontalBarRow}>
-                    <div className={styles.horizontalBarHeader}>
-                      <span className={styles.horizontalBarLabel}>{client.name}</span>
-                      <span className={styles.horizontalBarValue}>{formatEur(client.revenue)}</span>
-                    </div>
-                    <div className={styles.horizontalBarTrack}>
-                      <div
-                        className={styles.horizontalBarFill}
-                        style={{
-                          width: `${(client.revenue / maxClientRevenue) * 100}%`,
-                          opacity: 1 - (i * 0.12),
-                        }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-        </div>
-
-        {/* Activity Table */}
-        <div className={styles.animateIn} style={{ animationDelay: '600ms' }}>
-          <Card padding="lg">
-            <div className={styles.chartHeader}>
-              <h3 className={styles.chartTitle}>Activite recente</h3>
-              <span className={styles.chartSubtitle}>{data.activities.length} evenements</span>
             </div>
-            <div className={styles.activityList}>
-              {data.activities.map((activity, index) => {
-                const IconComponent = getActivityIcon(activity.type);
-                const iconClass = getActivityIconClass(activity.type);
+
+            {/* KPI Stats - 6 cards */}
+            <div className={styles.statsGrid}>
+              {data.kpis.map((kpi, index) => {
+                const isPositive = kpi.change >= 0;
+                const isGood = kpi.key === 'cancel' ? !isPositive : isPositive;
 
                 return (
-                  <div key={`${activity.type}-${index}`} className={styles.activityItem}>
-                    <div className={`${styles.activityIcon} ${iconClass}`}>
-                      <IconComponent size={16} />
-                    </div>
-                    <div className={styles.activityContent}>
-                      <span className={styles.activityTitle}>{activity.title}</span>
-                      <span className={styles.activityDescription}>{activity.description}</span>
-                    </div>
-                    <div className={styles.activityMeta}>
-                      {activity.amount !== undefined && (
-                        <span className={`${styles.activityAmount} ${activity.amount < 0 ? styles.activityAmountNegative : ''}`}>
-                          {activity.amount >= 0 ? '+' : ''}{formatEur(activity.amount)}
-                        </span>
-                      )}
-                      <span className={styles.activityTime}>{activity.time}</span>
-                    </div>
+                  <div
+                    key={kpi.key}
+                    className={styles.animateIn}
+                    style={{ animationDelay: `${index * 60}ms` }}
+                  >
+                    <Card padding="md" className={styles.statCard}>
+                      <div className={styles.statHeader}>
+                        <span className={styles.statLabel}>{kpi.label}</span>
+                        <div
+                          className={styles.statIcon}
+                          style={{ backgroundColor: `color-mix(in srgb, ${kpi.color} 12%, transparent)` }}
+                        >
+                          <kpi.icon size={16} style={{ color: kpi.color }} />
+                        </div>
+                      </div>
+                      <span className={styles.statValue}>{kpi.value}</span>
+                      <span className={`${styles.statTrend} ${isGood ? styles.trendUp : styles.trendDown}`}>
+                        {isGood ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                        {isPositive ? '+' : ''}{kpi.change}%
+                      </span>
+                    </Card>
                   </div>
                 );
               })}
             </div>
-          </Card>
-        </div>
+
+            {/* Charts Row 1: Bar Chart + Donut Chart */}
+            <div className={styles.chartsGrid}>
+              <div className={styles.animateIn} style={{ animationDelay: '200ms' }}>
+                <Card padding="lg" className={styles.chartCard}>
+                  <div className={styles.chartHeader}>
+                    <h3 className={styles.chartTitle}>Revenus par mois</h3>
+                    <span className={styles.chartSubtitle}>Annuel</span>
+                  </div>
+                  <div className={styles.barChart}>
+                    {data.monthlyRevenue.map((m, i) => (
+                      <div key={m.month} className={styles.barChartColumn}>
+                        <div className={styles.barChartBarWrapper}>
+                          <div
+                            className={styles.barChartBar}
+                            style={{
+                              height: `${(m.value / maxMonthlyRevenue) * 100}%`,
+                              animationDelay: `${i * 50}ms`,
+                            }}
+                            data-value={formatEur(m.value)}
+                          />
+                        </div>
+                        <span className={styles.barChartLabel}>{m.month}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+
+              <div className={styles.animateIn} style={{ animationDelay: '300ms' }}>
+                <Card padding="lg" className={styles.chartCard}>
+                  <div className={styles.chartHeader}>
+                    <h3 className={styles.chartTitle}>Repartition par espace</h3>
+                    <span className={styles.chartSubtitle}>Reservations</span>
+                  </div>
+                  <div className={styles.donutChartContainer}>
+                    <div
+                      className={styles.donutChart}
+                      style={{ background: buildConicGradient(data.spaces) }}
+                    >
+                      <div className={styles.donutChartHole}>
+                        <span className={styles.donutChartTotal}>{totalSpaceBookings}%</span>
+                        <span className={styles.donutChartTotalLabel}>Total</span>
+                      </div>
+                    </div>
+                    <div className={styles.donutLegend}>
+                      {data.spaces.map((space) => (
+                        <div key={space.name} className={styles.donutLegendItem}>
+                          <span
+                            className={styles.donutLegendDot}
+                            style={{ backgroundColor: space.color }}
+                          />
+                          <span className={styles.donutLegendLabel}>{space.name}</span>
+                          <span className={styles.donutLegendValue}>{space.percentage}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            {/* Charts Row 2: Area Chart + Horizontal Bar Chart */}
+            <div className={styles.chartsGrid}>
+              <div className={styles.animateIn} style={{ animationDelay: '400ms' }}>
+                <Card padding="lg" className={styles.chartCard}>
+                  <div className={styles.chartHeader}>
+                    <h3 className={styles.chartTitle}>Tendance reservations</h3>
+                    <span className={styles.chartSubtitle}>Par semaine</span>
+                  </div>
+                  <div className={styles.areaChart}>
+                    {data.weeklyBookings.map((w) => {
+                      const heightPercent = (w.value / maxWeeklyBooking) * 100;
+                      return (
+                        <div key={w.label} className={styles.areaChartColumn}>
+                          <div
+                            className={styles.areaChartFill}
+                            style={{ height: `${heightPercent}%` }}
+                          />
+                          <div
+                            className={styles.areaChartPoint}
+                            style={{ bottom: `${heightPercent}%` }}
+                            data-value={`${w.value} reservations`}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className={styles.areaChartLabels}>
+                    {data.weeklyBookings.map((w) => (
+                      <span key={w.label} className={styles.areaChartLabel}>{w.label}</span>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+
+              <div className={styles.animateIn} style={{ animationDelay: '500ms' }}>
+                <Card padding="lg" className={styles.chartCard}>
+                  <div className={styles.chartHeader}>
+                    <h3 className={styles.chartTitle}>Top 5 clients</h3>
+                    <span className={styles.chartSubtitle}>Par revenu</span>
+                  </div>
+                  <div className={styles.horizontalBars}>
+                    {data.topClients.map((client, i) => (
+                      <div key={client.name} className={styles.horizontalBarRow}>
+                        <div className={styles.horizontalBarHeader}>
+                          <span className={styles.horizontalBarLabel}>{client.name}</span>
+                          <span className={styles.horizontalBarValue}>{formatEur(client.revenue)}</span>
+                        </div>
+                        <div className={styles.horizontalBarTrack}>
+                          <div
+                            className={styles.horizontalBarFill}
+                            style={{
+                              width: `${(client.revenue / maxClientRevenue) * 100}%`,
+                              opacity: 1 - (i * 0.12),
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+            </div>
+
+            {/* Activity Table */}
+            <div className={styles.animateIn} style={{ animationDelay: '600ms' }}>
+              <Card padding="lg">
+                <div className={styles.chartHeader}>
+                  <h3 className={styles.chartTitle}>Activite recente</h3>
+                  <span className={styles.chartSubtitle}>{data.activities.length} evenements</span>
+                </div>
+                <div className={styles.activityList}>
+                  {data.activities.map((activity, index) => {
+                    const IconComponent = getActivityIcon(activity.type);
+                    const iconClass = getActivityIconClass(activity.type);
+
+                    return (
+                      <div key={`${activity.type}-${index}`} className={styles.activityItem}>
+                        <div className={`${styles.activityIcon} ${iconClass}`}>
+                          <IconComponent size={16} />
+                        </div>
+                        <div className={styles.activityContent}>
+                          <span className={styles.activityTitle}>{activity.title}</span>
+                          <span className={styles.activityDescription}>{activity.description}</span>
+                        </div>
+                        <div className={styles.activityMeta}>
+                          {activity.amount !== undefined && (
+                            <span className={`${styles.activityAmount} ${activity.amount < 0 ? styles.activityAmountNegative : ''}`}>
+                              {activity.amount >= 0 ? '+' : ''}{formatEur(activity.amount)}
+                            </span>
+                          )}
+                          <span className={styles.activityTime}>{activity.time}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </Card>
+            </div>
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            TAB: Report Builder
+            ═══════════════════════════════════════════ */}
+        {activeTab === 'builder' && (
+          <>
+            <div className={styles.animateIn}>
+              <Card padding="lg">
+                <div className={styles.chartHeader}>
+                  <h3 className={styles.chartTitle}>Creer un rapport personnalise</h3>
+                  <span className={styles.chartSubtitle}>Configuration</span>
+                </div>
+
+                <div className={styles.builderForm}>
+                  {/* Left Column */}
+                  <div className={styles.formSection}>
+                    {/* Report Name */}
+                    <div className={styles.formGroup}>
+                      <Input
+                        label="Nom du rapport"
+                        placeholder="Ex: Revenus mensuels Q1"
+                        value={builderForm.name}
+                        onChange={(e) =>
+                          setBuilderForm((prev) => ({ ...prev, name: e.target.value }))
+                        }
+                        fullWidth
+                      />
+                    </div>
+
+                    {/* Metrics Selection */}
+                    <div className={styles.formGroup}>
+                      <span className={styles.formLabel}>Metriques</span>
+                      <div className={styles.checkboxGrid}>
+                        {METRIC_OPTIONS.map((metric) => {
+                          const isChecked = builderForm.metrics.includes(metric.key);
+                          return (
+                            <label
+                              key={metric.key}
+                              className={`${styles.checkboxLabel} ${isChecked ? styles.checkboxLabelChecked : ''}`}
+                            >
+                              <input
+                                type="checkbox"
+                                className={styles.checkboxInput}
+                                checked={isChecked}
+                                onChange={() => handleMetricToggle(metric.key)}
+                              />
+                              {metric.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column */}
+                  <div className={styles.formSection}>
+                    {/* Period Selection */}
+                    <div className={styles.formGroup}>
+                      <Select
+                        label="Periode"
+                        options={PERIOD_OPTIONS}
+                        value={builderForm.period}
+                        onChange={(val) =>
+                          setBuilderForm((prev) => ({ ...prev, period: val as PeriodKey }))
+                        }
+                        fullWidth
+                      />
+                    </div>
+
+                    {/* Chart Type Selection */}
+                    <div className={styles.formGroup}>
+                      <span className={styles.formLabel}>Type de visualisation</span>
+                      <div className={styles.radioGroup}>
+                        {CHART_OPTIONS.map((option) => {
+                          const isSelected = builderForm.chartType === option.value;
+                          const IconComp = option.icon;
+                          return (
+                            <label
+                              key={option.value}
+                              className={`${styles.radioLabel} ${isSelected ? styles.radioLabelChecked : ''}`}
+                            >
+                              <input
+                                type="radio"
+                                name="chartType"
+                                className={styles.radioInput}
+                                checked={isSelected}
+                                onChange={() =>
+                                  setBuilderForm((prev) => ({ ...prev, chartType: option.value }))
+                                }
+                              />
+                              <IconComp size={16} />
+                              {option.label}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Generate Button */}
+                <div className={styles.builderActions}>
+                  <Button
+                    variant="primary"
+                    icon={<Play size={16} />}
+                    onClick={handleGenerateReport}
+                  >
+                    Generer le rapport
+                  </Button>
+                </div>
+              </Card>
+            </div>
+
+            {/* Generated Report Preview */}
+            {generatedReport && (
+              <div className={styles.generatedReport}>
+                <div className={styles.animateIn}>
+                  <Card padding="lg">
+                    <div className={styles.reportPreviewHeader}>
+                      <h3 className={styles.reportPreviewTitle}>{generatedReport.name}</h3>
+                      <div className={styles.reportPreviewActions}>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          icon={<Save size={16} />}
+                          onClick={handleSaveReport}
+                        >
+                          Sauvegarder
+                        </Button>
+                      </div>
+                    </div>
+                    <ReportVisualization report={generatedReport} />
+                  </Card>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            TAB: Mes Rapports (Saved Reports)
+            ═══════════════════════════════════════════ */}
+        {activeTab === 'saved' && (
+          <>
+            <div className={styles.animateIn}>
+              {savedReports.length === 0 ? (
+                <Card padding="lg">
+                  <div className={styles.emptyState}>
+                    <div className={styles.emptyStateIcon}>
+                      <FolderOpen size={24} />
+                    </div>
+                    <h3 className={styles.emptyStateTitle}>Aucun rapport sauvegarde</h3>
+                    <p className={styles.emptyStateDescription}>
+                      Creez un rapport personnalise dans l'onglet Report Builder puis sauvegardez-le pour le retrouver ici.
+                    </p>
+                    <div style={{ marginTop: 'var(--space-4)' }}>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        icon={<Plus size={16} />}
+                        onClick={() => setActiveTab('builder')}
+                      >
+                        Creer un rapport
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              ) : (
+                <Card padding="lg">
+                  <div className={styles.chartHeader}>
+                    <h3 className={styles.chartTitle}>Rapports sauvegardes</h3>
+                    <span className={styles.chartSubtitle}>
+                      {savedReports.length} rapport{savedReports.length > 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  <div className={styles.savedReportsList}>
+                    {savedReports.map((report) => (
+                      <div key={report.id} className={styles.savedReportItem}>
+                        <div className={styles.savedReportIcon}>
+                          {report.chartType === 'barres' && <BarChart3 size={20} />}
+                          {report.chartType === 'donut' && <PieChart size={20} />}
+                          {report.chartType === 'ligne' && <LineChart size={20} />}
+                          {report.chartType === 'tableau' && <Table size={20} />}
+                        </div>
+                        <div className={styles.savedReportInfo}>
+                          <div className={styles.savedReportName}>{report.name}</div>
+                          <div className={styles.savedReportMeta}>
+                            <span className={styles.savedReportDate}>
+                              {formatDateFR(report.createdAt)}
+                            </span>
+                            <div className={styles.savedReportMetrics}>
+                              {report.metrics.map((m) => (
+                                <span key={m} className={styles.savedReportBadge}>
+                                  {METRIC_LABELS[m]}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <div className={styles.savedReportActions}>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            icon={<Play size={14} />}
+                            onClick={() => handleLoadReport(report)}
+                          >
+                            Charger
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon={<Trash2 size={14} />}
+                            onClick={() => handleDeleteReport(report.id)}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
+            </div>
+
+            {/* Loaded Report Visualization */}
+            {loadedReport && (
+              <div className={styles.generatedReport}>
+                <div className={styles.animateIn}>
+                  <Card padding="lg">
+                    <div className={styles.reportPreviewHeader}>
+                      <h3 className={styles.reportPreviewTitle}>{loadedReport.name}</h3>
+                      <span className={styles.chartSubtitle}>Apercu</span>
+                    </div>
+                    <ReportVisualization report={loadedReport} />
+                  </Card>
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );

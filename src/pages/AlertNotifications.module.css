@@ -671,6 +671,75 @@
   margin-top: var(--space-4);
 }
 
+/* Push Notifications */
+.pushPermissionBanner {
+  margin-bottom: var(--space-5);
+}
+
+.pushCategories {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.pushCategoryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.pushCategoryRow:hover {
+  background-color: var(--bg-hover);
+}
+
+.pushCategoryInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+}
+
+.pushCategoryIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.pushCategoryText {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pushCategoryName {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+
+.pushCategoryDescription {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.pushCategoryActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .alertGridHeader {
@@ -684,5 +753,16 @@
 
   .channelToggle {
     justify-content: flex-start;
+  }
+
+  .pushCategoryRow {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .pushCategoryActions {
+    width: 100%;
+    justify-content: flex-end;
   }
 }

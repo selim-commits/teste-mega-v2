@@ -43,6 +43,7 @@ const ApiDocs = lazy(() => import('./pages/ApiDocs').then(m => ({ default: m.Api
 const Webhooks = lazy(() => import('./pages/Webhooks').then(m => ({ default: m.Webhooks })));
 const AIPricing = lazy(() => import('./pages/AIPricing').then(m => ({ default: m.AIPricing })));
 const IdentityVerification = lazy(() => import('./pages/IdentityVerification').then(m => ({ default: m.IdentityVerification })));
+const OwnerPortal = lazy(() => import('./pages/OwnerPortal').then(m => ({ default: m.OwnerPortal })));
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 
 // Minimal loading fallback for page transitions
@@ -108,6 +109,9 @@ function App() {
                     <Route path="/chat" element={<Chat />} />
                     <Route path="/api-docs" element={<ApiDocs />} />
                     <Route path="/webhooks" element={<Webhooks />} />
+
+                    {/* Portails */}
+                    <Route path="/owner-portal" element={<OwnerPortal />} />
 
                     {/* Autres */}
                     <Route path="/team" element={<Team />} />

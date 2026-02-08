@@ -240,6 +240,18 @@ export {
   purchaseQueryKeys,
 } from './usePacks';
 
+// Push Notifications
+export {
+  usePushNotifications,
+  CATEGORY_LABELS as PUSH_CATEGORY_LABELS,
+} from './usePushNotifications';
+export type {
+  PushPermissionStatus,
+  PushCategory,
+  PushPreferences,
+  PushNotificationPayload,
+} from './usePushNotifications';
+
 // Chat
 export {
   // Conversation hooks

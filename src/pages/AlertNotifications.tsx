@@ -21,6 +21,8 @@ import {
   XCircle,
   Activity,
   Shield,
+  MessageSquare,
+  Zap,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -28,7 +30,10 @@ import { Button } from '../components/ui/Button';
 import { Switch, Checkbox } from '../components/ui/Checkbox';
 import { Input } from '../components/ui/Input';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Modal';
+import { NotificationPermission } from '../components/ui/NotificationPermission';
 import { useNotifications } from '../stores/uiStore';
+import { usePushNotifications, CATEGORY_LABELS } from '../hooks/usePushNotifications';
+import type { PushCategory } from '../hooks/usePushNotifications';
 import styles from './AlertNotifications.module.css';
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -259,9 +264,22 @@ function getHistoryTypeIcon(type: NotificationHistoryItem['type']) {
 
 // ─── Component ───────────────────────────────────────────────────────
 
+const PUSH_CATEGORY_ICONS: Record<PushCategory, React.ElementType> = {
+  bookings: Calendar,
+  messages: MessageSquare,
+  alerts: Zap,
+};
+
+const PUSH_CATEGORY_DESCRIPTIONS: Record<PushCategory, string> = {
+  bookings: 'Nouvelles réservations, annulations et modifications',
+  messages: 'Nouveaux messages chat de vos clients',
+  alerts: 'Alertes système, équipement et rappels',
+};
+
 export function AlertNotifications() {
   const savedPrefs = loadSavedPrefs();
   const { success, error: notifyError } = useNotifications();
+  const pushNotifications = usePushNotifications();
 
   // State: Categories
   const [categories, setCategories] = useState<AlertCategory[]>(() =>
@@ -401,6 +419,26 @@ export function AlertNotifications() {
     }
   }, [categories, rules, quietHours, history, success, notifyError]);
 
+  // ─── Push notification handlers ──────────────────────────────
+
+  const handleRequestPermission = useCallback(async () => {
+    const result = await pushNotifications.requestPermission();
+    if (result === 'granted') {
+      success('Notifications activées', 'Vous recevrez désormais des notifications push.');
+    } else if (result === 'denied') {
+      notifyError('Permission refusée', 'Les notifications ont été bloquées par votre navigateur.');
+    }
+  }, [pushNotifications, success, notifyError]);
+
+  const handleTestPush = useCallback((category: PushCategory) => {
+    if (pushNotifications.permissionStatus !== 'granted') {
+      notifyError('Permission requise', 'Veuillez d\'abord autoriser les notifications push.');
+      return;
+    }
+    pushNotifications.sendTestNotification(category);
+    success('Notification envoyée', `Notification test "${CATEGORY_LABELS[category]}" envoyée.`);
+  }, [pushNotifications, success, notifyError]);
+
   // ─── Computed stats ────────────────────────────────────────────
 
   const activeChannels = new Set<Channel>();
@@ -482,6 +520,81 @@ export function AlertNotifications() {
             </Card>
           </div>
         </div>
+
+        {/* ─── Push Notifications ─────────────────────────────────── */}
+        <Card padding="lg" className={styles.sectionCard}>
+          <div className={styles.sectionHeader}>
+            <div>
+              <h3 className={styles.sectionTitle}>Notifications Push</h3>
+              <p className={styles.sectionSubtitle}>
+                Recevez des alertes en temps réel directement dans votre navigateur
+              </p>
+            </div>
+          </div>
+
+          {/* Permission Banner */}
+          <div className={styles.pushPermissionBanner}>
+            <NotificationPermission
+              isSupported={pushNotifications.isSupported}
+              permissionStatus={pushNotifications.permissionStatus}
+              enabled={pushNotifications.preferences.enabled}
+              onRequestPermission={handleRequestPermission}
+              onToggleEnabled={pushNotifications.toggleEnabled}
+            />
+          </div>
+
+          {/* Category Toggles */}
+          {pushNotifications.isSupported && pushNotifications.permissionStatus === 'granted' && (
+            <div className={styles.pushCategories}>
+              {(Object.keys(pushNotifications.preferences.categories) as PushCategory[]).map(
+                (category, index) => {
+                  const CategoryIcon = PUSH_CATEGORY_ICONS[category];
+                  const isEnabled = pushNotifications.preferences.categories[category];
+                  return (
+                    <div
+                      key={category}
+                      className={`${styles.pushCategoryRow} ${styles.animateInLeft}`}
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <div className={styles.pushCategoryInfo}>
+                        <div className={styles.pushCategoryIcon}>
+                          <CategoryIcon size={20} />
+                        </div>
+                        <div className={styles.pushCategoryText}>
+                          <span className={styles.pushCategoryName}>
+                            {CATEGORY_LABELS[category]}
+                          </span>
+                          <span className={styles.pushCategoryDescription}>
+                            {PUSH_CATEGORY_DESCRIPTIONS[category]}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className={styles.pushCategoryActions}>
+                        <Switch
+                          checked={isEnabled && pushNotifications.preferences.enabled}
+                          onChange={() => pushNotifications.toggleCategory(category)}
+                          disabled={!pushNotifications.preferences.enabled}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={<Send size={14} />}
+                          onClick={() => handleTestPush(category)}
+                          disabled={
+                            !pushNotifications.preferences.enabled || !isEnabled
+                          }
+                        >
+                          Tester
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          )}
+        </Card>
 
         {/* ─── Alert Categories ─────────────────────────────────── */}
         <Card padding="lg" className={styles.sectionCard}>

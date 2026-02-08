@@ -73,6 +73,12 @@ const navSections: NavSection[] = [
     ],
   },
   {
+    label: 'Portails',
+    items: [
+      { label: 'Portail Proprietaire', path: '/owner-portal' },
+    ],
+  },
+  {
     label: 'Administration',
     items: [
       { label: 'Équipe', path: '/team' },
