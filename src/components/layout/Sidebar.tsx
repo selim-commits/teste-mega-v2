@@ -47,6 +47,7 @@ const navSections: NavSection[] = [
       { label: 'Synchroniser vos différents calendriers', path: '/calendar-sync' },
       { label: 'Paramètres de paiement', path: '/payments' },
       { label: 'Tarification', path: '/revenue' },
+      { label: 'Controle d\'acces', path: '/access-control' },
     ],
   },
   {
@@ -65,6 +66,7 @@ const navSections: NavSection[] = [
       { label: 'AI Console', path: '/ai' },
       { label: 'Messages', path: '/chat' },
       { label: 'Documentation API', path: '/api-docs' },
+      { label: 'Webhooks', path: '/webhooks' },
     ],
   },
   {

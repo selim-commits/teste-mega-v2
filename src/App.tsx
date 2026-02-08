@@ -37,7 +37,9 @@ const Revenue = lazy(() => import('./pages/Revenue').then(m => ({ default: m.Rev
 const ClientPortal = lazy(() => import('./pages/ClientPortal').then(m => ({ default: m.ClientPortal })));
 const PhotoGallery = lazy(() => import('./pages/PhotoGallery').then(m => ({ default: m.PhotoGallery })));
 const Reviews = lazy(() => import('./pages/Reviews').then(m => ({ default: m.Reviews })));
+const AccessControl = lazy(() => import('./pages/AccessControl').then(m => ({ default: m.AccessControl })));
 const ApiDocs = lazy(() => import('./pages/ApiDocs').then(m => ({ default: m.ApiDocs })));
+const Webhooks = lazy(() => import('./pages/Webhooks').then(m => ({ default: m.Webhooks })));
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 
 // Minimal loading fallback for page transitions
@@ -86,6 +88,7 @@ function App() {
                     <Route path="/calendar-sync" element={<CalendarSync />} />
                     <Route path="/payments" element={<Payments />} />
                     <Route path="/revenue" element={<Revenue />} />
+                    <Route path="/access-control" element={<AccessControl />} />
 
                     {/* Notifications */}
                     <Route path="/notifications/email" element={<EmailNotifications />} />
@@ -98,6 +101,7 @@ function App() {
                     <Route path="/ai" element={<AIConsole />} />
                     <Route path="/chat" element={<Chat />} />
                     <Route path="/api-docs" element={<ApiDocs />} />
+                    <Route path="/webhooks" element={<Webhooks />} />
 
                     {/* Autres */}
                     <Route path="/team" element={<Team />} />
