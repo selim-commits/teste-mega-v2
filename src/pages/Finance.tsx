@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import { useDebounce } from '../hooks/useDebounce';
+import { useCurrency, type CurrencyCode } from '../hooks/useCurrency';
 import {
   DollarSign,
   TrendingUp,
@@ -27,6 +28,7 @@ import { useFinanceStore } from '../stores/financeStore';
 import { useNotifications } from '../stores/uiStore';
 import type { Invoice, InvoiceStatus, InvoiceInsert, Client, PaymentInsert } from '../types/database';
 import { formatCurrency } from '../lib/utils';
+import { Select } from '../components/ui/Select';
 import { DEMO_STUDIO_ID as STUDIO_ID } from '../stores/authStore';
 import type { KpiItem } from './finance/types';
 
@@ -52,6 +54,10 @@ const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 
 const TVA_RATE = 0.20;
 
 export function Finance() {
+  // Currency
+  const { defaultCurrency, formatAmount: formatCurrencyAmount, currencyOptions, convertAmount: convertCurrency } = useCurrency();
+  const [displayCurrency, setDisplayCurrency] = useState<CurrencyCode>(defaultCurrency);
+
   // State
   const [period, setPeriod] = useState('month');
   const [statusFilter, setStatusFilter] = useState<InvoiceStatus | 'all'>('all');
@@ -119,6 +125,16 @@ export function Finance() {
   const cancelMutation = useCancelInvoice();
   const deleteMutation = useDeleteInvoice();
   const createPaymentMutation = useCreatePayment();
+
+  // ===== Currency formatting =====
+  const fmtCurrency = useCallback(
+    (amount: number) => {
+      if (displayCurrency === 'EUR') return formatCurrency(amount);
+      const converted = convertCurrency(amount, 'EUR', displayCurrency);
+      return formatCurrencyAmount(converted, displayCurrency);
+    },
+    [displayCurrency, convertCurrency, formatCurrencyAmount]
+  );
 
   // ===== Computed data =====
 
@@ -526,7 +542,7 @@ export function Finance() {
         await markAsPaidMutation.mutateAsync({ id: invoiceForPayment.id, paidAmount: newPaidAmount });
         showSuccess('Paiement enregistre', `La facture ${invoiceForPayment.invoice_number} a ete entierement payee`);
       } else {
-        showSuccess('Paiement enregistre', `Paiement de ${formatCurrency(paymentFormData.amount)} enregistre`);
+        showSuccess('Paiement enregistre', `Paiement de ${fmtCurrency(paymentFormData.amount)} enregistre`);
       }
 
       setIsPaymentModalOpen(false);
@@ -569,10 +585,21 @@ export function Finance() {
       <Header
         title="Finance & BI"
         subtitle="Analysez vos performances financieres"
+        actions={
+          <div style={{ minWidth: 220 }}>
+            <Select
+              options={currencyOptions}
+              value={displayCurrency}
+              onChange={(value) => setDisplayCurrency(value as CurrencyCode)}
+              size="sm"
+              placeholder="Devise"
+            />
+          </div>
+        }
       />
 
       <div className={styles.content}>
-        <FinanceOverview kpis={kpis} stats={stats} />
+        <FinanceOverview kpis={kpis} stats={stats} formatCurrency={fmtCurrency} />
 
         <RevenueChart
           revenueData={revenueData}

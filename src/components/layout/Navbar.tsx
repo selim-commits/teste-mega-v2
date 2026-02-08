@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LogOut, Settings, Users, User } from 'lucide-react';
+import { LogOut, Settings, Users, User, Sun, Moon, Monitor } from 'lucide-react';
 import { useAuthContext } from '../../contexts/AuthContext';
+import { useTheme } from '../../hooks/useTheme';
 import styles from './Navbar.module.css';
 
 interface NavbarProps {
@@ -13,6 +14,17 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
   const menuRef = useRef<HTMLDivElement>(null);
   const { user, signOut } = useAuthContext();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
+
+  const themeIcon =
+    theme === 'light' ? <Sun size={18} /> :
+    theme === 'dark' ? <Moon size={18} /> :
+    <Monitor size={18} />;
+
+  const themeLabel =
+    theme === 'light' ? 'Mode clair' :
+    theme === 'dark' ? 'Mode sombre' :
+    'Mode systeme';
 
   const userEmail = user?.email || '';
   const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || userEmail.split('@')[0];
@@ -55,8 +67,16 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
         <span className={styles.logo}>Rooom</span>
       </div>
 
-      {/* Right: avatar */}
+      {/* Right: theme toggle + avatar */}
       <div className={styles.right}>
+        <button
+          className={styles.themeToggle}
+          onClick={toggleTheme}
+          aria-label={themeLabel}
+          title={themeLabel}
+        >
+          {themeIcon}
+        </button>
         <div className={styles.avatarContainer} ref={menuRef}>
           <button
             className={styles.avatarBtn}

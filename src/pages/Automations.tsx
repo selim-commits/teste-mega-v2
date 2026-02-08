@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   Zap,
   Search,
@@ -31,6 +31,12 @@ import {
   Gift,
   Filter,
   Edit3,
+  Trash2,
+  Save,
+  GitBranch,
+  Timer,
+  Workflow,
+  Copy,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -46,7 +52,7 @@ import styles from './Automations.module.css';
 
 type AutomationStatus = 'active' | 'paused' | 'error';
 type AutomationCategory = 'reservation' | 'paiement' | 'communication' | 'tache';
-type PageTab = 'automations' | 'journeys';
+type PageTab = 'automations' | 'journeys' | 'builder';
 type JourneyChannel = 'email' | 'sms' | 'push';
 
 interface Automation {
@@ -97,6 +103,144 @@ interface GuestJourney {
   steps: JourneyStep[];
   active: boolean;
   lastModified: string;
+}
+
+// ===== Builder Types =====
+
+type WorkflowNodeType = 'trigger' | 'condition' | 'action' | 'delay';
+
+interface WorkflowNodeConfig {
+  label: string;
+  value: string;
+}
+
+interface WorkflowNode {
+  id: string;
+  type: WorkflowNodeType;
+  name: string;
+  icon: React.ElementType;
+  config: WorkflowNodeConfig[];
+}
+
+interface WorkflowData {
+  id: string;
+  name: string;
+  nodes: WorkflowNode[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// ===== Builder palette items =====
+
+interface PaletteItem {
+  type: WorkflowNodeType;
+  name: string;
+  description: string;
+  icon: React.ElementType;
+  defaultConfig: WorkflowNodeConfig[];
+}
+
+const triggerPaletteItems: PaletteItem[] = [
+  { type: 'trigger', name: 'Nouvelle reservation', description: 'Quand une reservation est creee', icon: CalendarCheck, defaultConfig: [{ label: 'Evenement', value: 'reservation.created' }] },
+  { type: 'trigger', name: 'Paiement recu', description: 'Quand un paiement est confirme', icon: CreditCard, defaultConfig: [{ label: 'Evenement', value: 'payment.received' }] },
+  { type: 'trigger', name: 'Client cree', description: 'Quand un nouveau client est cree', icon: UserPlus, defaultConfig: [{ label: 'Evenement', value: 'client.created' }] },
+  { type: 'trigger', name: 'Annulation', description: 'Quand une reservation est annulee', icon: XCircle, defaultConfig: [{ label: 'Evenement', value: 'reservation.cancelled' }] },
+];
+
+const conditionPaletteItems: PaletteItem[] = [
+  { type: 'condition', name: 'Si montant >', description: 'Verifie le montant de la transaction', icon: CreditCard, defaultConfig: [{ label: 'Montant minimum', value: '100' }] },
+  { type: 'condition', name: 'Si type de service =', description: 'Verifie le type de service reserve', icon: ClipboardList, defaultConfig: [{ label: 'Service', value: 'Studio photo' }] },
+  { type: 'condition', name: 'Si nouveau client', description: 'Verifie si c\'est un premier achat', icon: UserPlus, defaultConfig: [{ label: 'Condition', value: 'is_new_client' }] },
+  { type: 'condition', name: 'Si VIP', description: 'Verifie le statut VIP du client', icon: Star, defaultConfig: [{ label: 'Statut', value: 'vip' }] },
+];
+
+const actionPaletteItems: PaletteItem[] = [
+  { type: 'action', name: 'Envoyer email', description: 'Envoie un email au client', icon: Mail, defaultConfig: [{ label: 'Template', value: 'Confirmation' }] },
+  { type: 'action', name: 'Envoyer SMS', description: 'Envoie un SMS au client', icon: MessageSquare, defaultConfig: [{ label: 'Template', value: 'Rappel' }] },
+  { type: 'action', name: 'Creer tache', description: 'Cree une tache pour l\'equipe', icon: ClipboardList, defaultConfig: [{ label: 'Type', value: 'Suivi client' }] },
+  { type: 'action', name: 'Notifier equipe', description: 'Envoie une notification interne', icon: Bell, defaultConfig: [{ label: 'Canal', value: 'Notification push' }] },
+];
+
+const delayPaletteItems: PaletteItem[] = [
+  { type: 'delay', name: 'Attendre', description: 'Attend avant l\'etape suivante', icon: Timer, defaultConfig: [{ label: 'Duree', value: '30' }, { label: 'Unite', value: 'minutes' }] },
+];
+
+const allPaletteItems = [...triggerPaletteItems, ...conditionPaletteItems, ...actionPaletteItems, ...delayPaletteItems];
+
+// ===== Workflow Templates =====
+
+const WORKFLOW_STORAGE_KEY = 'rooom_automation_workflows';
+
+function createWorkflowTemplates(): WorkflowData[] {
+  return [
+    {
+      id: crypto.randomUUID(),
+      name: 'Confirmation de reservation',
+      nodes: [
+        { id: crypto.randomUUID(), type: 'trigger', name: 'Nouvelle reservation', icon: CalendarCheck, config: [{ label: 'Evenement', value: 'reservation.created' }] },
+        { id: crypto.randomUUID(), type: 'action', name: 'Envoyer email', icon: Mail, config: [{ label: 'Template', value: 'Email de confirmation' }] },
+      ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'Suivi client',
+      nodes: [
+        { id: crypto.randomUUID(), type: 'trigger', name: 'Nouvelle reservation', icon: CalendarCheck, config: [{ label: 'Evenement', value: 'reservation.created' }] },
+        { id: crypto.randomUUID(), type: 'delay', name: 'Attendre', icon: Timer, config: [{ label: 'Duree', value: '24' }, { label: 'Unite', value: 'heures' }] },
+        { id: crypto.randomUUID(), type: 'condition', name: 'Si nouveau client', icon: UserPlus, config: [{ label: 'Condition', value: 'is_new_client' }] },
+        { id: crypto.randomUUID(), type: 'action', name: 'Envoyer email', icon: Mail, config: [{ label: 'Template', value: 'Email de bienvenue' }] },
+      ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+    {
+      id: crypto.randomUUID(),
+      name: 'Alerte paiement',
+      nodes: [
+        { id: crypto.randomUUID(), type: 'trigger', name: 'Paiement recu', icon: CreditCard, config: [{ label: 'Evenement', value: 'payment.received' }] },
+        { id: crypto.randomUUID(), type: 'condition', name: 'Si montant >', icon: CreditCard, config: [{ label: 'Montant minimum', value: '500' }] },
+        { id: crypto.randomUUID(), type: 'action', name: 'Notifier equipe', icon: Bell, config: [{ label: 'Canal', value: 'Notification push' }] },
+      ],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
+  ];
+}
+
+function loadWorkflows(): WorkflowData[] {
+  try {
+    const saved = localStorage.getItem(WORKFLOW_STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved) as WorkflowData[];
+    }
+  } catch {
+    // Ignore
+  }
+  return createWorkflowTemplates();
+}
+
+function saveWorkflows(workflows: WorkflowData[]) {
+  try {
+    localStorage.setItem(WORKFLOW_STORAGE_KEY, JSON.stringify(workflows));
+  } catch {
+    // Ignore
+  }
+}
+
+function getNodeTypeLabel(type: WorkflowNodeType): string {
+  switch (type) {
+    case 'trigger': return 'Declencheur';
+    case 'condition': return 'Condition';
+    case 'action': return 'Action';
+    case 'delay': return 'Delai';
+  }
+}
+
+function getNodeIconForName(name: string, type: WorkflowNodeType): React.ElementType {
+  const item = allPaletteItems.find((p) => p.name === name && p.type === type);
+  return item?.icon ?? Zap;
 }
 
 // ===== Mock data - Automations =====
@@ -683,6 +827,16 @@ export function Automations() {
   const [editStepTemplate, setEditStepTemplate] = useState('');
   const [editStepCondition, setEditStepCondition] = useState('');
 
+  // Builder state
+  const [workflows, setWorkflows] = useState<WorkflowData[]>(loadWorkflows);
+  const [activeWorkflowId, setActiveWorkflowId] = useState<string | null>(null);
+  const [addNodeDropdownIndex, setAddNodeDropdownIndex] = useState<number | null>(null);
+  const [isNodeEditModalOpen, setIsNodeEditModalOpen] = useState(false);
+  const [editingNode, setEditingNode] = useState<WorkflowNode | null>(null);
+  const [editNodeName, setEditNodeName] = useState('');
+  const [editNodeConfig, setEditNodeConfig] = useState<WorkflowNodeConfig[]>([]);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const { success } = useNotifications();
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -909,6 +1063,194 @@ export function Automations() {
     return { activeSteps, emailCount, smsCount, pushCount, totalActive };
   }, [selectedJourney]);
 
+  // ===== Builder Derived State =====
+
+  const activeWorkflow = useMemo(
+    () => workflows.find((w) => w.id === activeWorkflowId) ?? null,
+    [workflows, activeWorkflowId]
+  );
+
+  // Close add-node dropdown on outside click
+  useEffect(() => {
+    if (addNodeDropdownIndex === null) return;
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setAddNodeDropdownIndex(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [addNodeDropdownIndex]);
+
+  // ===== Builder Handlers =====
+
+  const handleSelectWorkflow = useCallback((workflowId: string) => {
+    setActiveWorkflowId(workflowId);
+    setAddNodeDropdownIndex(null);
+  }, []);
+
+  const handleCreateWorkflow = useCallback(() => {
+    const newWorkflow: WorkflowData = {
+      id: crypto.randomUUID(),
+      name: 'Nouveau workflow',
+      nodes: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const updated = [...workflows, newWorkflow];
+    setWorkflows(updated);
+    saveWorkflows(updated);
+    setActiveWorkflowId(newWorkflow.id);
+    success('Workflow cree', newWorkflow.name);
+  }, [workflows, success]);
+
+  const handleDeleteWorkflow = useCallback(() => {
+    if (!activeWorkflowId) return;
+    const workflow = workflows.find((w) => w.id === activeWorkflowId);
+    const updated = workflows.filter((w) => w.id !== activeWorkflowId);
+    setWorkflows(updated);
+    saveWorkflows(updated);
+    setActiveWorkflowId(updated.length > 0 ? updated[0].id : null);
+    if (workflow) {
+      success('Workflow supprime', workflow.name);
+    }
+  }, [activeWorkflowId, workflows, success]);
+
+  const handleDuplicateWorkflow = useCallback(() => {
+    if (!activeWorkflow) return;
+    const duplicate: WorkflowData = {
+      id: crypto.randomUUID(),
+      name: `${activeWorkflow.name} (copie)`,
+      nodes: activeWorkflow.nodes.map((n) => ({
+        ...n,
+        id: crypto.randomUUID(),
+        config: n.config.map((c) => ({ ...c })),
+      })),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const updated = [...workflows, duplicate];
+    setWorkflows(updated);
+    saveWorkflows(updated);
+    setActiveWorkflowId(duplicate.id);
+    success('Workflow duplique', duplicate.name);
+  }, [activeWorkflow, workflows, success]);
+
+  const handleUpdateWorkflowName = useCallback((name: string) => {
+    if (!activeWorkflowId) return;
+    setWorkflows((prev) => {
+      const updated = prev.map((w) =>
+        w.id === activeWorkflowId
+          ? { ...w, name, updatedAt: new Date().toISOString() }
+          : w
+      );
+      saveWorkflows(updated);
+      return updated;
+    });
+  }, [activeWorkflowId]);
+
+  const handleAddNode = useCallback((paletteItem: PaletteItem, insertIndex: number) => {
+    if (!activeWorkflowId) return;
+    const newNode: WorkflowNode = {
+      id: crypto.randomUUID(),
+      type: paletteItem.type,
+      name: paletteItem.name,
+      icon: paletteItem.icon,
+      config: paletteItem.defaultConfig.map((c) => ({ ...c })),
+    };
+    setWorkflows((prev) => {
+      const updated = prev.map((w) => {
+        if (w.id !== activeWorkflowId) return w;
+        const newNodes = [...w.nodes];
+        newNodes.splice(insertIndex, 0, newNode);
+        return { ...w, nodes: newNodes, updatedAt: new Date().toISOString() };
+      });
+      saveWorkflows(updated);
+      return updated;
+    });
+    setAddNodeDropdownIndex(null);
+    success('Node ajoute', `${getNodeTypeLabel(paletteItem.type)}: ${paletteItem.name}`);
+  }, [activeWorkflowId, success]);
+
+  const handleAddNodeFromPalette = useCallback((paletteItem: PaletteItem) => {
+    if (!activeWorkflowId) return;
+    const insertIndex = activeWorkflow?.nodes.length ?? 0;
+    handleAddNode(paletteItem, insertIndex);
+  }, [activeWorkflowId, activeWorkflow, handleAddNode]);
+
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    if (!activeWorkflowId) return;
+    setWorkflows((prev) => {
+      const updated = prev.map((w) => {
+        if (w.id !== activeWorkflowId) return w;
+        return {
+          ...w,
+          nodes: w.nodes.filter((n) => n.id !== nodeId),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      saveWorkflows(updated);
+      return updated;
+    });
+    success('Node supprime', '');
+  }, [activeWorkflowId, success]);
+
+  const handleOpenEditNode = useCallback((node: WorkflowNode) => {
+    setEditingNode(node);
+    setEditNodeName(node.name);
+    setEditNodeConfig(node.config.map((c) => ({ ...c })));
+    setIsNodeEditModalOpen(true);
+  }, []);
+
+  const handleSaveNode = useCallback(() => {
+    if (!editingNode || !activeWorkflowId) return;
+    setWorkflows((prev) => {
+      const updated = prev.map((w) => {
+        if (w.id !== activeWorkflowId) return w;
+        return {
+          ...w,
+          nodes: w.nodes.map((n) => {
+            if (n.id !== editingNode.id) return n;
+            return {
+              ...n,
+              name: editNodeName.trim() || n.name,
+              icon: getNodeIconForName(editNodeName.trim() || n.name, n.type),
+              config: editNodeConfig,
+            };
+          }),
+          updatedAt: new Date().toISOString(),
+        };
+      });
+      saveWorkflows(updated);
+      return updated;
+    });
+    setIsNodeEditModalOpen(false);
+    setEditingNode(null);
+    success('Node modifie', editNodeName);
+  }, [editingNode, activeWorkflowId, editNodeName, editNodeConfig, success]);
+
+  const handleLoadTemplate = useCallback((template: WorkflowData) => {
+    const copy: WorkflowData = {
+      id: crypto.randomUUID(),
+      name: template.name,
+      nodes: template.nodes.map((n) => ({
+        ...n,
+        id: crypto.randomUUID(),
+        config: n.config.map((c) => ({ ...c })),
+      })),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const updated = [...workflows, copy];
+    setWorkflows(updated);
+    saveWorkflows(updated);
+    setActiveWorkflowId(copy.id);
+    success('Template charge', copy.name);
+  }, [workflows, success]);
+
+  // Pre-generate templates for display (not stored)
+  const builderTemplates = useMemo(() => createWorkflowTemplates(), []);
+
   // ===== Render =====
 
   return (
@@ -934,6 +1276,13 @@ export function Automations() {
           >
             <Users size={16} />
             Parcours invite
+          </button>
+          <button
+            className={`${styles.tab} ${activeTab === 'builder' ? styles.active : ''}`}
+            onClick={() => setActiveTab('builder')}
+          >
+            <Workflow size={16} />
+            Builder
           </button>
         </div>
 
@@ -1487,6 +1836,438 @@ export function Automations() {
             )}
           </>
         )}
+
+        {/* Tab: Builder */}
+        {activeTab === 'builder' && (
+          <>
+            {/* Builder Toolbar */}
+            <div className={styles.builderToolbar}>
+              <div className={styles.builderToolbarLeft}>
+                <select
+                  className={styles.workflowSelect}
+                  value={activeWorkflowId ?? ''}
+                  onChange={(e) => handleSelectWorkflow(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Selectionner un workflow...
+                  </option>
+                  {workflows.map((w) => (
+                    <option key={w.id} value={w.id}>
+                      {w.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className={styles.builderToolbarRight}>
+                {activeWorkflow && (
+                  <>
+                    <Button
+                      variant="ghost"
+                      icon={<Copy size={16} />}
+                      onClick={handleDuplicateWorkflow}
+                    >
+                      Dupliquer
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      icon={<Trash2 size={16} />}
+                      onClick={handleDeleteWorkflow}
+                    >
+                      Supprimer
+                    </Button>
+                  </>
+                )}
+                <Button
+                  variant="primary"
+                  icon={<Plus size={16} />}
+                  onClick={handleCreateWorkflow}
+                >
+                  Nouveau workflow
+                </Button>
+              </div>
+            </div>
+
+            {/* Info bar */}
+            {activeWorkflow && (
+              <div className={styles.workflowInfoBar}>
+                <span className={styles.workflowInfoItem}>
+                  <GitBranch size={14} />
+                  {activeWorkflow.nodes.length} node{activeWorkflow.nodes.length !== 1 ? 's' : ''}
+                </span>
+                <span className={styles.workflowInfoItem}>
+                  <Clock size={14} />
+                  Modifie {formatRelativeTime(activeWorkflow.updatedAt)}
+                </span>
+                <span className={styles.workflowInfoItem}>
+                  <Save size={14} />
+                  Sauvegarde auto (localStorage)
+                </span>
+              </div>
+            )}
+
+            <div className={styles.builderLayout}>
+              {/* Left Sidebar: Node Palette */}
+              <div className={styles.builderSidebar}>
+                <Card padding="md">
+                  <h4 className={styles.sectionTitle} style={{ marginBottom: 'var(--space-4)' }}>
+                    Palette de nodes
+                  </h4>
+
+                  {/* Triggers */}
+                  <div className={styles.paletteSection}>
+                    <span className={styles.paletteSectionTitle}>Declencheurs</span>
+                    {triggerPaletteItems.map((item) => (
+                      <button
+                        key={item.name}
+                        className={styles.paletteItem}
+                        onClick={() => handleAddNodeFromPalette(item)}
+                        disabled={!activeWorkflow}
+                      >
+                        <div className={`${styles.paletteItemIcon} ${styles.paletteItemIconTrigger}`}>
+                          <item.icon size={16} />
+                        </div>
+                        <div className={styles.paletteItemInfo}>
+                          <p className={styles.paletteItemName}>{item.name}</p>
+                          <p className={styles.paletteItemDesc}>{item.description}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Conditions */}
+                  <div className={styles.paletteSection}>
+                    <span className={styles.paletteSectionTitle}>Conditions</span>
+                    {conditionPaletteItems.map((item) => (
+                      <button
+                        key={item.name}
+                        className={styles.paletteItem}
+                        onClick={() => handleAddNodeFromPalette(item)}
+                        disabled={!activeWorkflow}
+                      >
+                        <div className={`${styles.paletteItemIcon} ${styles.paletteItemIconCondition}`}>
+                          <item.icon size={16} />
+                        </div>
+                        <div className={styles.paletteItemInfo}>
+                          <p className={styles.paletteItemName}>{item.name}</p>
+                          <p className={styles.paletteItemDesc}>{item.description}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Actions */}
+                  <div className={styles.paletteSection}>
+                    <span className={styles.paletteSectionTitle}>Actions</span>
+                    {actionPaletteItems.map((item) => (
+                      <button
+                        key={item.name}
+                        className={styles.paletteItem}
+                        onClick={() => handleAddNodeFromPalette(item)}
+                        disabled={!activeWorkflow}
+                      >
+                        <div className={`${styles.paletteItemIcon} ${styles.paletteItemIconAction}`}>
+                          <item.icon size={16} />
+                        </div>
+                        <div className={styles.paletteItemInfo}>
+                          <p className={styles.paletteItemName}>{item.name}</p>
+                          <p className={styles.paletteItemDesc}>{item.description}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Delays */}
+                  <div className={styles.paletteSection}>
+                    <span className={styles.paletteSectionTitle}>Delais</span>
+                    {delayPaletteItems.map((item) => (
+                      <button
+                        key={item.name}
+                        className={styles.paletteItem}
+                        onClick={() => handleAddNodeFromPalette(item)}
+                        disabled={!activeWorkflow}
+                      >
+                        <div className={`${styles.paletteItemIcon} ${styles.paletteItemIconDelay}`}>
+                          <item.icon size={16} />
+                        </div>
+                        <div className={styles.paletteItemInfo}>
+                          <p className={styles.paletteItemName}>{item.name}</p>
+                          <p className={styles.paletteItemDesc}>{item.description}</p>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </Card>
+
+                {/* Templates Quick Access */}
+                <Card padding="md">
+                  <h4 className={styles.sectionTitle} style={{ marginBottom: 'var(--space-4)' }}>
+                    Templates
+                  </h4>
+                  <div className={styles.templateQuickList}>
+                    {builderTemplates.map((template) => (
+                      <button
+                        key={template.id}
+                        className={styles.templateQuickItem}
+                        onClick={() => handleLoadTemplate(template)}
+                      >
+                        <Sparkles size={14} />
+                        {template.name}
+                        <span style={{ marginLeft: 'auto', color: 'var(--text-muted)' }}>
+                          {template.nodes.length} nodes
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </Card>
+              </div>
+
+              {/* Right: Canvas */}
+              <div className={styles.builderCanvas}>
+                {!activeWorkflow ? (
+                  <div className={styles.canvasEmpty}>
+                    <Workflow size={48} />
+                    <h3 className={styles.canvasEmptyTitle}>Aucun workflow selectionne</h3>
+                    <p className={styles.canvasEmptyDesc}>
+                      Selectionnez un workflow existant ou creez-en un nouveau pour commencer a construire votre automation visuelle.
+                    </p>
+                    <Button
+                      variant="primary"
+                      icon={<Plus size={16} />}
+                      onClick={handleCreateWorkflow}
+                    >
+                      Creer un workflow
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Workflow name */}
+                    <div className={styles.workflowNameRow}>
+                      <input
+                        type="text"
+                        className={styles.workflowNameInput}
+                        value={activeWorkflow.name}
+                        onChange={(e) => handleUpdateWorkflowName(e.target.value)}
+                        placeholder="Nom du workflow..."
+                      />
+                    </div>
+
+                    {/* Node list */}
+                    {activeWorkflow.nodes.length === 0 ? (
+                      <button
+                        className={styles.addFirstNodeBtn}
+                        onClick={() => setAddNodeDropdownIndex(0)}
+                      >
+                        <Plus size={16} />
+                        Ajouter le premier node
+                      </button>
+                    ) : (
+                      <div className={styles.nodeList}>
+                        {activeWorkflow.nodes.map((node, index) => {
+                          const NodeIcon = node.icon;
+                          const typeClass =
+                            node.type === 'trigger'
+                              ? styles.nodeTrigger
+                              : node.type === 'condition'
+                              ? styles.nodeCondition
+                              : node.type === 'action'
+                              ? styles.nodeAction
+                              : styles.nodeDelay;
+                          const iconClass =
+                            node.type === 'trigger'
+                              ? styles.nodeCardIconTrigger
+                              : node.type === 'condition'
+                              ? styles.nodeCardIconCondition
+                              : node.type === 'action'
+                              ? styles.nodeCardIconAction
+                              : styles.nodeCardIconDelay;
+                          const typeColorClass =
+                            node.type === 'trigger'
+                              ? styles.nodeCardTypeTrigger
+                              : node.type === 'condition'
+                              ? styles.nodeCardTypeCondition
+                              : node.type === 'action'
+                              ? styles.nodeCardTypeAction
+                              : styles.nodeCardTypeDelay;
+
+                          return (
+                            <div key={node.id}>
+                              {/* Node card */}
+                              <div className={`${styles.nodeCard} ${styles.animateIn}`} style={{ animationDelay: `${index * 40}ms` }}>
+                                <div className={`${styles.nodeCardInner} ${typeClass}`}>
+                                  <div className={`${styles.nodeCardIconWrap} ${iconClass}`}>
+                                    <NodeIcon size={18} />
+                                  </div>
+                                  <div className={styles.nodeCardContent}>
+                                    <p className={`${styles.nodeCardType} ${typeColorClass}`}>
+                                      {getNodeTypeLabel(node.type)}
+                                    </p>
+                                    <h4 className={styles.nodeCardTitle}>{node.name}</h4>
+                                    {node.config.length > 0 && (
+                                      <p className={styles.nodeCardConfig}>
+                                        {node.config.map((c) => `${c.label}: ${c.value}`).join(' | ')}
+                                      </p>
+                                    )}
+                                  </div>
+                                  <div className={styles.nodeCardActions}>
+                                    <button
+                                      className={styles.nodeEditBtn}
+                                      onClick={() => handleOpenEditNode(node)}
+                                      title="Modifier"
+                                    >
+                                      <Edit3 size={14} />
+                                    </button>
+                                    <button
+                                      className={styles.nodeDeleteBtn}
+                                      onClick={() => handleDeleteNode(node.id)}
+                                      title="Supprimer"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Connector + add button */}
+                              <div className={styles.nodeConnector} style={{ position: 'relative' }}>
+                                <div className={styles.nodeConnectorLine} />
+                                <button
+                                  className={styles.addNodeBtn}
+                                  onClick={() => setAddNodeDropdownIndex(index + 1)}
+                                  title="Ajouter un node"
+                                >
+                                  <Plus size={14} />
+                                </button>
+                                <div className={styles.nodeConnectorLine} />
+
+                                {/* Dropdown */}
+                                {addNodeDropdownIndex === index + 1 && (
+                                  <div className={styles.addNodeDropdown} ref={dropdownRef}>
+                                    <span className={styles.addNodeSectionLabel}>Declencheurs</span>
+                                    {triggerPaletteItems.map((item) => (
+                                      <button
+                                        key={item.name}
+                                        className={styles.addNodeDropdownItem}
+                                        onClick={() => handleAddNode(item, index + 1)}
+                                      >
+                                        <div className={`${styles.addNodeDropdownIcon} ${styles.paletteItemIconTrigger}`}>
+                                          <item.icon size={12} />
+                                        </div>
+                                        {item.name}
+                                      </button>
+                                    ))}
+                                    <span className={styles.addNodeSectionLabel}>Conditions</span>
+                                    {conditionPaletteItems.map((item) => (
+                                      <button
+                                        key={item.name}
+                                        className={styles.addNodeDropdownItem}
+                                        onClick={() => handleAddNode(item, index + 1)}
+                                      >
+                                        <div className={`${styles.addNodeDropdownIcon} ${styles.paletteItemIconCondition}`}>
+                                          <item.icon size={12} />
+                                        </div>
+                                        {item.name}
+                                      </button>
+                                    ))}
+                                    <span className={styles.addNodeSectionLabel}>Actions</span>
+                                    {actionPaletteItems.map((item) => (
+                                      <button
+                                        key={item.name}
+                                        className={styles.addNodeDropdownItem}
+                                        onClick={() => handleAddNode(item, index + 1)}
+                                      >
+                                        <div className={`${styles.addNodeDropdownIcon} ${styles.paletteItemIconAction}`}>
+                                          <item.icon size={12} />
+                                        </div>
+                                        {item.name}
+                                      </button>
+                                    ))}
+                                    <span className={styles.addNodeSectionLabel}>Delais</span>
+                                    {delayPaletteItems.map((item) => (
+                                      <button
+                                        key={item.name}
+                                        className={styles.addNodeDropdownItem}
+                                        onClick={() => handleAddNode(item, index + 1)}
+                                      >
+                                        <div className={`${styles.addNodeDropdownIcon} ${styles.paletteItemIconDelay}`}>
+                                          <item.icon size={12} />
+                                        </div>
+                                        {item.name}
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Add node dropdown for position 0 (when list has nodes but we want to add at start) */}
+                    {activeWorkflow.nodes.length === 0 && addNodeDropdownIndex === 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'center', position: 'relative' }}>
+                        <div className={styles.addNodeDropdown} ref={dropdownRef}>
+                          <span className={styles.addNodeSectionLabel}>Declencheurs</span>
+                          {triggerPaletteItems.map((item) => (
+                            <button
+                              key={item.name}
+                              className={styles.addNodeDropdownItem}
+                              onClick={() => handleAddNode(item, 0)}
+                            >
+                              <div className={`${styles.addNodeDropdownIcon} ${styles.paletteItemIconTrigger}`}>
+                                <item.icon size={12} />
+                              </div>
+                              {item.name}
+                            </button>
+                          ))}
+                          <span className={styles.addNodeSectionLabel}>Conditions</span>
+                          {conditionPaletteItems.map((item) => (
+                            <button
+                              key={item.name}
+                              className={styles.addNodeDropdownItem}
+                              onClick={() => handleAddNode(item, 0)}
+                            >
+                              <div className={`${styles.addNodeDropdownIcon} ${styles.paletteItemIconCondition}`}>
+                                <item.icon size={12} />
+                              </div>
+                              {item.name}
+                            </button>
+                          ))}
+                          <span className={styles.addNodeSectionLabel}>Actions</span>
+                          {actionPaletteItems.map((item) => (
+                            <button
+                              key={item.name}
+                              className={styles.addNodeDropdownItem}
+                              onClick={() => handleAddNode(item, 0)}
+                            >
+                              <div className={`${styles.addNodeDropdownIcon} ${styles.paletteItemIconAction}`}>
+                                <item.icon size={12} />
+                              </div>
+                              {item.name}
+                            </button>
+                          ))}
+                          <span className={styles.addNodeSectionLabel}>Delais</span>
+                          {delayPaletteItems.map((item) => (
+                            <button
+                              key={item.name}
+                              className={styles.addNodeDropdownItem}
+                              onClick={() => handleAddNode(item, 0)}
+                            >
+                              <div className={`${styles.addNodeDropdownIcon} ${styles.paletteItemIconDelay}`}>
+                                <item.icon size={12} />
+                              </div>
+                              {item.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Create Automation Modal */}
@@ -1679,6 +2460,62 @@ export function Automations() {
             icon={<CheckCircle size={16} />}
             onClick={handleSaveStep}
             disabled={!editStepName.trim()}
+          >
+            Enregistrer
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Edit Node Modal (Builder) */}
+      <Modal
+        isOpen={isNodeEditModalOpen}
+        onClose={() => setIsNodeEditModalOpen(false)}
+        size="md"
+      >
+        <ModalHeader
+          title="Modifier le node"
+          subtitle={editingNode ? getNodeTypeLabel(editingNode.type) : ''}
+          onClose={() => setIsNodeEditModalOpen(false)}
+        />
+        <ModalBody>
+          <div className={styles.formGroup}>
+            <label htmlFor="node-name" className={styles.formLabel}>Nom</label>
+            <input
+              id="node-name"
+              type="text"
+              className={styles.formInput}
+              value={editNodeName}
+              onChange={(e) => setEditNodeName(e.target.value)}
+            />
+          </div>
+
+          {editNodeConfig.map((config, idx) => (
+            <div key={idx} className={styles.formGroup}>
+              <label htmlFor={`node-config-${idx}`} className={styles.formLabel}>{config.label}</label>
+              <input
+                id={`node-config-${idx}`}
+                type="text"
+                className={styles.formInput}
+                value={config.value}
+                onChange={(e) => {
+                  const updated = editNodeConfig.map((c, i) =>
+                    i === idx ? { ...c, value: e.target.value } : c
+                  );
+                  setEditNodeConfig(updated);
+                }}
+              />
+            </div>
+          ))}
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="ghost" onClick={() => setIsNodeEditModalOpen(false)}>
+            Annuler
+          </Button>
+          <Button
+            variant="primary"
+            icon={<CheckCircle size={16} />}
+            onClick={handleSaveNode}
+            disabled={!editNodeName.trim()}
           >
             Enregistrer
           </Button>

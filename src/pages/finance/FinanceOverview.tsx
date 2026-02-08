@@ -2,18 +2,20 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '../../components/ui/Card';
-import { formatCurrency } from '../../lib/utils';
+import { formatCurrency as defaultFormatCurrency } from '../../lib/utils';
 import type { KpiItem, FinanceStats } from './types';
 import styles from '../Finance.module.css';
 
 interface FinanceOverviewProps {
   kpis: KpiItem[];
   stats: FinanceStats;
+  formatCurrency?: (amount: number) => string;
 }
 
 export const FinanceOverview = memo(function FinanceOverview({
   kpis,
   stats,
+  formatCurrency = defaultFormatCurrency,
 }: FinanceOverviewProps) {
   return (
     <>

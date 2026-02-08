@@ -11,6 +11,7 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Badge } from '../../components/ui/Badge';
 import { useNotifications } from '../../stores/uiStore';
+import { useCurrency, formatAmount, EXCHANGE_RATES, type CurrencyCode } from '../../hooks/useCurrency';
 import type { BillingSettingsData } from './types';
 import { defaultBillingSettings } from './types';
 import styles from '../Settings.module.css';
@@ -61,6 +62,14 @@ interface BillingSectionProps {
 
 export function BillingSection({ studioId: _studioId }: BillingSectionProps) {
   const { success, error: notifyError, info } = useNotifications();
+  const {
+    defaultCurrency,
+    showConversion,
+    setDefaultCurrency,
+    setShowConversion,
+    currencyOptions,
+    supportedCurrencies,
+  } = useCurrency();
   const [settings, setSettings] = useState<BillingSettingsData>(() => {
     return loadFromStorage() || defaultBillingSettings;
   });
@@ -115,6 +124,99 @@ export function BillingSection({ studioId: _studioId }: BillingSectionProps) {
             Gerez votre abonnement et vos informations de facturation
           </p>
         </div>
+
+        {/* Currency Settings */}
+        <Card padding="lg" className={styles.formCard}>
+          <h3 className={styles.subsectionTitle}>Devise</h3>
+          <p className={styles.subsectionDescription}>
+            Configurez la devise par defaut pour vos factures et tarifs
+          </p>
+
+          <Select
+            label="Devise par defaut"
+            options={currencyOptions}
+            value={defaultCurrency}
+            onChange={(value) => {
+              setDefaultCurrency(value as CurrencyCode);
+              success('Devise mise a jour', `La devise par defaut est maintenant ${value}`);
+            }}
+            fullWidth
+          />
+
+          <div className={styles.formGroup}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <span className={styles.label}>Afficher le taux de conversion</span>
+                <p className={styles.hint} style={{ margin: 0 }}>
+                  Affiche les montants convertis a cote des montants originaux
+                </p>
+              </div>
+              <label className={styles.toggle}>
+                <input
+                  type="checkbox"
+                  checked={showConversion}
+                  onChange={(e) => setShowConversion(e.target.checked)}
+                />
+                <span className={styles.toggleSlider} />
+              </label>
+            </div>
+          </div>
+
+          <div className={styles.formGroup}>
+            <span className={styles.label}>Taux de change (base EUR)</span>
+            <p className={styles.hint} style={{ marginTop: 0 }}>
+              Taux fixes utilises pour les conversions
+            </p>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+              gap: 'var(--space-3)',
+              marginTop: 'var(--space-2)',
+            }}>
+              {supportedCurrencies.map((currency) => (
+                <div
+                  key={currency.code}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: 'var(--space-3) var(--space-4)',
+                    backgroundColor: currency.code === defaultCurrency ? 'var(--accent-primary-light)' : 'var(--bg-secondary)',
+                    borderRadius: 'var(--radius-lg)',
+                    border: currency.code === defaultCurrency ? '1px solid var(--accent-primary)' : '1px solid var(--border-subtle)',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+                    <span style={{
+                      fontWeight: 600,
+                      fontSize: 'var(--text-sm)',
+                      color: 'var(--text-primary)',
+                    }}>
+                      {currency.symbol}
+                    </span>
+                    <span style={{
+                      fontSize: 'var(--text-sm)',
+                      color: 'var(--text-secondary)',
+                    }}>
+                      {currency.code}
+                    </span>
+                  </div>
+                  <span style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: 'var(--text-sm)',
+                    color: 'var(--text-primary)',
+                    fontWeight: 500,
+                  }}>
+                    {EXCHANGE_RATES[currency.code].toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p className={styles.hint}>
+              Exemple : {formatAmount(100, 'EUR')} = {formatAmount(100 * EXCHANGE_RATES[defaultCurrency], defaultCurrency)}
+            </p>
+          </div>
+        </Card>
 
         {/* Current Plan */}
         <Card padding="lg" className={styles.formCard}>

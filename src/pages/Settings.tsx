@@ -7,6 +7,7 @@ import {
   CalendarCog,
   Plug,
   ShieldX,
+  Palette,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
@@ -20,11 +21,13 @@ import { NotificationsSection } from './settings/NotificationsSection';
 import { IntegrationsSection } from './settings/IntegrationsSection';
 import { BillingSection } from './settings/BillingSection';
 import { CancellationPolicySection } from './settings/CancellationPolicySection';
+import { AppearanceSection } from './settings/AppearanceSection';
 import styles from './Settings.module.css';
 
 // Settings tabs configuration
 const settingsTabs = [
   { id: 'profile', label: 'Profil Studio', icon: Building2 },
+  { id: 'appearance', label: 'Apparence', icon: Palette },
   { id: 'hours', label: 'Horaires', icon: Clock },
   { id: 'booking', label: 'Reservations', icon: CalendarCog },
   { id: 'cancellation', label: 'Annulations', icon: ShieldX },
@@ -59,6 +62,9 @@ export function Settings() {
           <div className={styles.tabsContent}>
             <TabsContent value="profile">
               <StudioProfileSection studioId={studioId} />
+            </TabsContent>
+            <TabsContent value="appearance">
+              <AppearanceSection />
             </TabsContent>
             <TabsContent value="hours">
               <BusinessHoursSection studioId={studioId} />

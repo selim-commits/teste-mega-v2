@@ -3,10 +3,14 @@ import { Outlet } from 'react-router-dom';
 import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import { InstallPrompt } from '../ui/InstallPrompt';
+import { useTheme } from '../../hooks/useTheme';
 import styles from './AppLayout.module.css';
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Initialize theme and listen for system preference changes
+  useTheme();
 
   return (
     <div className={styles.layout}>

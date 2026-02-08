@@ -127,19 +127,17 @@ export const useUIStore = create<UIState>()(
       // Theme actions
       setTheme: (theme) => {
         set({ theme });
-        // Apply theme to document
+        // Apply theme to document via data-theme attribute
         if (typeof document !== 'undefined') {
           const root = document.documentElement;
-          root.classList.remove('light', 'dark');
 
-          if (theme === 'system') {
-            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)')
-              .matches
-              ? 'dark'
-              : 'light';
-            root.classList.add(systemTheme);
+          if (theme === 'dark') {
+            root.setAttribute('data-theme', 'dark');
+          } else if (theme === 'light') {
+            root.setAttribute('data-theme', 'light');
           } else {
-            root.classList.add(theme);
+            // 'system' - remove attribute, let CSS @media handle it
+            root.removeAttribute('data-theme');
           }
         }
       },
