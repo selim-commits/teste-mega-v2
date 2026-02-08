@@ -18,6 +18,7 @@ import {
   Archive,
   DollarSign,
   Boxes,
+  MapPin,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -37,18 +38,24 @@ import {
   useRetireEquipment,
   useSetEquipmentForMaintenance,
 } from '../hooks/useEquipment';
-import { useEquipmentStore, selectFilteredEquipment } from '../stores/equipmentStore';
+import {
+  useEquipmentStore,
+  selectFilteredEquipment,
+  selectEquipmentCountsBySpace,
+} from '../stores/equipmentStore';
 import { DEMO_STUDIO_ID as STUDIO_ID } from '../stores/authStore';
+import { useActiveSpaces } from '../hooks/useSpaces';
 import type { Equipment, EquipmentInsert, EquipmentStatus } from '../types/database';
 import { EquipmentFormModal } from './inventory/EquipmentFormModal';
 import { DeleteEquipmentModal } from './inventory/DeleteEquipmentModal';
 import { QrCodeModal } from './inventory/QrCodeModal';
+import { BySpaceView } from './inventory/BySpaceView';
 import type { EquipmentFormData } from './inventory/types';
 import { statusOptions, conditionOptions, getCategoryIcon } from './inventory/types';
 import styles from './Inventory.module.css';
 
 export function Inventory() {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [viewMode, setViewMode] = useState<'grid' | 'list' | 'by-space'>('list');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 
@@ -70,6 +77,7 @@ export function Inventory() {
   // API hooks
   const { data: equipment, isLoading, refetch } = useEquipment({ studioId: STUDIO_ID });
   const { data: categoriesData } = useEquipmentCategories(STUDIO_ID);
+  const { data: spaces } = useActiveSpaces(STUDIO_ID);
 
   const createMutation = useCreateEquipment();
   const updateMutation = useUpdateEquipment();
@@ -139,6 +147,10 @@ export function Inventory() {
     setFilters({ category: categoryId === 'all' ? 'all' : categoryId });
   }, [setFilters]);
 
+  const handleSpaceFilter = useCallback((value: string) => {
+    setFilters({ space: value });
+  }, [setFilters]);
+
   const handleCreate = useCallback(async (formData: EquipmentFormData) => {
     const newEquipment: Omit<EquipmentInsert, 'id' | 'created_at' | 'updated_at'> = {
       studio_id: STUDIO_ID,
@@ -156,6 +168,7 @@ export function Inventory() {
       hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
       daily_rate: formData.daily_rate ? parseFloat(formData.daily_rate) : null,
       location: formData.location || null,
+      space_id: formData.space_id || null,
       image_url: formData.image_url || null,
       qr_code: `EQ-${crypto.randomUUID()}`,
     };
@@ -190,6 +203,7 @@ export function Inventory() {
           hourly_rate: formData.hourly_rate ? parseFloat(formData.hourly_rate) : null,
           daily_rate: formData.daily_rate ? parseFloat(formData.daily_rate) : null,
           location: formData.location || null,
+          space_id: formData.space_id || null,
           image_url: formData.image_url || null,
         },
       });
@@ -270,6 +284,7 @@ export function Inventory() {
       hourly_rate: item.hourly_rate?.toString() || '',
       daily_rate: item.daily_rate?.toString() || '',
       location: item.location || '',
+      space_id: item.space_id || '',
       image_url: item.image_url || '',
     });
     setShowEditModal(true);
@@ -327,6 +342,17 @@ export function Inventory() {
     if (condition >= 5) return 'var(--accent-yellow)';
     return 'var(--accent-red)';
   };
+
+  const getSpaceName = useCallback((spaceId: string | null) => {
+    if (!spaceId) return null;
+    const space = spaces?.find(s => s.id === spaceId);
+    return space?.name || null;
+  }, [spaces]);
+
+  // Equipment counts by space (for future use)
+  const equipmentCountsBySpace = useMemo(() => {
+    return selectEquipmentCountsBySpace(equipment || []);
+  }, [equipment]);
 
   const tableColumns = [
     {
@@ -394,6 +420,21 @@ export function Inventory() {
           <span style={{ color: getConditionColor(item.condition) }}>{item.condition}/10</span>
         </div>
       ),
+    },
+    {
+      key: 'space',
+      header: 'Espace',
+      render: (item: Equipment) => {
+        const spaceName = getSpaceName(item.space_id);
+        return spaceName ? (
+          <Badge variant="default" size="sm">
+            <MapPin size={12} />
+            {spaceName}
+          </Badge>
+        ) : (
+          <span className={styles.noSpace}>Non assigné</span>
+        );
+      },
     },
     {
       key: 'location',
@@ -535,14 +576,23 @@ export function Inventory() {
               <button
                 className={`${styles.viewBtn} ${viewMode === 'grid' ? styles.active : ''}`}
                 onClick={() => setViewMode('grid')}
+                title="Vue grille"
               >
                 <Grid3X3 size={16} />
               </button>
               <button
                 className={`${styles.viewBtn} ${viewMode === 'list' ? styles.active : ''}`}
                 onClick={() => setViewMode('list')}
+                title="Vue liste"
               >
                 <List size={16} />
+              </button>
+              <button
+                className={`${styles.viewBtn} ${viewMode === 'by-space' ? styles.active : ''}`}
+                onClick={() => setViewMode('by-space')}
+                title="Vue par espace"
+              >
+                <MapPin size={16} />
               </button>
             </div>
             <Button
@@ -582,6 +632,16 @@ export function Inventory() {
                 ]}
                 value={filters.category}
                 onChange={(v) => handleCategoryFilter(v)}
+              />
+              <Select
+                label="Espace"
+                options={[
+                  { value: 'all', label: 'Tous les espaces' },
+                  { value: 'unassigned', label: 'Non assignés' },
+                  ...(spaces || []).map((s) => ({ value: s.id, label: s.name })),
+                ]}
+                value={filters.space}
+                onChange={handleSpaceFilter}
               />
               <Select
                 label="Condition minimum"
@@ -628,6 +688,17 @@ export function Inventory() {
               />
             )}
           </>
+        ) : viewMode === 'by-space' ? (
+          <BySpaceView
+            isLoading={isLoading}
+            filteredEquipment={filteredEquipment}
+            spaces={spaces}
+            equipmentCountsBySpace={equipmentCountsBySpace}
+            getStatusBadge={getStatusBadge}
+            openEditModal={openEditModal}
+            openQrModal={openQrModal}
+            openDeleteModal={openDeleteModal}
+          />
         ) : (
           <div className={styles.itemsGrid}>
             {isLoading ? (
@@ -698,7 +769,14 @@ export function Inventory() {
                         <p className={styles.itemBrand}>{item.brand} {item.model}</p>
                       )}
                       <div className={styles.itemMeta}>
-                        <span className={styles.itemLocation}>{item.location || '-'}</span>
+                        {getSpaceName(item.space_id) ? (
+                          <Badge variant="default" size="sm">
+                            <MapPin size={12} />
+                            {getSpaceName(item.space_id)}
+                          </Badge>
+                        ) : (
+                          <span className={styles.itemLocation}>Non assigné</span>
+                        )}
                         {getStatusBadge(item.status)}
                       </div>
                       {(item.hourly_rate || item.daily_rate) && (

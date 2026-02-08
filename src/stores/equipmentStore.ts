@@ -6,6 +6,7 @@ interface EquipmentFilters {
   status: EquipmentStatus | 'all';
   category: string | 'all';
   location: string | 'all';
+  space: string | 'all';
   conditionMin: number;
   searchQuery: string;
 }
@@ -48,6 +49,7 @@ const defaultFilters: EquipmentFilters = {
   status: 'all',
   category: 'all',
   location: 'all',
+  space: 'all',
   conditionMin: 0,
   searchQuery: '',
 };
@@ -146,6 +148,14 @@ export const selectFilteredEquipment = (
     filtered = filtered.filter((e) => e.location === filters.location);
   }
 
+  if (filters.space !== 'all') {
+    if (filters.space === 'unassigned') {
+      filtered = filtered.filter((e) => !e.space_id);
+    } else {
+      filtered = filtered.filter((e) => e.space_id === filters.space);
+    }
+  }
+
   if (filters.conditionMin > 0) {
     filtered = filtered.filter((e) => e.condition >= filters.conditionMin);
   }
@@ -200,4 +210,28 @@ export const selectEquipmentValue = (equipment: Equipment[]): number => {
     (total, e) => total + (e.current_value || e.purchase_price || 0),
     0
   );
+};
+
+export const selectEquipmentBySpace = (
+  equipment: Equipment[],
+  spaceId: string | null
+): Equipment[] => {
+  if (spaceId === null) {
+    return equipment.filter((e) => !e.space_id);
+  }
+  return equipment.filter((e) => e.space_id === spaceId);
+};
+
+export const selectEquipmentCountsBySpace = (
+  equipment: Equipment[]
+): Record<string, number> => {
+  const counts: Record<string, number> = { unassigned: 0 };
+  equipment.forEach((e) => {
+    if (e.space_id) {
+      counts[e.space_id] = (counts[e.space_id] || 0) + 1;
+    } else {
+      counts.unassigned += 1;
+    }
+  });
+  return counts;
 };

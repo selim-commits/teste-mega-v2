@@ -25,6 +25,7 @@ export interface EquipmentFormData {
   daily_rate: string;
   location: string;
   image_url: string;
+  space_id: string;
 }
 
 export const defaultFormData: EquipmentFormData = {
@@ -43,6 +44,7 @@ export const defaultFormData: EquipmentFormData = {
   daily_rate: '',
   location: '',
   image_url: '',
+  space_id: '',
 };
 
 export const statusOptions = [

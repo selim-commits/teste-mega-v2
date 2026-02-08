@@ -2,6 +2,11 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   Plus,
   Calendar as CalendarIcon,
+  List,
+  Trash2,
+  FileDown,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import { format, addDays, startOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -11,11 +16,15 @@ import { Button } from '../components/ui/Button';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
+import { BulkActionBar } from '../components/ui/BulkActionBar';
+import type { BulkAction } from '../components/ui/BulkActionBar';
 import { useAuthStore } from '../stores/authStore';
-import { useBookings, useCreateBooking } from '../hooks/useBookings';
+import { useBookings, useCreateBooking, useUpdateBookingStatus, useDeleteBooking } from '../hooks/useBookings';
 import { useActiveSpaces } from '../hooks/useSpaces';
 import { useActiveClients } from '../hooks/useClients';
-import type { BookingStatus } from '../types/database';
+import { useBulkSelection } from '../hooks/useBulkSelection';
+import { useNotifications } from '../stores/uiStore';
+import type { BookingStatus, Booking } from '../types/database';
 
 // Import embed components
 import { Calendar } from '../embed/components/Calendar';
@@ -42,12 +51,16 @@ const initialFormData: BookingFormData = {
   notes: '',
 };
 
+type ViewMode = 'calendar' | 'list';
+
 export function Bookings() {
   const { studioId } = useAuthStore();
+  const [viewMode, setViewMode] = useState<ViewMode>('calendar');
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSpace, setSelectedSpace] = useState<string>('');
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [formData, setFormData] = useState<BookingFormData>(initialFormData);
   const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   const loadingSlotsTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -62,6 +75,21 @@ export function Bookings() {
   const { data: spaces = [] } = useActiveSpaces(studioId || '');
   const { data: clients = [] } = useActiveClients(studioId || '');
   const createBooking = useCreateBooking();
+  const updateBookingStatus = useUpdateBookingStatus();
+  const deleteBooking = useDeleteBooking();
+  const { success, error: showError } = useNotifications();
+
+  // Bulk selection
+  const {
+    toggleItem,
+    toggleAll,
+    clearSelection,
+    isSelected,
+    isAllSelected,
+    isIndeterminate,
+    selectedCount,
+    selectedItems,
+  } = useBulkSelection<Booking>(bookings);
 
   // Calendar date constraints
   const today = startOfDay(new Date());
@@ -169,6 +197,164 @@ export function Bookings() {
     }).length;
   }, [bookings, selectedSpace]);
 
+  // Handle bulk actions
+  const handleBulkDelete = useCallback(async () => {
+    if (selectedCount === 0) return;
+    setIsDeleteModalOpen(true);
+  }, [selectedCount]);
+
+  const confirmBulkDelete = useCallback(async () => {
+    try {
+      const deletePromises = selectedItems.map((booking) =>
+        deleteBooking.mutateAsync(booking.id)
+      );
+      await Promise.all(deletePromises);
+      success('Suppressions réussies', `${selectedCount} réservation(s) supprimée(s)`);
+      clearSelection();
+      setIsDeleteModalOpen(false);
+    } catch (err) {
+      showError('Erreur', 'Impossible de supprimer les réservations');
+    }
+  }, [selectedItems, selectedCount, deleteBooking, success, showError, clearSelection]);
+
+  const handleBulkStatusChange = useCallback(
+    async (status: BookingStatus) => {
+      if (selectedCount === 0) return;
+
+      try {
+        const updatePromises = selectedItems.map((booking) =>
+          updateBookingStatus.mutateAsync({ id: booking.id, status })
+        );
+        await Promise.all(updatePromises);
+
+        const statusLabels: Record<BookingStatus, string> = {
+          pending: 'en attente',
+          confirmed: 'confirmées',
+          in_progress: 'en cours',
+          completed: 'terminées',
+          cancelled: 'annulées',
+        };
+
+        success(
+          'Statuts mis à jour',
+          `${selectedCount} réservation(s) ${statusLabels[status]}`
+        );
+        clearSelection();
+      } catch (err) {
+        showError('Erreur', 'Impossible de mettre à jour les statuts');
+      }
+    },
+    [selectedItems, selectedCount, updateBookingStatus, success, showError, clearSelection]
+  );
+
+  const handleBulkExport = useCallback(() => {
+    if (selectedCount === 0) return;
+
+    // Generate CSV
+    const headers = ['ID', 'Titre', 'Client', 'Espace', 'Début', 'Fin', 'Statut'];
+    const rows = selectedItems.map((booking) => [
+      booking.id,
+      booking.title,
+      booking.client_id,
+      booking.space_id,
+      format(new Date(booking.start_time), 'dd/MM/yyyy HH:mm', { locale: fr }),
+      format(new Date(booking.end_time), 'dd/MM/yyyy HH:mm', { locale: fr }),
+      booking.status,
+    ]);
+
+    const csv = [
+      headers.join(','),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+    ].join('\n');
+
+    // Download
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute(
+      'download',
+      `reservations-${format(new Date(), 'yyyy-MM-dd', { locale: fr })}.csv`
+    );
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    success('Export réussi', `${selectedCount} réservation(s) exportée(s)`);
+  }, [selectedItems, selectedCount, success]);
+
+  // Bulk actions configuration
+  const bulkActions: BulkAction[] = [
+    {
+      id: 'confirm',
+      label: 'Confirmer',
+      icon: <CheckCircle size={16} />,
+      variant: 'primary',
+      onClick: () => handleBulkStatusChange('confirmed'),
+    },
+    {
+      id: 'cancel',
+      label: 'Annuler',
+      icon: <XCircle size={16} />,
+      variant: 'secondary',
+      onClick: () => handleBulkStatusChange('cancelled'),
+    },
+    {
+      id: 'export',
+      label: 'Exporter',
+      icon: <FileDown size={16} />,
+      variant: 'secondary',
+      onClick: handleBulkExport,
+    },
+    {
+      id: 'delete',
+      label: 'Supprimer',
+      icon: <Trash2 size={16} />,
+      variant: 'danger',
+      onClick: handleBulkDelete,
+    },
+  ];
+
+  // Get client and space names for display
+  const getClientName = useCallback(
+    (clientId: string) => {
+      const client = clients.find((c) => c.id === clientId);
+      return client?.name || 'Client inconnu';
+    },
+    [clients]
+  );
+
+  const getSpaceName = useCallback(
+    (spaceId: string) => {
+      const space = spaces.find((s) => s.id === spaceId);
+      return space?.name || 'Espace inconnu';
+    },
+    [spaces]
+  );
+
+  const getStatusLabel = (status: BookingStatus): string => {
+    const labels: Record<BookingStatus, string> = {
+      pending: 'En attente',
+      confirmed: 'Confirmée',
+      in_progress: 'En cours',
+      completed: 'Terminée',
+      cancelled: 'Annulée',
+    };
+    return labels[status];
+  };
+
+  const getStatusColor = (status: BookingStatus): string => {
+    const colors: Record<BookingStatus, string> = {
+      pending: '#F59E0B',
+      confirmed: '#22C55E',
+      in_progress: '#3B82F6',
+      completed: '#6B7280',
+      cancelled: '#EF4444',
+    };
+    return colors[status];
+  };
+
   return (
     <div className={styles.page}>
       {/* CSS Variables for embed components */}
@@ -187,6 +373,32 @@ export function Bookings() {
       <Header
         title="Reservations"
         subtitle="Gerez vos reservations et disponibilites"
+        actions={
+          <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+            <Button
+              variant={viewMode === 'calendar' ? 'primary' : 'ghost'}
+              size="sm"
+              onClick={() => {
+                setViewMode('calendar');
+                clearSelection();
+              }}
+            >
+              <CalendarIcon size={16} />
+              Calendrier
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'primary' : 'ghost'}
+              size="sm"
+              onClick={() => {
+                setViewMode('list');
+                clearSelection();
+              }}
+            >
+              <List size={16} />
+              Liste
+            </Button>
+          </div>
+        }
       />
 
       <div className={styles.content}>
@@ -233,9 +445,10 @@ export function Bookings() {
 
           {/* Main Content */}
           <main className={styles.main}>
-            <div className={`${styles.embedWrapper} ${styles.calendarSlotsGrid}`}>
-              {/* Calendar - using embed component */}
-              <Card className={styles.calendarCard}>
+            {viewMode === 'calendar' ? (
+              <div className={`${styles.embedWrapper} ${styles.calendarSlotsGrid}`}>
+                {/* Calendar - using embed component */}
+                <Card className={styles.calendarCard}>
                 <Calendar
                   selectedDate={selectedDate}
                   onSelectDate={handleSelectDate}
@@ -278,9 +491,115 @@ export function Bookings() {
                 )}
               </Card>
             </div>
+            ) : (
+              /* List View */
+              <Card>
+                <div className={styles.tableContainer}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th className={styles.checkboxCell}>
+                          <input
+                            type="checkbox"
+                            checked={isAllSelected}
+                            ref={(input) => {
+                              if (input) {
+                                input.indeterminate = isIndeterminate;
+                              }
+                            }}
+                            onChange={toggleAll}
+                            aria-label="Sélectionner tout"
+                          />
+                        </th>
+                        <th>Titre</th>
+                        <th>Client</th>
+                        <th>Espace</th>
+                        <th>Date & Heure</th>
+                        <th>Statut</th>
+                        <th>Montant</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bookings.length === 0 ? (
+                        <tr>
+                          <td colSpan={7} className={styles.emptyState}>
+                            <div className={styles.emptyStateContent}>
+                              <CalendarIcon size={48} strokeWidth={1} />
+                              <p>Aucune réservation</p>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        bookings.map((booking) => (
+                          <tr
+                            key={booking.id}
+                            className={isSelected(booking.id) ? styles.selectedRow : ''}
+                          >
+                            <td className={styles.checkboxCell}>
+                              <input
+                                type="checkbox"
+                                checked={isSelected(booking.id)}
+                                onChange={() => toggleItem(booking.id)}
+                                aria-label={`Sélectionner ${booking.title}`}
+                              />
+                            </td>
+                            <td className={styles.titleCell}>{booking.title}</td>
+                            <td>{getClientName(booking.client_id)}</td>
+                            <td>{getSpaceName(booking.space_id)}</td>
+                            <td>
+                              <div className={styles.dateTimeCell}>
+                                <span className={styles.date}>
+                                  {format(new Date(booking.start_time), 'dd/MM/yyyy', {
+                                    locale: fr,
+                                  })}
+                                </span>
+                                <span className={styles.time}>
+                                  {format(new Date(booking.start_time), 'HH:mm', {
+                                    locale: fr,
+                                  })}{' '}
+                                  -{' '}
+                                  {format(new Date(booking.end_time), 'HH:mm', {
+                                    locale: fr,
+                                  })}
+                                </span>
+                              </div>
+                            </td>
+                            <td>
+                              <span
+                                className={styles.statusBadge}
+                                style={{
+                                  backgroundColor: `${getStatusColor(booking.status)}15`,
+                                  color: getStatusColor(booking.status),
+                                }}
+                              >
+                                {getStatusLabel(booking.status)}
+                              </span>
+                            </td>
+                            <td className={styles.amountCell}>
+                              {new Intl.NumberFormat('fr-FR', {
+                                style: 'currency',
+                                currency: 'EUR',
+                              }).format(booking.total_amount || 0)}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )}
           </main>
         </div>
       </div>
+
+      {/* Bulk Action Bar */}
+      <BulkActionBar
+        selectedCount={selectedCount}
+        onClearSelection={clearSelection}
+        actions={bulkActions}
+        isVisible={viewMode === 'list'}
+      />
 
       {/* Booking Modal */}
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} size="md">
@@ -371,6 +690,32 @@ export function Bookings() {
             disabled={!formData.space_id || !formData.client_id || createBooking.isPending}
           >
             {createBooking.isPending ? 'Creation...' : 'Creer la reservation'}
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <Modal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} size="sm">
+        <ModalHeader
+          title="Confirmer la suppression"
+          onClose={() => setIsDeleteModalOpen(false)}
+        />
+        <ModalBody>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--text-secondary)' }}>
+            Êtes-vous sûr de vouloir supprimer {selectedCount} réservation(s) ?
+            Cette action est irréversible.
+          </p>
+        </ModalBody>
+        <ModalFooter>
+          <Button variant="ghost" onClick={() => setIsDeleteModalOpen(false)}>
+            Annuler
+          </Button>
+          <Button
+            variant="danger"
+            onClick={confirmBulkDelete}
+            disabled={deleteBooking.isPending}
+          >
+            {deleteBooking.isPending ? 'Suppression...' : 'Supprimer'}
           </Button>
         </ModalFooter>
       </Modal>

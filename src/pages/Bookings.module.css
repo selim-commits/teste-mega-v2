@@ -395,6 +395,136 @@
   gap: var(--space-3);
 }
 
+/* Table View Styles */
+.tableContainer {
+  overflow-x: auto;
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table thead tr {
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border-default);
+}
+
+.table th {
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--text-tertiary);
+}
+
+.table th:first-child {
+  border-top-left-radius: var(--radius-md);
+}
+
+.table th:last-child {
+  border-top-right-radius: var(--radius-md);
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.table tbody tr:hover {
+  background-color: var(--bg-hover);
+}
+
+.table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.table tbody tr.selectedRow {
+  background-color: var(--accent-primary-light);
+}
+
+.table td {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.checkboxCell {
+  width: 48px;
+  text-align: center;
+}
+
+.checkboxCell input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent-primary);
+}
+
+.titleCell {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.dateTimeCell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.date {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+}
+
+.time {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.amountCell {
+  font-weight: 500;
+  text-align: right;
+}
+
+.emptyState {
+  padding: 0 !important;
+}
+
+.emptyStateContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12);
+  color: var(--text-muted);
+  text-align: center;
+  gap: var(--space-3);
+}
+
+.emptyStateContent svg {
+  opacity: 0.5;
+}
+
+.emptyStateContent p {
+  font-size: var(--text-sm);
+}
+
 /* Mobile Styles */
 @media (max-width: 768px) {
   .content {

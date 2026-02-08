@@ -18,6 +18,9 @@ import {
   Trash2,
   Edit2,
   Eye,
+  Link2,
+  User,
+  X,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -46,7 +49,16 @@ interface Task {
   space: string;
   dueDate: string;
   recurring: boolean;
+  bookingId?: string;
   createdAt: string;
+}
+
+interface LinkedBooking {
+  id: string;
+  title: string;
+  clientName: string;
+  startTime: string;
+  endTime: string;
 }
 
 // Options
@@ -148,6 +160,50 @@ function formatDate(dateStr: string): string {
 
 // Mock data
 const today = new Date();
+
+// Mock bookings data for linking
+const mockLinkedBookings: LinkedBooking[] = [
+  {
+    id: 'booking-1',
+    title: 'Shooting Mode - Marie Dupont',
+    clientName: 'Marie Dupont',
+    startTime: new Date(today.getTime() + 7200000).toISOString(),
+    endTime: new Date(today.getTime() + 18000000).toISOString(),
+  },
+  {
+    id: 'booking-2',
+    title: 'Portrait Corporate - Jean Martin',
+    clientName: 'Jean Martin',
+    startTime: new Date(today.getTime() + 21600000).toISOString(),
+    endTime: new Date(today.getTime() + 28800000).toISOString(),
+  },
+  {
+    id: 'booking-3',
+    title: 'Tournage Promo - Pierre Leroy',
+    clientName: 'Pierre Leroy',
+    startTime: new Date(today.getTime() + 118800000).toISOString(),
+    endTime: new Date(today.getTime() + 136800000).toISOString(),
+  },
+  {
+    id: 'booking-4',
+    title: 'Fashion Week Prep - Claire Moreau',
+    clientName: 'Claire Moreau',
+    startTime: new Date(today.getTime() + 140400000).toISOString(),
+    endTime: new Date(today.getTime() + 158400000).toISOString(),
+  },
+];
+
+const bookingOptions = [
+  { value: '', label: 'Aucune reservation' },
+  ...mockLinkedBookings.map((booking) => ({
+    value: booking.id,
+    label: `${booking.clientName} - ${new Date(booking.startTime).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+    })}`,
+  })),
+];
+
 const mockTasks: Task[] = [
   {
     id: '1',
@@ -160,6 +216,7 @@ const mockTasks: Task[] = [
     space: 'Studio A - Cyclo',
     dueDate: today.toISOString().split('T')[0],
     recurring: false,
+    bookingId: 'booking-1',
     createdAt: new Date(today.getTime() - 86400000).toISOString(),
   },
   {
@@ -186,6 +243,7 @@ const mockTasks: Task[] = [
     space: 'Studio C - Green Screen',
     dueDate: new Date(today.getTime() + 86400000).toISOString().split('T')[0],
     recurring: false,
+    bookingId: 'booking-3',
     createdAt: new Date(today.getTime() - 86400000).toISOString(),
   },
   {
@@ -291,6 +349,7 @@ const initialFormState = {
   space: studioSpaces[0],
   dueDate: today.toISOString().split('T')[0],
   recurring: false,
+  bookingId: '',
 };
 
 export function Tasks() {
@@ -301,7 +360,9 @@ export function Tasks() {
   const [statusFilter, setStatusFilter] = useState<TaskStatus | 'all'>('all');
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | 'all'>('all');
   const [typeFilter, setTypeFilter] = useState<TaskType | 'all'>('all');
+  const [bookingFilter, setBookingFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(false);
+  const [expandedBookingId, setExpandedBookingId] = useState<string | null>(null);
 
   // Modal state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -338,8 +399,18 @@ export function Tasks() {
       result = result.filter((task) => task.type === typeFilter);
     }
 
+    if (bookingFilter !== 'all') {
+      if (bookingFilter === 'linked') {
+        result = result.filter((task) => task.bookingId);
+      } else if (bookingFilter === 'unlinked') {
+        result = result.filter((task) => !task.bookingId);
+      } else {
+        result = result.filter((task) => task.bookingId === bookingFilter);
+      }
+    }
+
     return result;
-  }, [tasks, debouncedSearch, statusFilter, priorityFilter, typeFilter]);
+  }, [tasks, debouncedSearch, statusFilter, priorityFilter, typeFilter, bookingFilter]);
 
   // Kanban columns
   const todoTasks = useMemo(() => filteredTasks.filter((t) => t.status === 'todo'), [filteredTasks]);
@@ -361,8 +432,9 @@ export function Tasks() {
       (t) => t.status === 'done' && new Date(t.createdAt) >= oneWeekAgo
     ).length;
     const activeTotal = tasks.filter((t) => t.status !== 'done').length;
+    const linkedCount = tasks.filter((t) => t.bookingId).length;
 
-    return { todayCount, overdueCount, completedThisWeek, activeTotal };
+    return { todayCount, overdueCount, completedThisWeek, activeTotal, linkedCount };
   }, [tasks]);
 
   // Handlers
@@ -413,6 +485,7 @@ export function Tasks() {
         space: formData.space,
         dueDate: formData.dueDate,
         recurring: formData.recurring,
+        bookingId: formData.bookingId || undefined,
         createdAt: new Date().toISOString(),
       };
 
@@ -429,7 +502,22 @@ export function Tasks() {
     setStatusFilter('all');
     setPriorityFilter('all');
     setTypeFilter('all');
+    setBookingFilter('all');
     setSearchQuery('');
+  }, []);
+
+  const getLinkedBooking = useCallback((bookingId?: string): LinkedBooking | null => {
+    if (!bookingId) return null;
+    return mockLinkedBookings.find((b) => b.id === bookingId) || null;
+  }, []);
+
+  const formatBookingDate = useCallback((dateStr: string): string => {
+    return new Date(dateStr).toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   }, []);
 
   // Render task card
@@ -442,6 +530,8 @@ export function Tasks() {
         : styles.taskCardLow;
 
     const taskIsOverdue = task.status !== 'done' && isOverdue(task.dueDate);
+    const linkedBooking = getLinkedBooking(task.bookingId);
+    const isBookingExpanded = expandedBookingId === task.bookingId;
 
     return (
       <motion.div
@@ -517,7 +607,64 @@ export function Tasks() {
             {task.recurring && (
               <Badge variant="default" size="sm">Recurrent</Badge>
             )}
+            {linkedBooking && (
+              <Badge variant="info" size="sm">
+                <Link2 size={12} style={{ marginRight: 'var(--space-1)' }} />
+                Lie
+              </Badge>
+            )}
           </div>
+
+          {linkedBooking && (
+            <div className={styles.taskBookingLink}>
+              <button
+                className={styles.bookingLinkButton}
+                onClick={() => setExpandedBookingId(isBookingExpanded ? null : task.bookingId!)}
+              >
+                <User size={12} />
+                <span>{linkedBooking.clientName}</span>
+                <span className={styles.bookingLinkDate}>
+                  {formatDate(linkedBooking.startTime.split('T')[0])}
+                </span>
+              </button>
+              <AnimatePresence>
+                {isBookingExpanded && (
+                  <motion.div
+                    className={styles.bookingDetail}
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className={styles.bookingDetailContent}>
+                      <div className={styles.bookingDetailHeader}>
+                        <span className={styles.bookingDetailTitle}>{linkedBooking.title}</span>
+                        <button
+                          className={styles.bookingDetailClose}
+                          onClick={() => setExpandedBookingId(null)}
+                          aria-label="Fermer"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                      <div className={styles.bookingDetailInfo}>
+                        <div className={styles.bookingDetailRow}>
+                          <Clock size={12} />
+                          <span>
+                            {formatBookingDate(linkedBooking.startTime)} -{' '}
+                            {new Date(linkedBooking.endTime).toLocaleTimeString('fr-FR', {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           <div className={styles.taskCardFooter}>
             <div className={styles.taskAssignee}>
@@ -562,18 +709,18 @@ export function Tasks() {
               bgColor: 'var(--state-error-bg)',
             },
             {
-              label: 'Completees cette semaine',
-              value: stats.completedThisWeek.toString(),
-              icon: CheckCircle2,
-              color: 'var(--state-success)',
-              bgColor: 'var(--state-success-bg)',
+              label: 'Liees a une reservation',
+              value: stats.linkedCount.toString(),
+              icon: Link2,
+              color: 'var(--accent-primary)',
+              bgColor: 'var(--accent-primary-light)',
             },
             {
               label: 'Total actives',
               value: stats.activeTotal.toString(),
               icon: ClipboardList,
-              color: 'var(--accent-primary)',
-              bgColor: 'var(--accent-primary-light)',
+              color: 'var(--state-success)',
+              bgColor: 'var(--state-success-bg)',
             },
           ].map((stat, index) => (
             <motion.div
@@ -659,6 +806,17 @@ export function Tasks() {
                   options={typeFilterOptions}
                   value={typeFilter}
                   onChange={(value) => setTypeFilter(value as TaskType | 'all')}
+                />
+                <Select
+                  label="Reservation"
+                  options={[
+                    { value: 'all', label: 'Toutes les reservations' },
+                    { value: 'linked', label: 'Avec reservation' },
+                    { value: 'unlinked', label: 'Sans reservation' },
+                    ...bookingOptions.filter((opt) => opt.value !== ''),
+                  ]}
+                  value={bookingFilter}
+                  onChange={(value) => setBookingFilter(value)}
                 />
                 <Button variant="ghost" size="sm" onClick={resetFilters}>
                   Reinitialiser
@@ -864,6 +1022,25 @@ export function Tasks() {
                   value={formData.dueDate}
                   onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                 />
+              </div>
+
+              {/* Booking Link */}
+              <div className={`${styles.formField} ${styles.formFullWidth}`}>
+                <label htmlFor="task-booking" className={styles.formLabel}>
+                  Reservation liee
+                </label>
+                <select
+                  id="task-booking"
+                  className={styles.formSelect}
+                  value={formData.bookingId}
+                  onChange={(e) => setFormData({ ...formData, bookingId: e.target.value })}
+                >
+                  {bookingOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Recurring toggle */}

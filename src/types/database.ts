@@ -304,6 +304,7 @@ export interface Database {
           status: EquipmentStatus
           condition: number
           location: string | null
+          space_id: string | null
           qr_code: string | null
           image_url: string | null
           notes: string | null
@@ -327,6 +328,7 @@ export interface Database {
           status?: EquipmentStatus
           condition?: number
           location?: string | null
+          space_id?: string | null
           qr_code?: string | null
           image_url?: string | null
           notes?: string | null
@@ -350,6 +352,7 @@ export interface Database {
           status?: EquipmentStatus
           condition?: number
           location?: string | null
+          space_id?: string | null
           qr_code?: string | null
           image_url?: string | null
           notes?: string | null

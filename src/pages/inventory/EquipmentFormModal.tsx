@@ -3,6 +3,8 @@ import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { Button } from '../../components/ui/Button';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from '../../components/ui/Modal';
+import { useActiveSpaces } from '../../hooks/useSpaces';
+import { DEMO_STUDIO_ID as STUDIO_ID } from '../../stores/authStore';
 import type { EquipmentFormData } from './types';
 import { defaultFormData, statusFormOptions, conditionOptions } from './types';
 import styles from '../Inventory.module.css';
@@ -28,6 +30,8 @@ export function EquipmentFormModal({
 }: EquipmentFormModalProps) {
   const [formData, setFormData] = useState<EquipmentFormData>(initialData || defaultFormData);
   const [formErrors, setFormErrors] = useState<Partial<EquipmentFormData>>({});
+
+  const { data: spaces } = useActiveSpaces(STUDIO_ID);
 
   const handleFormChange = useCallback((field: keyof EquipmentFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -107,6 +111,19 @@ export function EquipmentFormModal({
             options={conditionOptions}
             value={String(formData.condition)}
             onChange={(v) => handleFormChange('condition', v)}
+            fullWidth
+          />
+          <Select
+            label="Espace assigné"
+            options={[
+              { value: '', label: 'Non assigné' },
+              ...(spaces || []).map((space) => ({
+                value: space.id,
+                label: space.name,
+              })),
+            ]}
+            value={formData.space_id}
+            onChange={(v) => handleFormChange('space_id', v)}
             fullWidth
           />
           <Input
