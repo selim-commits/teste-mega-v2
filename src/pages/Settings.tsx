@@ -8,6 +8,7 @@ import {
   Plug,
   ShieldX,
   Palette,
+  Database,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
@@ -22,6 +23,7 @@ import { IntegrationsSection } from './settings/IntegrationsSection';
 import { BillingSection } from './settings/BillingSection';
 import { CancellationPolicySection } from './settings/CancellationPolicySection';
 import { AppearanceSection } from './settings/AppearanceSection';
+import { DataMigrationSection } from './settings/DataMigrationSection';
 import styles from './Settings.module.css';
 
 // Settings tabs configuration
@@ -34,6 +36,7 @@ const settingsTabs = [
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'integrations', label: 'Integrations', icon: Plug },
   { id: 'billing', label: 'Facturation', icon: CreditCard },
+  { id: 'data', label: 'Donnees', icon: Database },
 ];
 
 export function Settings() {
@@ -83,6 +86,9 @@ export function Settings() {
             </TabsContent>
             <TabsContent value="billing">
               <BillingSection studioId={studioId} />
+            </TabsContent>
+            <TabsContent value="data">
+              <DataMigrationSection />
             </TabsContent>
           </div>
         </Tabs>

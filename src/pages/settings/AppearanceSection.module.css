@@ -92,3 +92,16 @@
   background-color: var(--accent-primary);
   color: #FFFFFF;
 }
+
+/* Language Selector Grid */
+.localeGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-4);
+}
+
+@media (max-width: 700px) {
+  .localeGrid {
+    grid-template-columns: 1fr;
+  }
+}

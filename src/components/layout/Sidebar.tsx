@@ -2,15 +2,18 @@ import { useState, useRef, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useTranslation } from '../../hooks/useTranslation';
 import styles from './Sidebar.module.css';
 
 interface NavItem {
-  label: string;
+  /** i18n key under the `nav` namespace (e.g. `"dashboard"` -> `t("nav.dashboard")`) */
+  i18nKey: string;
   path: string;
 }
 
 interface NavSection {
-  label: string;
+  /** i18n key under the `nav` namespace for the section heading */
+  i18nKey: string;
   items: NavItem[];
 }
 
@@ -20,69 +23,70 @@ interface SidebarProps {
 }
 
 // Menu structure matching Acuity Scheduling
+// Labels are now i18n keys resolved at render time via t('nav.<key>')
 const navSections: NavSection[] = [
   {
-    label: 'Aperçu',
+    i18nKey: 'overview',
     items: [
-      { label: 'Tableau de bord', path: '/dashboard' },
-      { label: 'Calendrier', path: '/spaces' },
-      { label: 'Page Rendez-vous', path: '/bookings' },
-      { label: 'Clients', path: '/clients' },
-      { label: 'Portail Client', path: '/client-portal' },
-      { label: 'Verification d\'identite', path: '/identity-verification' },
-      { label: 'Avis & Notes', path: '/reviews' },
-      { label: 'Galerie Photos', path: '/photo-gallery' },
-      { label: 'Factures', path: '/finance' },
-      { label: 'Rapports', path: '/reports' },
-      { label: 'Benchmarking', path: '/benchmarking' },
+      { i18nKey: 'dashboard', path: '/dashboard' },
+      { i18nKey: 'calendar', path: '/spaces' },
+      { i18nKey: 'bookings', path: '/bookings' },
+      { i18nKey: 'clients', path: '/clients' },
+      { i18nKey: 'clientPortal', path: '/client-portal' },
+      { i18nKey: 'identityVerification', path: '/identity-verification' },
+      { i18nKey: 'reviews', path: '/reviews' },
+      { i18nKey: 'photoGallery', path: '/photo-gallery' },
+      { i18nKey: 'invoices', path: '/finance' },
+      { i18nKey: 'reports', path: '/reports' },
+      { i18nKey: 'benchmarking', path: '/benchmarking' },
     ],
   },
   {
-    label: 'Paramètres de l\'entreprise',
+    i18nKey: 'businessSettings',
     items: [
-      { label: 'Disponibilité', path: '/availability' },
-      { label: 'Types de rendez-vous', path: '/appointment-types' },
-      { label: 'Packs, cadeaux et abonnements', path: '/packs' },
-      { label: 'Inventaire', path: '/inventory' },
-      { label: 'Tâches', path: '/tasks' },
-      { label: 'Intégrations', path: '/integrations' },
-      { label: 'Synchroniser vos différents calendriers', path: '/calendar-sync' },
-      { label: 'Paramètres de paiement', path: '/payments' },
-      { label: 'Tarification', path: '/revenue' },
-      { label: 'Controle d\'acces', path: '/access-control' },
+      { i18nKey: 'availability', path: '/availability' },
+      { i18nKey: 'appointmentTypes', path: '/appointment-types' },
+      { i18nKey: 'packs', path: '/packs' },
+      { i18nKey: 'inventory', path: '/inventory' },
+      { i18nKey: 'tasks', path: '/tasks' },
+      { i18nKey: 'integrations', path: '/integrations' },
+      { i18nKey: 'calendarSync', path: '/calendar-sync' },
+      { i18nKey: 'paymentSettings', path: '/payments' },
+      { i18nKey: 'pricing', path: '/revenue' },
+      { i18nKey: 'accessControl', path: '/access-control' },
     ],
   },
   {
-    label: 'Notifications',
+    i18nKey: 'notifications',
     items: [
-      { label: 'E-mails client', path: '/notifications/email' },
-      { label: 'Text Messages client', path: '/notifications/sms' },
-      { label: 'Alertes relatives aux réservations', path: '/notifications/alerts' },
+      { i18nKey: 'clientEmails', path: '/notifications/email' },
+      { i18nKey: 'clientSms', path: '/notifications/sms' },
+      { i18nKey: 'bookingAlerts', path: '/notifications/alerts' },
     ],
   },
   {
-    label: 'Outils avancés',
+    i18nKey: 'advancedTools',
     items: [
-      { label: 'Widget Builder', path: '/widgets' },
-      { label: 'Automations', path: '/automations' },
-      { label: 'AI Console', path: '/ai' },
-      { label: 'AI Pricing', path: '/ai-pricing' },
-      { label: 'Messages', path: '/chat' },
-      { label: 'Documentation API', path: '/api-docs' },
-      { label: 'Webhooks', path: '/webhooks' },
+      { i18nKey: 'widgetBuilder', path: '/widgets' },
+      { i18nKey: 'automations', path: '/automations' },
+      { i18nKey: 'aiConsole', path: '/ai' },
+      { i18nKey: 'aiPricing', path: '/ai-pricing' },
+      { i18nKey: 'messages', path: '/chat' },
+      { i18nKey: 'apiDocs', path: '/api-docs' },
+      { i18nKey: 'webhooks', path: '/webhooks' },
     ],
   },
   {
-    label: 'Portails',
+    i18nKey: 'portals',
     items: [
-      { label: 'Portail Proprietaire', path: '/owner-portal' },
+      { i18nKey: 'ownerPortal', path: '/owner-portal' },
     ],
   },
   {
-    label: 'Administration',
+    i18nKey: 'administration',
     items: [
-      { label: 'Équipe', path: '/team' },
-      { label: 'Paramètres', path: '/settings' },
+      { i18nKey: 'team', path: '/team' },
+      { i18nKey: 'settings', path: '/settings' },
     ],
   },
 ];
@@ -257,6 +261,7 @@ function MiniCalendar() {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
+  const { t } = useTranslation();
 
   // Close sidebar on navigation (mobile)
   useEffect(() => {
@@ -289,8 +294,8 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <MiniCalendar />
 
           {navSections.map((section) => (
-            <div key={section.label} className={styles.navSection}>
-              <span className={styles.navLabel}>{section.label}</span>
+            <div key={section.i18nKey} className={styles.navSection}>
+              <span className={styles.navLabel}>{t(`nav.${section.i18nKey}`)}</span>
               <ul className={styles.navList}>
                 {section.items.map((item) => (
                   <li key={item.path}>
@@ -300,7 +305,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                         cn(styles.navItem, isActive && styles.active)
                       }
                     >
-                      {item.label}
+                      {t(`nav.${item.i18nKey}`)}
                     </NavLink>
                   </li>
                 ))}
