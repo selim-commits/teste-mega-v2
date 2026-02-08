@@ -31,6 +31,9 @@ const Payments = lazy(() => import('./pages/Payments').then(m => ({ default: m.P
 const EmailNotifications = lazy(() => import('./pages/EmailNotifications').then(m => ({ default: m.EmailNotifications })));
 const SMSNotifications = lazy(() => import('./pages/SMSNotifications').then(m => ({ default: m.SMSNotifications })));
 const AlertNotifications = lazy(() => import('./pages/AlertNotifications').then(m => ({ default: m.AlertNotifications })));
+const Tasks = lazy(() => import('./pages/Tasks').then(m => ({ default: m.Tasks })));
+const Automations = lazy(() => import('./pages/Automations').then(m => ({ default: m.Automations })));
+const Revenue = lazy(() => import('./pages/Revenue').then(m => ({ default: m.Revenue })));
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 
 // Minimal loading fallback for page transitions
@@ -70,10 +73,12 @@ function App() {
                     <Route path="/availability" element={<Availability />} />
                     <Route path="/appointment-types" element={<AppointmentTypes />} />
                     <Route path="/inventory" element={<Inventory />} />
+                    <Route path="/tasks" element={<Tasks />} />
                     <Route path="/packs" element={<Packs />} />
                     <Route path="/integrations" element={<Integrations />} />
                     <Route path="/calendar-sync" element={<CalendarSync />} />
                     <Route path="/payments" element={<Payments />} />
+                    <Route path="/revenue" element={<Revenue />} />
 
                     {/* Notifications */}
                     <Route path="/notifications/email" element={<EmailNotifications />} />
@@ -82,6 +87,7 @@ function App() {
 
                     {/* Outils avancés */}
                     <Route path="/widgets" element={<WidgetBuilder />} />
+                    <Route path="/automations" element={<Automations />} />
                     <Route path="/ai" element={<AIConsole />} />
                     <Route path="/chat" element={<Chat />} />
 

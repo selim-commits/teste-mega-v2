@@ -37,9 +37,12 @@ const navSections: NavSection[] = [
       { label: 'Disponibilité', path: '/availability' },
       { label: 'Types de rendez-vous', path: '/appointment-types' },
       { label: 'Packs, cadeaux et abonnements', path: '/packs' },
+      { label: 'Tâches', path: '/tasks' },
       { label: 'Intégrations', path: '/integrations' },
       { label: 'Synchroniser vos différents calendriers', path: '/calendar-sync' },
       { label: 'Paramètres de paiement', path: '/payments' },
+      { label: 'Tarification', path: '/revenue' },
+      { label: 'Automations', path: '/automations' },
     ],
   },
   {
