@@ -22,73 +22,73 @@ interface SidebarProps {
   onClose: () => void;
 }
 
-// Menu structure matching Acuity Scheduling
-// Labels are now i18n keys resolved at render time via t('nav.<key>')
+// ── Scrollable sections ──
 const navSections: NavSection[] = [
   {
-    i18nKey: 'overview',
+    i18nKey: 'daily',
     items: [
       { i18nKey: 'dashboard', path: '/dashboard' },
       { i18nKey: 'calendar', path: '/spaces' },
       { i18nKey: 'bookings', path: '/bookings' },
+      { i18nKey: 'messages', path: '/chat' },
+      { i18nKey: 'tasks', path: '/tasks' },
+    ],
+  },
+  {
+    i18nKey: 'clientsCrm',
+    items: [
       { i18nKey: 'clients', path: '/clients' },
       { i18nKey: 'clientPortal', path: '/client-portal' },
-      { i18nKey: 'identityVerification', path: '/identity-verification' },
       { i18nKey: 'reviews', path: '/reviews' },
+      { i18nKey: 'identityVerification', path: '/identity-verification' },
       { i18nKey: 'photoGallery', path: '/photo-gallery' },
+    ],
+  },
+  {
+    i18nKey: 'finances',
+    items: [
       { i18nKey: 'invoices', path: '/finance' },
       { i18nKey: 'reports', path: '/reports' },
       { i18nKey: 'benchmarking', path: '/benchmarking' },
+      { i18nKey: 'packs', path: '/packs' },
+      { i18nKey: 'ownerPortal', path: '/owner-portal' },
     ],
   },
   {
-    i18nKey: 'businessSettings',
+    i18nKey: 'operations',
     items: [
+      { i18nKey: 'inventory', path: '/inventory' },
+      { i18nKey: 'accessControl', path: '/access-control' },
       { i18nKey: 'availability', path: '/availability' },
       { i18nKey: 'appointmentTypes', path: '/appointment-types' },
-      { i18nKey: 'packs', path: '/packs' },
-      { i18nKey: 'inventory', path: '/inventory' },
-      { i18nKey: 'tasks', path: '/tasks' },
-      { i18nKey: 'integrations', path: '/integrations' },
       { i18nKey: 'calendarSync', path: '/calendar-sync' },
-      { i18nKey: 'paymentSettings', path: '/payments' },
-      { i18nKey: 'pricing', path: '/revenue' },
-      { i18nKey: 'accessControl', path: '/access-control' },
     ],
   },
   {
-    i18nKey: 'notifications',
-    items: [
-      { i18nKey: 'clientEmails', path: '/notifications/email' },
-      { i18nKey: 'clientSms', path: '/notifications/sms' },
-      { i18nKey: 'bookingAlerts', path: '/notifications/alerts' },
-    ],
-  },
-  {
-    i18nKey: 'advancedTools',
+    i18nKey: 'tools',
     items: [
       { i18nKey: 'widgetBuilder', path: '/widgets' },
       { i18nKey: 'automations', path: '/automations' },
       { i18nKey: 'aiConsole', path: '/ai' },
       { i18nKey: 'aiPricing', path: '/ai-pricing' },
-      { i18nKey: 'messages', path: '/chat' },
-      { i18nKey: 'apiDocs', path: '/api-docs' },
-      { i18nKey: 'webhooks', path: '/webhooks' },
+      { i18nKey: 'pricing', path: '/revenue' },
+      { i18nKey: 'paymentSettings', path: '/payments' },
+      { i18nKey: 'integrations', path: '/integrations' },
     ],
   },
-  {
-    i18nKey: 'portals',
-    items: [
-      { i18nKey: 'ownerPortal', path: '/owner-portal' },
-    ],
-  },
-  {
-    i18nKey: 'administration',
-    items: [
-      { i18nKey: 'team', path: '/team' },
-      { i18nKey: 'settings', path: '/settings' },
-    ],
-  },
+];
+
+// ── Notification sub-items (collapsible in pinned zone) ──
+const notificationItems: NavItem[] = [
+  { i18nKey: 'clientEmails', path: '/notifications/email' },
+  { i18nKey: 'clientSms', path: '/notifications/sms' },
+  { i18nKey: 'bookingAlerts', path: '/notifications/alerts' },
+];
+
+// ── Pinned items (fixed bottom zone, excluding notifications) ──
+const pinnedItems: NavItem[] = [
+  { i18nKey: 'team', path: '/team' },
+  { i18nKey: 'settings', path: '/settings' },
 ];
 
 // Calendar helpers
@@ -263,6 +263,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
   const { t } = useTranslation();
 
+  // Auto-expand notifications when on a notification route
+  const isOnNotificationRoute = location.pathname.startsWith('/notifications');
+  const [notificationsOpen, setNotificationsOpen] = useState(isOnNotificationRoute);
+
+  // Keep in sync when navigating to/from notification routes
+  useEffect(() => {
+    if (isOnNotificationRoute) setNotificationsOpen(true);
+  }, [isOnNotificationRoute]);
+
   // Close sidebar on navigation (mobile)
   useEffect(() => {
     if (isOpen) {
@@ -313,6 +322,51 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
           ))}
         </nav>
+
+        {/* Fixed bottom zone */}
+        <div className={styles.pinnedSection}>
+          {/* Collapsible Notifications */}
+          <button
+            className={cn(styles.collapsibleBtn, isOnNotificationRoute && styles.collapsibleBtnActive)}
+            onClick={() => setNotificationsOpen(!notificationsOpen)}
+            aria-expanded={notificationsOpen}
+          >
+            <span>{t('nav.notifications')}</span>
+            <ChevronDown
+              size={16}
+              className={cn(styles.chevronIcon, notificationsOpen && styles.chevronOpen)}
+            />
+          </button>
+          {notificationsOpen && (
+            <ul className={styles.subList}>
+              {notificationItems.map((item) => (
+                <li key={item.path}>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) =>
+                      cn(styles.navItem, styles.subItem, isActive && styles.active)
+                    }
+                  >
+                    {t(`nav.${item.i18nKey}`)}
+                  </NavLink>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {/* Pinned links */}
+          {pinnedItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                cn(styles.navItem, isActive && styles.active)
+              }
+            >
+              {t(`nav.${item.i18nKey}`)}
+            </NavLink>
+          ))}
+        </div>
       </aside>
     </>
   );

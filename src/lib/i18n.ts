@@ -53,50 +53,49 @@ const fr: TranslationDictionary = {
   },
   nav: {
     // Sections
-    overview: 'Apercu',
-    businessSettings: "Parametres de l'entreprise",
+    daily: 'Quotidien',
+    clientsCrm: 'Clients & CRM',
+    finances: 'Finances',
+    operations: 'Espaces & Operations',
+    tools: 'Outils',
     notifications: 'Notifications',
-    advancedTools: 'Outils avances',
-    portals: 'Portails',
-    administration: 'Administration',
-    // Items - Apercu
+    // Items - Quotidien
     dashboard: 'Tableau de bord',
     calendar: 'Calendrier',
-    bookings: 'Page Rendez-vous',
+    bookings: 'Rendez-vous',
+    messages: 'Messages',
+    tasks: 'Taches',
+    // Items - Clients & CRM
     clients: 'Clients',
     clientPortal: 'Portail Client',
-    identityVerification: "Verification d'identite",
     reviews: 'Avis & Notes',
+    identityVerification: 'Verification',
     photoGallery: 'Galerie Photos',
+    // Items - Finances
     invoices: 'Factures',
     reports: 'Rapports',
     benchmarking: 'Benchmarking',
-    // Items - Parametres de l'entreprise
-    availability: 'Disponibilite',
-    appointmentTypes: 'Types de rendez-vous',
-    packs: 'Packs, cadeaux et abonnements',
+    packs: 'Packs',
+    ownerPortal: 'Portail Proprietaire',
+    // Items - Espaces & Operations
     inventory: 'Inventaire',
-    tasks: 'Taches',
-    integrations: 'Integrations',
-    calendarSync: 'Synchroniser vos differents calendriers',
-    paymentSettings: 'Parametres de paiement',
-    pricing: 'Tarification',
     accessControl: "Controle d'acces",
-    // Items - Notifications
-    clientEmails: 'E-mails client',
-    clientSms: 'Text Messages client',
-    bookingAlerts: 'Alertes relatives aux reservations',
-    // Items - Outils avances
+    availability: 'Disponibilite',
+    appointmentTypes: 'Types de RDV',
+    calendarSync: 'Synchro Calendriers',
+    // Items - Outils
     widgetBuilder: 'Widget Builder',
     automations: 'Automations',
     aiConsole: 'AI Console',
     aiPricing: 'AI Pricing',
-    messages: 'Messages',
-    apiDocs: 'Documentation API',
-    webhooks: 'Webhooks',
-    // Items - Portails
-    ownerPortal: 'Portail Proprietaire',
-    // Items - Administration
+    pricing: 'Tarification',
+    paymentSettings: 'Paiements',
+    integrations: 'Integrations',
+    // Items - Notifications (sous-items)
+    clientEmails: 'E-mails',
+    clientSms: 'SMS',
+    bookingAlerts: 'Alertes',
+    // Items - Zone fixe
     team: 'Equipe',
     settings: 'Parametres',
   },
@@ -180,50 +179,49 @@ const en: TranslationDictionary = {
   },
   nav: {
     // Sections
-    overview: 'Overview',
-    businessSettings: 'Business Settings',
+    daily: 'Daily',
+    clientsCrm: 'Clients & CRM',
+    finances: 'Finances',
+    operations: 'Spaces & Operations',
+    tools: 'Tools',
     notifications: 'Notifications',
-    advancedTools: 'Advanced Tools',
-    portals: 'Portals',
-    administration: 'Administration',
-    // Items - Overview
+    // Items - Daily
     dashboard: 'Dashboard',
     calendar: 'Calendar',
     bookings: 'Appointments',
+    messages: 'Messages',
+    tasks: 'Tasks',
+    // Items - Clients & CRM
     clients: 'Clients',
     clientPortal: 'Client Portal',
-    identityVerification: 'Identity Verification',
     reviews: 'Reviews & Ratings',
+    identityVerification: 'Verification',
     photoGallery: 'Photo Gallery',
+    // Items - Finances
     invoices: 'Invoices',
     reports: 'Reports',
     benchmarking: 'Benchmarking',
-    // Items - Business Settings
+    packs: 'Packs',
+    ownerPortal: 'Owner Portal',
+    // Items - Spaces & Operations
+    inventory: 'Inventory',
+    accessControl: 'Access Control',
     availability: 'Availability',
     appointmentTypes: 'Appointment Types',
-    packs: 'Packs, gifts & subscriptions',
-    inventory: 'Inventory',
-    tasks: 'Tasks',
-    integrations: 'Integrations',
-    calendarSync: 'Sync your calendars',
-    paymentSettings: 'Payment Settings',
-    pricing: 'Pricing',
-    accessControl: 'Access Control',
-    // Items - Notifications
-    clientEmails: 'Client Emails',
-    clientSms: 'Client Text Messages',
-    bookingAlerts: 'Booking Alerts',
-    // Items - Advanced Tools
+    calendarSync: 'Calendar Sync',
+    // Items - Tools
     widgetBuilder: 'Widget Builder',
     automations: 'Automations',
     aiConsole: 'AI Console',
     aiPricing: 'AI Pricing',
-    messages: 'Messages',
-    apiDocs: 'API Documentation',
-    webhooks: 'Webhooks',
-    // Items - Portals
-    ownerPortal: 'Owner Portal',
-    // Items - Administration
+    pricing: 'Pricing',
+    paymentSettings: 'Payments',
+    integrations: 'Integrations',
+    // Items - Notifications (sub-items)
+    clientEmails: 'Emails',
+    clientSms: 'SMS',
+    bookingAlerts: 'Alerts',
+    // Items - Pinned
     team: 'Team',
     settings: 'Settings',
   },

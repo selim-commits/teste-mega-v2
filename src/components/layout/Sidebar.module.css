@@ -278,6 +278,65 @@
   text-underline-offset: 3px;
 }
 
+/* Pinned bottom section */
+.pinnedSection {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-default);
+  padding: var(--space-3) 0;
+}
+
+.collapsibleBtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-3) var(--space-6);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  font-weight: 400;
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast);
+  border-left: 3px solid transparent;
+  text-align: left;
+}
+
+.collapsibleBtn:hover {
+  background-color: var(--bg-secondary);
+}
+
+.collapsibleBtnActive {
+  border-left-color: var(--text-primary);
+}
+
+.chevronIcon {
+  transition: transform var(--duration-fast);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+}
+
+.subList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.subItem {
+  padding-left: var(--space-8) !important;
+  font-size: var(--text-sm) !important;
+  color: var(--text-secondary);
+}
+
+.subItem:hover {
+  color: var(--text-primary);
+}
+
 /* User Profile */
 .userProfile {
   display: flex;
@@ -441,5 +500,20 @@
 
   .userProfile {
     padding: var(--space-4) var(--space-5);
+  }
+
+  .collapsibleBtn {
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--text-lg);
+  }
+
+  .pinnedSection .navItem {
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--text-lg);
+  }
+
+  .subItem {
+    padding-left: var(--space-7) !important;
+    font-size: var(--text-base) !important;
   }
 }
