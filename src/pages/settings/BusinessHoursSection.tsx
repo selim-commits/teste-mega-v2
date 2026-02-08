@@ -3,7 +3,6 @@ import { Save } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
-import { DEMO_STUDIO_ID } from '../../stores/authStore';
 import {
   useSettings,
   useUpdateBusinessHours,
@@ -23,11 +22,15 @@ const dayLabels: Record<keyof BusinessHours, string> = {
   sunday: 'Dimanche',
 };
 
-export function BusinessHoursSection() {
+interface BusinessHoursSectionProps {
+  studioId: string;
+}
+
+export function BusinessHoursSection({ studioId }: BusinessHoursSectionProps) {
   const { addToast } = useToast();
   const [hours, setHours] = useState<BusinessHours>(defaultBusinessHours);
-  const { data: studioSettings } = useSettings(DEMO_STUDIO_ID);
-  const updateBusinessHours = useUpdateBusinessHours(DEMO_STUDIO_ID);
+  const { data: studioSettings } = useSettings(studioId);
+  const updateBusinessHours = useUpdateBusinessHours(studioId);
 
   // Sync form with fetched data (React recommended pattern for prop-driven state)
   const [prevStudioSettings, setPrevStudioSettings] = useState(studioSettings);

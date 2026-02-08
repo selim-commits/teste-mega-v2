@@ -51,14 +51,15 @@ function App() {
             <BrowserRouter>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
-                  {/* Auth pages (outside AuthGuard) */}
-                  <Route path="/login" element={<GuestGuard><Login /></GuestGuard>} />
+                  {/* Homepage / Landing page (visible to unauthenticated users) */}
+                  <Route path="/" element={<GuestGuard redirectTo="/dashboard"><Login /></GuestGuard>} />
+                  <Route path="/login" element={<Navigate to="/" replace />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/auth/reset-password" element={<AuthCallback />} />
 
                   <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
                     {/* Aperçu */}
-                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/spaces" element={<Calendar />} />
                     <Route path="/bookings" element={<Bookings />} />
                     <Route path="/clients" element={<Clients />} />
@@ -90,7 +91,7 @@ function App() {
                   </Route>
 
                   {/* Catch-all: redirect unknown routes to login */}
-                  <Route path="*" element={<Navigate to="/login" replace />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Suspense>
             </BrowserRouter>

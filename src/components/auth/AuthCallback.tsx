@@ -15,11 +15,11 @@ export function AuthCallback() {
     if (!initialized) return
 
     if (user) {
-      navigate('/', { replace: true })
+      navigate('/dashboard', { replace: true })
     } else {
-      // If no user after init, redirect to login
+      // If no user after init, redirect to homepage
       // (e.g. expired/invalid token)
-      navigate('/login', { replace: true })
+      navigate('/', { replace: true })
     }
   }, [user, initialized, navigate])
 

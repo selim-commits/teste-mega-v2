@@ -3,7 +3,6 @@ import { Save } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
-import { DEMO_STUDIO_ID } from '../../stores/authStore';
 import {
   useSettings,
   useUpdateNotificationSettings,
@@ -12,11 +11,15 @@ import type { NotificationSettings } from './types';
 import { defaultNotificationSettings } from './types';
 import styles from '../Settings.module.css';
 
-export function NotificationsSection() {
+interface NotificationsSectionProps {
+  studioId: string;
+}
+
+export function NotificationsSection({ studioId }: NotificationsSectionProps) {
   const { addToast } = useToast();
   const [settings, setSettings] = useState<NotificationSettings>(defaultNotificationSettings);
-  const { data: studioSettings } = useSettings(DEMO_STUDIO_ID);
-  const updateNotificationSettings = useUpdateNotificationSettings(DEMO_STUDIO_ID);
+  const { data: studioSettings } = useSettings(studioId);
+  const updateNotificationSettings = useUpdateNotificationSettings(studioId);
 
   // Sync form with fetched data (React recommended pattern for prop-driven state)
   const [prevStudioSettings, setPrevStudioSettings] = useState(studioSettings);

@@ -10,7 +10,6 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { useToast } from '../../components/ui/Toast';
-import { DEMO_STUDIO_ID } from '../../stores/authStore';
 import {
   useStudioSettings,
   useUpdateProfile,
@@ -20,13 +19,17 @@ import type { StudioProfile } from './types';
 import { defaultStudioProfile, generateSlug } from './types';
 import styles from '../Settings.module.css';
 
-export function StudioProfileSection() {
+interface StudioProfileSectionProps {
+  studioId: string;
+}
+
+export function StudioProfileSection({ studioId }: StudioProfileSectionProps) {
   const { addToast } = useToast();
   const [profile, setProfile] = useState<StudioProfile>(defaultStudioProfile);
 
   // Fetch studio data from Supabase
-  const { data: studio, isLoading: isFetching } = useStudioSettings(DEMO_STUDIO_ID);
-  const updateProfile = useUpdateProfile(DEMO_STUDIO_ID);
+  const { data: studio, isLoading: isFetching } = useStudioSettings(studioId);
+  const updateProfile = useUpdateProfile(studioId);
 
   // Sync form with fetched data (React recommended pattern for prop-driven state)
   const [prevStudio, setPrevStudio] = useState(studio);

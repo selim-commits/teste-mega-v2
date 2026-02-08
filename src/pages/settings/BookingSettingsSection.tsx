@@ -4,7 +4,6 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Select } from '../../components/ui/Select';
 import { useToast } from '../../components/ui/Toast';
-import { DEMO_STUDIO_ID } from '../../stores/authStore';
 import {
   useSettings,
   useUpdateBookingSettings,
@@ -45,11 +44,15 @@ const maxAdvanceOptions = [
   { value: '365', label: '1 an' },
 ];
 
-export function BookingSettingsSection() {
+interface BookingSettingsSectionProps {
+  studioId: string;
+}
+
+export function BookingSettingsSection({ studioId }: BookingSettingsSectionProps) {
   const { addToast } = useToast();
   const [settings, setSettings] = useState<BookingSettings>(defaultBookingSettings);
-  const { data: studioSettings } = useSettings(DEMO_STUDIO_ID);
-  const updateBookingSettings = useUpdateBookingSettings(DEMO_STUDIO_ID);
+  const { data: studioSettings } = useSettings(studioId);
+  const updateBookingSettings = useUpdateBookingSettings(studioId);
 
   // Sync form with fetched data (React recommended pattern for prop-driven state)
   const [prevStudioSettings, setPrevStudioSettings] = useState(studioSettings);

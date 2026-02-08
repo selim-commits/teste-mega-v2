@@ -5,7 +5,6 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
 import { useToast } from '../../components/ui/Toast';
-import { DEMO_STUDIO_ID } from '../../stores/authStore';
 import {
   useSettings,
   useUpdateBillingSettings,
@@ -21,11 +20,15 @@ const vatRateOptions = [
   { value: '20', label: '20% (Taux normal)' },
 ];
 
-export function BillingSection() {
+interface BillingSectionProps {
+  studioId: string;
+}
+
+export function BillingSection({ studioId }: BillingSectionProps) {
   const { addToast } = useToast();
   const [settings, setSettings] = useState<BillingSettingsData>(defaultBillingSettings);
-  const { data: studioSettings } = useSettings(DEMO_STUDIO_ID);
-  const updateBillingSettings = useUpdateBillingSettings(DEMO_STUDIO_ID);
+  const { data: studioSettings } = useSettings(studioId);
+  const updateBillingSettings = useUpdateBillingSettings(studioId);
 
   // Sync form with fetched data (React recommended pattern for prop-driven state)
   const [prevStudioSettings, setPrevStudioSettings] = useState(studioSettings);

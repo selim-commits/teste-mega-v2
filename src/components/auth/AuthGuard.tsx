@@ -7,7 +7,7 @@ interface AuthGuardProps {
   children: ReactNode
   /**
    * Path to redirect to if user is not authenticated
-   * @default '/login'
+   * @default '/'
    */
   redirectTo?: string
   /**
@@ -39,7 +39,7 @@ interface AuthGuardProps {
  */
 export function AuthGuard({
   children,
-  redirectTo = '/login',
+  redirectTo = '/',
   showLoader = true,
   loadingComponent,
 }: AuthGuardProps) {
@@ -82,7 +82,7 @@ interface GuestGuardProps {
   children: ReactNode
   /**
    * Path to redirect to if user is already authenticated
-   * @default '/'
+   * @default '/dashboard'
    */
   redirectTo?: string
 }
@@ -94,7 +94,7 @@ interface GuestGuardProps {
  * @example
  * ```tsx
  * <Route
- *   path="/login"
+ *   path="/"
  *   element={
  *     <GuestGuard>
  *       <Login />
@@ -103,7 +103,7 @@ interface GuestGuardProps {
  * />
  * ```
  */
-export function GuestGuard({ children, redirectTo = '/' }: GuestGuardProps) {
+export function GuestGuard({ children, redirectTo = '/dashboard' }: GuestGuardProps) {
   const { user, initialized } = useAuthContext()
   const location = useLocation()
 

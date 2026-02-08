@@ -149,7 +149,7 @@ export function Login() {
 
     // In demo mode, bypass auth entirely
     if (isDemoMode) {
-      navigate('/');
+      navigate('/dashboard');
       return;
     }
 

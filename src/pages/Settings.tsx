@@ -9,6 +9,9 @@ import {
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
+import { useAuthContext } from '../contexts/AuthContext';
+import { useTeamMembersByUser } from '../hooks/useTeam';
+import { DEMO_STUDIO_ID } from '../stores/authStore';
 import { StudioProfileSection } from './settings/StudioProfileSection';
 import { BusinessHoursSection } from './settings/BusinessHoursSection';
 import { BookingSettingsSection } from './settings/BookingSettingsSection';
@@ -29,6 +32,9 @@ const settingsTabs = [
 
 export function Settings() {
   const [activeTab, setActiveTab] = useState('profile');
+  const { user } = useAuthContext();
+  const { data: teamMemberships } = useTeamMembersByUser(user?.id || '');
+  const studioId = teamMemberships?.[0]?.studio_id || DEMO_STUDIO_ID;
 
   return (
     <div className={styles.page}>
@@ -49,22 +55,22 @@ export function Settings() {
 
           <div className={styles.tabsContent}>
             <TabsContent value="profile">
-              <StudioProfileSection />
+              <StudioProfileSection studioId={studioId} />
             </TabsContent>
             <TabsContent value="hours">
-              <BusinessHoursSection />
+              <BusinessHoursSection studioId={studioId} />
             </TabsContent>
             <TabsContent value="booking">
-              <BookingSettingsSection />
+              <BookingSettingsSection studioId={studioId} />
             </TabsContent>
             <TabsContent value="notifications">
-              <NotificationsSection />
+              <NotificationsSection studioId={studioId} />
             </TabsContent>
             <TabsContent value="integrations">
               <IntegrationsSection />
             </TabsContent>
             <TabsContent value="billing">
-              <BillingSection />
+              <BillingSection studioId={studioId} />
             </TabsContent>
           </div>
         </Tabs>
