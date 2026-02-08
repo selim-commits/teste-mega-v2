@@ -182,7 +182,7 @@ export function useStudioConversations(
  */
 export function useActiveConversations(studioId: string) {
   return useStudioConversations(studioId, {
-    status: ['active', 'waiting_for_human', 'assigned'],
+    status: ['active', 'waiting_human', 'with_human'],
   });
 }
 
@@ -191,7 +191,7 @@ export function useActiveConversations(studioId: string) {
  */
 export function useWaitingConversations(studioId: string) {
   return useStudioConversations(studioId, {
-    status: 'waiting_for_human',
+    status: 'waiting_human',
   });
 }
 
@@ -732,7 +732,7 @@ export function useLiveChat(conversationId: string, studioContext?: StudioContex
       return sendMessage.mutateAsync({
         conversationId,
         message: {
-          sender_type: 'team_member',
+          sender_type: 'human',
           sender_id: teamMemberId,
           content,
         },

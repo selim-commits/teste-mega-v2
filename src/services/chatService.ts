@@ -1,15 +1,9 @@
 import { supabase } from '../lib/supabase';
-import type { Json } from '../types/database';
+import type { Json, ChatStatus, ChatSenderType } from '../types/database';
 
-// Note: chatService uses custom types that don't match the DB schema exactly
-// (e.g. 'waiting_for_human' vs DB's 'waiting_human'). Local types are used
-// for the service interface while the DB operations use the typed client.
-
-// Chat conversation status
-export type ConversationStatus = 'active' | 'waiting_for_human' | 'assigned' | 'resolved' | 'closed';
-
-// Message sender type
-export type MessageSender = 'visitor' | 'ai' | 'team_member';
+// Re-export DB types for consumers
+export type ConversationStatus = ChatStatus;
+export type MessageSender = ChatSenderType;
 
 // Visitor data for starting a conversation
 export interface VisitorData {
@@ -20,15 +14,18 @@ export interface VisitorData {
   metadata?: Json;
 }
 
-// Chat message structure
+// Chat message structure (matches DB schema)
 export interface ChatMessage {
   id: string;
   conversation_id: string;
   sender_type: MessageSender;
-  sender_id: string | null; // team_member_id if human, null for AI/visitor
+  sender_id: string | null;
   content: string;
-  metadata?: Json; // AI context, attachments, etc.
-  is_read: boolean;
+  content_type?: string;
+  content_data?: Json | null;
+  is_internal?: boolean;
+  metadata?: Json;
+  read_at: string | null;
   created_at: string;
 }
 
@@ -38,8 +35,9 @@ export interface ChatMessageInsert {
   sender_type: MessageSender;
   sender_id?: string | null;
   content: string;
+  content_type?: string;
   metadata?: Json;
-  is_read?: boolean;
+  read_at?: string | null;
 }
 
 // Conversation structure
@@ -147,9 +145,9 @@ export const chatService = {
       tags: [],
     };
 
-    const { data, error } = await supabase
-      .from('chat_conversations')
-      .insert(conversationData as Record<string, unknown>)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from('chat_conversations') as any)
+      .insert(conversationData)
       .select()
       .single();
 
@@ -171,19 +169,16 @@ export const chatService = {
       if (error.code === 'PGRST116') return null; // Not found
       throw error;
     }
-    return data as ChatConversation;
+    return data as unknown as ChatConversation;
   },
 
   /**
    * Get a conversation with all its messages
    */
   async getConversationWithMessages(id: string): Promise<ConversationWithMessages | null> {
-    const { data, error } = await supabase
-      .from('chat_conversations')
-      .select(`
-        *,
-        messages:chat_messages(*)
-      `)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from('chat_conversations') as any)
+      .select('*, messages:chat_messages(*)')
       .eq('id', id)
       .single();
 
@@ -192,7 +187,6 @@ export const chatService = {
       throw error;
     }
 
-    // Sort messages by created_at
     if (data?.messages) {
       data.messages.sort((a: ChatMessage, b: ChatMessage) =>
         new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
@@ -206,13 +200,9 @@ export const chatService = {
    * Get a conversation with related client and assigned team member
    */
   async getConversationWithRelations(id: string): Promise<ConversationWithRelations | null> {
-    const { data, error } = await supabase
-      .from('chat_conversations')
-      .select(`
-        *,
-        client:clients(id, name, email, avatar_url),
-        assigned_team_member:team_members!chat_conversations_assigned_to_fkey(id, name, avatar_url)
-      `)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from('chat_conversations') as any)
+      .select('*, client:clients(id, name, email, avatar_url), assigned_team_member:team_members!chat_conversations_assigned_to_fkey(id, name, avatar_url)')
       .eq('id', id)
       .single();
 
@@ -230,13 +220,9 @@ export const chatService = {
     studioId: string,
     filters?: Omit<ConversationFilters, 'studioId'>
   ): Promise<ConversationWithRelations[]> {
-    let query = supabase
-      .from('chat_conversations')
-      .select(`
-        *,
-        client:clients(id, name, email, avatar_url),
-        assigned_team_member:team_members!chat_conversations_assigned_to_fkey(id, name, avatar_url)
-      `)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let query = (supabase.from('chat_conversations') as any)
+      .select('*, client:clients(id, name, email, avatar_url), assigned_team_member:team_members!chat_conversations_assigned_to_fkey(id, name, avatar_url)')
       .eq('studio_id', studioId);
 
     // Apply filters
@@ -293,9 +279,9 @@ export const chatService = {
     id: string,
     updates: ChatConversationUpdate
   ): Promise<ChatConversation> {
-    const { data, error } = await supabase
-      .from('chat_conversations')
-      .update({ ...updates, updated_at: new Date().toISOString() } as Record<string, unknown>)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from('chat_conversations') as any)
+      .update({ ...updates, updated_at: new Date().toISOString() })
       .eq('id', id)
       .select()
       .single();
@@ -309,7 +295,7 @@ export const chatService = {
    */
   async escalateToHuman(id: string, reason: string): Promise<ChatConversation> {
     return this.updateConversation(id, {
-      status: 'waiting_for_human',
+      status: 'waiting_human',
       escalation_reason: reason,
     });
   },
@@ -322,7 +308,7 @@ export const chatService = {
     teamMemberId: string
   ): Promise<ChatConversation> {
     return this.updateConversation(id, {
-      status: 'assigned',
+      status: 'with_human',
       assigned_to: teamMemberId,
     });
   },
@@ -332,7 +318,7 @@ export const chatService = {
    */
   async unassignConversation(id: string): Promise<ChatConversation> {
     return this.updateConversation(id, {
-      status: 'waiting_for_human',
+      status: 'waiting_human',
       assigned_to: null,
     });
   },
@@ -423,12 +409,12 @@ export const chatService = {
       sender_id: message.sender_id || null,
       content: message.content,
       metadata: message.metadata || {},
-      is_read: message.sender_type !== 'visitor', // Mark non-visitor messages as read
+      read_at: message.sender_type !== 'visitor' ? new Date().toISOString() : null,
     };
 
-    const { data, error } = await supabase
-      .from('chat_messages')
-      .insert(messageData as Record<string, unknown>)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase.from('chat_messages') as any)
+      .insert(messageData)
       .select()
       .single();
 
@@ -501,7 +487,7 @@ export const chatService = {
     if (error) throw error;
 
     // Reverse to get chronological order
-    return ((data as ChatMessage[]) || []).reverse();
+    return ((data as unknown as ChatMessage[]) || []).reverse();
   },
 
   /**
@@ -523,10 +509,10 @@ export const chatService = {
     // Mark all messages up to this point as read
     const { error: updateError } = await supabase
       .from('chat_messages')
-      .update({ is_read: true })
+      .update({ read_at: new Date().toISOString() })
       .eq('conversation_id', conversationId)
       .lte('created_at', targetMessage.created_at)
-      .eq('is_read', false);
+      .is('read_at', null);
 
     if (updateError) throw updateError;
 
@@ -543,9 +529,9 @@ export const chatService = {
   async markAllMessagesRead(conversationId: string): Promise<void> {
     const { error: updateError } = await supabase
       .from('chat_messages')
-      .update({ is_read: true })
+      .update({ read_at: new Date().toISOString() })
       .eq('conversation_id', conversationId)
-      .eq('is_read', false);
+      .is('read_at', null);
 
     if (updateError) throw updateError;
 
@@ -569,7 +555,7 @@ export const chatService = {
       if (error.code === 'PGRST116') return null;
       throw error;
     }
-    return data as ChatMessage;
+    return data as unknown as ChatMessage;
   },
 
   // ================== STATS & COUNTS ==================
@@ -607,8 +593,8 @@ export const chatService = {
 
     const counts: Record<ConversationStatus, number> = {
       active: 0,
-      waiting_for_human: 0,
-      assigned: 0,
+      waiting_human: 0,
+      with_human: 0,
       resolved: 0,
       closed: 0,
     };
@@ -642,7 +628,7 @@ export const chatService = {
       .from('chat_conversations')
       .select('id', { count: 'exact', head: true })
       .eq('studio_id', studioId)
-      .eq('status', 'waiting_for_human');
+      .eq('status', 'waiting_human');
 
     if (error) throw error;
     return count || 0;

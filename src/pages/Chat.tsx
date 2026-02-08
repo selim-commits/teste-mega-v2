@@ -39,16 +39,16 @@ import styles from './Chat.module.css';
 
 const statusLabels: Record<ConversationStatus, string> = {
   active: 'Actif',
-  waiting_for_human: 'En attente',
-  assigned: 'Assigne',
+  waiting_human: 'En attente',
+  with_human: 'Assigne',
   resolved: 'Resolu',
   closed: 'Ferme',
 };
 
 const statusColors: Record<ConversationStatus, BadgeVariant> = {
   active: 'info',
-  waiting_for_human: 'warning',
-  assigned: 'info',
+  waiting_human: 'warning',
+  with_human: 'info',
   resolved: 'success',
   closed: 'default',
 };
@@ -84,8 +84,8 @@ export function Chat() {
 
   // Stats
   const stats = useMemo(() => {
-    const active = conversations.filter((c) => c.status === 'active' || c.status === 'assigned').length;
-    const waiting = conversations.filter((c) => c.status === 'waiting_for_human').length;
+    const active = conversations.filter((c) => c.status === 'active' || c.status === 'with_human').length;
+    const waiting = conversations.filter((c) => c.status === 'waiting_human').length;
     const resolved = conversations.filter((c) => c.status === 'resolved' || c.status === 'closed').length;
     return { active, waiting, resolved, total: conversations.length };
   }, [conversations]);
@@ -102,7 +102,7 @@ export function Chat() {
       await sendMessage.mutateAsync({
         conversationId: selectedConversationId,
         message: {
-          sender_type: 'team_member',
+          sender_type: 'human',
           sender_id: studioId || undefined,
           content: newMessage.trim(),
         },
@@ -187,8 +187,8 @@ export function Chat() {
                   Tous
                 </button>
                 <button
-                  className={`${styles.filterBtn} ${statusFilter === 'waiting_for_human' ? styles.active : ''}`}
-                  onClick={() => setStatusFilter('waiting_for_human')}
+                  className={`${styles.filterBtn} ${statusFilter === 'waiting_human' ? styles.active : ''}`}
+                  onClick={() => setStatusFilter('waiting_human')}
                 >
                   <AlertCircle size={14} />
                   En attente
@@ -214,7 +214,7 @@ export function Chat() {
                     key={conv.id}
                     className={`${styles.conversationItem} ${
                       selectedConversationId === conv.id ? styles.selected : ''
-                    } ${conv.status === 'waiting_for_human' ? styles.urgent : ''}`}
+                    } ${conv.status === 'waiting_human' ? styles.urgent : ''}`}
                     onClick={() => setSelectedConversationId(conv.id)}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedConversationId(conv.id); } }}
                     role="button"
@@ -279,7 +279,7 @@ export function Chat() {
                     </div>
                   </div>
                   <div className={styles.chatHeaderActions}>
-                    {selectedConversation.status === 'waiting_for_human' && (
+                    {selectedConversation.status === 'waiting_human' && (
                       <Button size="sm" onClick={handleTakeOver}>
                         Prendre en charge
                       </Button>
