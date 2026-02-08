@@ -1,4 +1,3 @@
-import { HelpCircle, ChevronDown } from 'lucide-react';
 import styles from './Header.module.css';
 
 interface HeaderProps {
@@ -17,27 +16,11 @@ export function Header({ title, subtitle, actions }: HeaderProps) {
         </div>
       </div>
 
-      <div className={styles.right}>
-        {/* Help Button */}
-        <button className={styles.helpBtn} aria-label="Aide">
-          <HelpCircle size={20} />
-        </button>
-
-        {/* Action Buttons */}
-        {actions ? (
-          actions
-        ) : (
-          <>
-            <button className={styles.secondaryBtn}>
-              Bloquer un créneau
-            </button>
-            <button className={styles.primaryBtn}>
-              Ajouter
-              <ChevronDown size={16} />
-            </button>
-          </>
-        )}
-      </div>
+      {actions && (
+        <div className={styles.right}>
+          {actions}
+        </div>
+      )}
     </header>
   );
 }

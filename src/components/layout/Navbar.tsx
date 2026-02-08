@@ -52,7 +52,7 @@ export function Navbar({ onMenuToggle }: NavbarProps) {
           <span />
           <span />
         </button>
-        <span className={styles.logo}>acuity:scheduling</span>
+        <span className={styles.logo}>Rooom</span>
       </div>
 
       {/* Right: avatar */}

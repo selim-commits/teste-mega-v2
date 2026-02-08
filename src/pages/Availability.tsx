@@ -10,9 +10,19 @@ import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Switch } from '../components/ui/Checkbox';
+import { useNotifications } from '../stores/uiStore';
 import styles from './SettingsPage.module.css';
 
-const defaultSchedule = [
+const STORAGE_KEY = 'rooom_availability';
+
+interface ScheduleDay {
+  day: string;
+  enabled: boolean;
+  start: string;
+  end: string;
+}
+
+const defaultSchedule: ScheduleDay[] = [
   { day: 'Lundi', enabled: true, start: '09:00', end: '18:00' },
   { day: 'Mardi', enabled: true, start: '09:00', end: '18:00' },
   { day: 'Mercredi', enabled: true, start: '09:00', end: '18:00' },
@@ -22,8 +32,19 @@ const defaultSchedule = [
   { day: 'Dimanche', enabled: false, start: '', end: '' },
 ];
 
+function loadSchedule(): ScheduleDay[] {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved) as ScheduleDay[];
+  } catch {
+    // ignore parse errors
+  }
+  return defaultSchedule;
+}
+
 export function Availability() {
-  const [schedule, setSchedule] = useState(defaultSchedule);
+  const [schedule, setSchedule] = useState(loadSchedule);
+  const { success, info } = useNotifications();
 
   const toggleDay = (index: number) => {
     const newSchedule = [...schedule];
@@ -69,7 +90,24 @@ export function Availability() {
         <Card padding="lg" className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>Horaires hebdomadaires</h3>
-            <Button variant="secondary" size="sm" icon={<Copy size={16} />}>
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<Copy size={16} />}
+              onClick={() => {
+                const firstEnabled = schedule.find((d) => d.enabled);
+                if (firstEnabled) {
+                  const duplicated = schedule.map((d) => ({
+                    ...d,
+                    start: firstEnabled.start,
+                    end: firstEnabled.end,
+                    enabled: firstEnabled.enabled,
+                  }));
+                  setSchedule(duplicated);
+                  info('Horaires dupliques', 'Les horaires du premier jour actif ont ete appliques a tous les jours');
+                }
+              }}
+            >
               Dupliquer
             </Button>
           </div>
@@ -134,7 +172,12 @@ export function Availability() {
         <Card padding="lg" className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>Exceptions & Conges</h3>
-            <Button variant="primary" size="sm" icon={<Plus size={16} />}>
+            <Button
+              variant="primary"
+              size="sm"
+              icon={<Plus size={16} />}
+              onClick={() => info('Fonctionnalite bientot disponible', 'La gestion des exceptions sera disponible prochainement')}
+            >
               Ajouter
             </Button>
           </div>
@@ -148,7 +191,14 @@ export function Availability() {
 
         {/* Save Button */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
-          <Button variant="primary" icon={<Check size={16} />}>
+          <Button
+            variant="primary"
+            icon={<Check size={16} />}
+            onClick={() => {
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule));
+              success('Modifications enregistrees', 'Vos horaires de disponibilite ont ete sauvegardes');
+            }}
+          >
             Enregistrer les modifications
           </Button>
         </div>

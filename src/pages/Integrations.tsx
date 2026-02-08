@@ -9,6 +9,7 @@ import {
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { useNotifications } from '../stores/uiStore';
 import styles from './SettingsPage.module.css';
 
 interface Integration {
@@ -97,6 +98,7 @@ const categories = [
 
 export function Integrations() {
   const [activeCategory, setActiveCategory] = useState('all');
+  const { info } = useNotifications();
 
   const filteredIntegrations = integrations.filter(
     (int) => activeCategory === 'all' || int.category === activeCategory
@@ -190,19 +192,19 @@ export function Integrations() {
                 <div className={styles.cardFooter}>
                   {integration.connected ? (
                     <>
-                      <Button variant="ghost" size="sm" icon={<Settings size={14} />}>
+                      <Button variant="ghost" size="sm" icon={<Settings size={14} />} onClick={() => info(`Configuration de ${integration.name}`, 'Fonctionnalite bientot disponible')}>
                         Configurer
                       </Button>
-                      <Button variant="secondary" size="sm" icon={<X size={14} />}>
+                      <Button variant="secondary" size="sm" icon={<X size={14} />} onClick={() => info(`Deconnexion de ${integration.name}`, 'Fonctionnalite bientot disponible')}>
                         Deconnecter
                       </Button>
                     </>
                   ) : (
                     <>
-                      <Button variant="ghost" size="sm" icon={<ExternalLink size={14} />}>
+                      <Button variant="ghost" size="sm" icon={<ExternalLink size={14} />} onClick={() => info(integration.name, 'Contactez-nous pour activer cette integration')}>
                         En savoir plus
                       </Button>
-                      <Button variant="primary" size="sm" icon={<Plug size={14} />}>
+                      <Button variant="primary" size="sm" icon={<Plug size={14} />} onClick={() => info(integration.name, 'Contactez-nous pour activer cette integration')}>
                         Connecter
                       </Button>
                     </>
@@ -219,7 +221,7 @@ export function Integrations() {
           <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-4)' }}>
             Demandez une nouvelle integration et nous l'ajouterons a notre roadmap.
           </p>
-          <Button variant="secondary">
+          <Button variant="secondary" onClick={() => info('Demander une integration', 'Envoyez-nous un email a support@rooom.com')}>
             Demander une integration
           </Button>
         </Card>

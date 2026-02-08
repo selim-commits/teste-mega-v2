@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
   Package,
@@ -138,6 +139,7 @@ function isToday(dateStr: string): boolean {
 
 export function Dashboard() {
   const { user } = useAuthContext();
+  const navigate = useNavigate();
 
   // Get user's team memberships to find their studioId
   const { data: teamMemberships, isLoading: teamLoading } = useTeamMembersByUser(user?.id || '');
@@ -436,7 +438,7 @@ export function Dashboard() {
                 title="Prochaines reservations"
                 subtitle={weekBookingsLoading ? 'Chargement...' : `${upcomingBookings.length} a venir`}
                 action={
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/bookings')}>
                     Voir tout
                   </Button>
                 }
@@ -567,8 +569,8 @@ export function Dashboard() {
                   ? `Vous avez ${stats.totalBookings} reservations ce mois-ci. ${stats.revenueGrowth > 0 ? `Une croissance de ${stats.revenueGrowth}% par rapport au mois dernier!` : 'Continuez vos efforts!'}`
                   : 'Commencez a ajouter des reservations pour voir des insights personnalises.'}
               </p>
-              <Button variant="secondary" size="sm" className={styles.aiBtn}>
-                Appliquer la suggestion
+              <Button variant="secondary" size="sm" className={styles.aiBtn} onClick={() => navigate('/ai')}>
+                Voir les insights
               </Button>
             </Card>
           </div>
@@ -613,7 +615,7 @@ export function Dashboard() {
               <CardHeader
                 title="Activite recente"
                 action={
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/bookings')}>
                     Historique
                   </Button>
                 }

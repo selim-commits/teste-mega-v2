@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   CreditCard,
   DollarSign,
@@ -14,6 +14,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Switch } from '../components/ui/Checkbox';
+import { useNotifications } from '../stores/uiStore';
 import styles from './SettingsPage.module.css';
 
 const paymentMethods = [
@@ -50,9 +51,30 @@ const recentTransactions = [
   { id: '4', client: 'Sophie Bernard', amount: 50, status: 'failed', date: '2024-01-13' },
 ];
 
+function getStoredBoolean(key: string, fallback: boolean): boolean {
+  try {
+    const stored = localStorage.getItem(key);
+    if (stored !== null) return stored === 'true';
+  } catch {
+    // localStorage unavailable
+  }
+  return fallback;
+}
+
 export function Payments() {
-  const [autoCharge, setAutoCharge] = useState(true);
-  const [requireDeposit, setRequireDeposit] = useState(false);
+  const [autoCharge, setAutoCharge] = useState(() => getStoredBoolean('payments_auto_charge', true));
+  const [requireDeposit, setRequireDeposit] = useState(() => getStoredBoolean('payments_require_deposit', false));
+  const { info } = useNotifications();
+
+  const handleAutoChargeChange = useCallback((checked: boolean) => {
+    setAutoCharge(checked);
+    try { localStorage.setItem('payments_auto_charge', String(checked)); } catch { /* noop */ }
+  }, []);
+
+  const handleRequireDepositChange = useCallback((checked: boolean) => {
+    setRequireDeposit(checked);
+    try { localStorage.setItem('payments_require_deposit', String(checked)); } catch { /* noop */ }
+  }, []);
 
   return (
     <div className={styles.page}>
@@ -114,7 +136,7 @@ export function Payments() {
         <Card padding="lg" className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>Methodes de paiement</h3>
-            <Button variant="secondary" size="sm" icon={<Plus size={16} />}>
+            <Button variant="secondary" size="sm" icon={<Plus size={16} />} onClick={() => info('Ajouter une methode de paiement', 'Fonctionnalite bientot disponible')}>
               Ajouter
             </Button>
           </div>
@@ -137,10 +159,10 @@ export function Payments() {
                   {method.connected ? (
                     <>
                       <Badge variant="success" size="sm" dot>Actif</Badge>
-                      <Button variant="ghost" size="sm" icon={<Settings size={14} />} />
+                      <Button variant="ghost" size="sm" icon={<Settings size={14} />} onClick={() => info(`Parametres ${method.name}`, 'Fonctionnalite bientot disponible')} />
                     </>
                   ) : (
-                    <Button variant="primary" size="sm">
+                    <Button variant="primary" size="sm" onClick={() => info(`Connecter ${method.name}`, 'Contactez-nous pour activer cette methode de paiement')}>
                       Connecter
                     </Button>
                   )}
@@ -164,7 +186,7 @@ export function Payments() {
                   </span>
                 </div>
               </div>
-              <Switch checked={autoCharge} onChange={(e) => setAutoCharge(e.target.checked)} />
+              <Switch checked={autoCharge} onChange={(e) => handleAutoChargeChange(e.target.checked)} />
             </div>
 
             <div className={styles.listItem}>
@@ -176,7 +198,7 @@ export function Payments() {
                   </span>
                 </div>
               </div>
-              <Switch checked={requireDeposit} onChange={(e) => setRequireDeposit(e.target.checked)} />
+              <Switch checked={requireDeposit} onChange={(e) => handleRequireDepositChange(e.target.checked)} />
             </div>
 
             <div className={styles.listItem}>
@@ -188,7 +210,7 @@ export function Payments() {
                   </span>
                 </div>
               </div>
-              <Button variant="secondary" size="sm">
+              <Button variant="secondary" size="sm" onClick={() => info("Politique d'annulation", 'Fonctionnalite bientot disponible')}>
                 Modifier
               </Button>
             </div>
@@ -199,7 +221,7 @@ export function Payments() {
         <Card padding="lg" className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>Transactions recentes</h3>
-            <Button variant="ghost" size="sm" icon={<Download size={16} />}>
+            <Button variant="ghost" size="sm" icon={<Download size={16} />} onClick={() => info('Exporter les transactions', 'Fonctionnalite bientot disponible')}>
               Exporter
             </Button>
           </div>
@@ -233,7 +255,7 @@ export function Payments() {
           </div>
 
           <div style={{ marginTop: 'var(--space-4)', textAlign: 'center' }}>
-            <Button variant="ghost">
+            <Button variant="ghost" onClick={() => info('Voir toutes les transactions', 'Fonctionnalite bientot disponible')}>
               Voir toutes les transactions
             </Button>
           </div>

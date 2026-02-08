@@ -150,6 +150,43 @@
   background-color: var(--border-default);
 }
 
+.dropdownMenu {
+  position: absolute;
+  top: calc(100% + var(--space-1));
+  left: 0;
+  min-width: 180px;
+  background-color: var(--color-white);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  padding: var(--space-1) 0;
+}
+
+.dropdownMenuItem {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  background: none;
+  border: none;
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 400;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s;
+}
+
+.dropdownMenuItem:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.dropdownMenuItemActive {
+  font-weight: 500;
+  background-color: var(--bg-secondary);
+}
+
 .searchBox {
   display: flex;
   align-items: center;

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   BarChart3,
   TrendingUp,
@@ -14,6 +14,7 @@ import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
+import { useNotifications } from '../stores/uiStore';
 import styles from './SettingsPage.module.css';
 
 const periodOptions = [
@@ -23,43 +24,45 @@ const periodOptions = [
   { value: '12m', label: '12 derniers mois' },
 ];
 
-const stats = [
-  {
-    label: 'Revenus totaux',
-    value: '12,450 €',
-    change: '+12%',
-    trend: 'up',
-    icon: DollarSign,
-    color: 'var(--accent-green)',
-  },
-  {
-    label: 'Reservations',
-    value: '156',
-    change: '+8%',
-    trend: 'up',
-    icon: Calendar,
-    color: 'var(--accent-blue)',
-  },
-  {
-    label: 'Clients actifs',
-    value: '89',
-    change: '+15%',
-    trend: 'up',
-    icon: Users,
-    color: 'var(--accent-purple)',
-  },
-  {
-    label: 'Duree moyenne',
-    value: '2.5h',
-    change: '-5%',
-    trend: 'down',
-    icon: Clock,
-    color: 'var(--accent-orange)',
-  },
-];
+const statsByPeriod: Record<string, Array<{
+  label: string;
+  value: string;
+  change: string;
+  trend: string;
+  icon: typeof DollarSign;
+  color: string;
+}>> = {
+  '7d': [
+    { label: 'Revenus totaux', value: '2,180 €', change: '+5%', trend: 'up', icon: DollarSign, color: 'var(--accent-green)' },
+    { label: 'Reservations', value: '34', change: '+3%', trend: 'up', icon: Calendar, color: 'var(--accent-blue)' },
+    { label: 'Clients actifs', value: '22', change: '+10%', trend: 'up', icon: Users, color: 'var(--accent-purple)' },
+    { label: 'Duree moyenne', value: '2.3h', change: '-2%', trend: 'down', icon: Clock, color: 'var(--accent-orange)' },
+  ],
+  '30d': [
+    { label: 'Revenus totaux', value: '12,450 €', change: '+12%', trend: 'up', icon: DollarSign, color: 'var(--accent-green)' },
+    { label: 'Reservations', value: '156', change: '+8%', trend: 'up', icon: Calendar, color: 'var(--accent-blue)' },
+    { label: 'Clients actifs', value: '89', change: '+15%', trend: 'up', icon: Users, color: 'var(--accent-purple)' },
+    { label: 'Duree moyenne', value: '2.5h', change: '-5%', trend: 'down', icon: Clock, color: 'var(--accent-orange)' },
+  ],
+  '90d': [
+    { label: 'Revenus totaux', value: '35,890 €', change: '+18%', trend: 'up', icon: DollarSign, color: 'var(--accent-green)' },
+    { label: 'Reservations', value: '423', change: '+14%', trend: 'up', icon: Calendar, color: 'var(--accent-blue)' },
+    { label: 'Clients actifs', value: '145', change: '+22%', trend: 'up', icon: Users, color: 'var(--accent-purple)' },
+    { label: 'Duree moyenne', value: '2.4h', change: '+1%', trend: 'up', icon: Clock, color: 'var(--accent-orange)' },
+  ],
+  '12m': [
+    { label: 'Revenus totaux', value: '148,200 €', change: '+25%', trend: 'up', icon: DollarSign, color: 'var(--accent-green)' },
+    { label: 'Reservations', value: '1,842', change: '+20%', trend: 'up', icon: Calendar, color: 'var(--accent-blue)' },
+    { label: 'Clients actifs', value: '312', change: '+35%', trend: 'up', icon: Users, color: 'var(--accent-purple)' },
+    { label: 'Duree moyenne', value: '2.6h', change: '+3%', trend: 'up', icon: Clock, color: 'var(--accent-orange)' },
+  ],
+};
 
 export function Reports() {
   const [period, setPeriod] = useState('30d');
+  const { info } = useNotifications();
+
+  const stats = useMemo(() => statsByPeriod[period] || statsByPeriod['30d'], [period]);
 
   return (
     <div className={styles.page}>
@@ -77,10 +80,20 @@ export function Reports() {
             onChange={setPeriod}
           />
           <div className={styles.toolbarActions}>
-            <Button variant="secondary" size="sm" icon={<Filter size={16} />}>
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<Filter size={16} />}
+              onClick={() => info('Fonctionnalite bientot disponible', 'Les filtres avances seront disponibles prochainement')}
+            >
               Filtres
             </Button>
-            <Button variant="secondary" size="sm" icon={<Download size={16} />}>
+            <Button
+              variant="secondary"
+              size="sm"
+              icon={<Download size={16} />}
+              onClick={() => info('Fonctionnalite bientot disponible', "L'export des rapports sera disponible prochainement")}
+            >
               Exporter
             </Button>
           </div>

@@ -13,6 +13,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Switch } from '../components/ui/Checkbox';
+import { useNotifications } from '../stores/uiStore';
 import styles from './SettingsPage.module.css';
 
 interface SyncedCalendar {
@@ -60,6 +61,9 @@ const providerNames = {
 
 export function CalendarSync() {
   const [calendars, setCalendars] = useState(syncedCalendars);
+  const [blockBusySlots, setBlockBusySlots] = useState(true);
+  const [addBookingsToCalendar, setAddBookingsToCalendar] = useState(true);
+  const { info, success } = useNotifications();
 
   const toggleTwoWaySync = (id: string) => {
     setCalendars((prev) =>
@@ -107,7 +111,7 @@ export function CalendarSync() {
         <Card padding="lg" className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>Calendriers connectes</h3>
-            <Button variant="primary" size="sm" icon={<Plus size={16} />}>
+            <Button variant="primary" size="sm" icon={<Plus size={16} />} onClick={() => info('Ajouter un calendrier', 'Fonctionnalite bientot disponible')}>
               Ajouter un calendrier
             </Button>
           </div>
@@ -161,11 +165,11 @@ export function CalendarSync() {
                     </div>
 
                     <div className={styles.listItemActions}>
-                      <Button variant="ghost" size="sm" icon={<RefreshCw size={14} />}>
+                      <Button variant="ghost" size="sm" icon={<RefreshCw size={14} />} onClick={() => success(`Synchronisation de ${calendar.name}`, 'Synchronisation lancee')}>
                         Sync
                       </Button>
-                      <Button variant="ghost" size="sm" icon={<Settings size={14} />} />
-                      <Button variant="ghost" size="sm" icon={<Trash2 size={14} />} />
+                      <Button variant="ghost" size="sm" icon={<Settings size={14} />} onClick={() => info(`Parametres de ${calendar.name}`, 'Fonctionnalite bientot disponible')} />
+                      <Button variant="ghost" size="sm" icon={<Trash2 size={14} />} onClick={() => info(`Supprimer ${calendar.name}`, 'Fonctionnalite bientot disponible')} />
                     </div>
                   </div>
                 </div>
@@ -176,7 +180,7 @@ export function CalendarSync() {
               <CalendarSyncIcon size={48} />
               <h3>Aucun calendrier connecte</h3>
               <p>Connectez vos calendriers pour synchroniser automatiquement vos reservations</p>
-              <Button variant="primary" icon={<Plus size={16} />}>
+              <Button variant="primary" icon={<Plus size={16} />} onClick={() => info('Connecter un calendrier', 'Fonctionnalite bientot disponible')}>
                 Connecter un calendrier
               </Button>
             </div>
@@ -197,7 +201,7 @@ export function CalendarSync() {
                   </span>
                 </div>
               </div>
-              <Switch checked={true} onChange={() => {}} />
+              <Switch checked={blockBusySlots} onChange={(e) => setBlockBusySlots(e.target.checked)} />
             </div>
 
             <div className={styles.listItem}>
@@ -209,7 +213,7 @@ export function CalendarSync() {
                   </span>
                 </div>
               </div>
-              <Switch checked={true} onChange={() => {}} />
+              <Switch checked={addBookingsToCalendar} onChange={(e) => setAddBookingsToCalendar(e.target.checked)} />
             </div>
 
             <div className={styles.listItem}>
@@ -221,7 +225,7 @@ export function CalendarSync() {
                   </span>
                 </div>
               </div>
-              <Button variant="secondary" size="sm">
+              <Button variant="secondary" size="sm" onClick={() => info('Frequence de synchronisation', 'Fonctionnalite bientot disponible')}>
                 Modifier
               </Button>
             </div>

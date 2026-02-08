@@ -119,10 +119,26 @@ export function WidgetBuilder() {
     return () => clearTimeout(previewTimerRef.current);
   }, []);
 
-  // Saved configs state
-  const [savedConfigs, setSavedConfigs] = useState<WidgetConfig[]>([]);
+  // Saved configs state - load from localStorage on mount
+  const [savedConfigs, setSavedConfigs] = useState<WidgetConfig[]>(() => {
+    try {
+      const stored = localStorage.getItem('rooom_widget_configs');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
   const [activeConfigId, setActiveConfigId] = useState<string | null>(null);
   const [showSavedConfigs, setShowSavedConfigs] = useState(false);
+
+  // Persist configs to localStorage whenever they change
+  useEffect(() => {
+    try {
+      localStorage.setItem('rooom_widget_configs', JSON.stringify(savedConfigs));
+    } catch {
+      // Silently ignore localStorage errors (e.g., quota exceeded)
+    }
+  }, [savedConfigs]);
 
   // Handlers
   const handleWidgetTypeChange = useCallback((type: WidgetType) => {

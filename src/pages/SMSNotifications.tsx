@@ -14,6 +14,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Switch } from '../components/ui/Checkbox';
+import { useToast } from '../components/ui/Toast';
 import styles from './SettingsPage.module.css';
 
 interface SMSTemplate {
@@ -55,6 +56,34 @@ const smsTemplates: SMSTemplate[] = [
 export function SMSNotifications() {
   const [templates, setTemplates] = useState(smsTemplates);
   const [smsEnabled, setSmsEnabled] = useState(true);
+  const { addToast } = useToast();
+
+  const handleComingSoon = (action: string) => {
+    addToast({
+      title: 'Fonctionnalite bientot disponible',
+      description: `${action} sera disponible prochainement.`,
+      variant: 'info',
+      duration: 3000,
+    });
+  };
+
+  const handleNewTemplate = () => {
+    addToast({
+      title: 'Nouveau template',
+      description: 'L\'editeur de templates SMS sera bientot disponible.',
+      variant: 'info',
+      duration: 3000,
+    });
+  };
+
+  const handleEditTemplate = (name: string) => {
+    addToast({
+      title: 'Modification',
+      description: `L'edition du template "${name}" sera bientot disponible.`,
+      variant: 'info',
+      duration: 3000,
+    });
+  };
 
   const toggleTemplate = (id: string) => {
     setTemplates((prev) =>
@@ -141,7 +170,7 @@ export function SMSNotifications() {
                 </div>
                 <div className={styles.listItemActions}>
                   <Badge variant="success" size="sm" dot>Connecte</Badge>
-                  <Button variant="ghost" size="sm" icon={<Settings size={14} />} />
+                  <Button variant="ghost" size="sm" icon={<Settings size={14} />} onClick={() => handleComingSoon('Configuration Twilio')} />
                 </div>
               </div>
 
@@ -152,7 +181,7 @@ export function SMSNotifications() {
                     <span className={styles.listItemSubtitle}>+33 6 12 34 56 78</span>
                   </div>
                 </div>
-                <Button variant="ghost" size="sm">Modifier</Button>
+                <Button variant="ghost" size="sm" onClick={() => handleComingSoon('Modification du numero d\'expedition')}>Modifier</Button>
               </div>
             </div>
           )}
@@ -163,7 +192,7 @@ export function SMSNotifications() {
           <Card padding="lg" className={styles.sectionCard}>
             <div className={styles.sectionHeader}>
               <h3 className={styles.sectionTitle}>Templates SMS</h3>
-              <Button variant="primary" size="sm" icon={<Plus size={16} />}>
+              <Button variant="primary" size="sm" icon={<Plus size={16} />} onClick={handleNewTemplate}>
                 Nouveau template
               </Button>
             </div>
@@ -191,7 +220,7 @@ export function SMSNotifications() {
                         checked={template.enabled}
                         onChange={() => toggleTemplate(template.id)}
                       />
-                      <Button variant="ghost" size="sm" icon={<Edit2 size={14} />} />
+                      <Button variant="ghost" size="sm" icon={<Edit2 size={14} />} onClick={() => handleEditTemplate(template.name)} />
                     </div>
                   </div>
 

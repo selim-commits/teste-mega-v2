@@ -91,9 +91,10 @@ export function BookingFormModal({
   }, [formData]);
 
   const handleSubmit = useCallback(() => {
+    if (isSubmitting) return;
     if (!validateForm()) return;
     onSubmit(formData);
-  }, [formData, validateForm, onSubmit]);
+  }, [formData, validateForm, onSubmit, isSubmitting]);
 
   const handleClose = useCallback(() => {
     setFormData(initialFormData);
@@ -174,8 +175,9 @@ export function BookingFormModal({
           variant="primary"
           onClick={handleSubmit}
           disabled={isSubmitting}
+          loading={isSubmitting}
         >
-          {isSubmitting ? 'Creation...' : 'Creer'}
+          Creer
         </Button>
       </ModalFooter>
     </Modal>

@@ -32,6 +32,7 @@ import { Select } from '../components/ui/Select';
 import { Table, Pagination } from '../components/ui/Table';
 import { Dropdown, DropdownItem, DropdownDivider } from '../components/ui/Dropdown';
 import { Avatar } from '../components/ui/Avatar';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useTeamMembers,
   useTeamMember,
@@ -42,7 +43,7 @@ import {
   useDeactivateTeamMember,
   useUpdateTeamMemberRole,
 } from '../hooks/useTeam';
-import { useTeamStore } from '../stores/teamStore';
+import { queryKeys } from '../lib/queryClient';
 import { useNotifications } from '../stores/uiStore';
 import { DEMO_STUDIO_ID } from '../stores/authStore';
 import type { TeamMember, TeamRole, TeamMemberInsert, TeamMemberUpdate } from '../types/database';
@@ -101,10 +102,8 @@ export function Team() {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [editFormData, setEditFormData] = useState<TeamMemberFormData | null>(null);
 
-  // Zustand store (reserved for future use)
-  void useTeamStore;
-
   // Hooks
+  const queryClient = useQueryClient();
   const { success: showSuccess, error: showError } = useNotifications();
 
   // Queries
@@ -541,7 +540,7 @@ export function Team() {
         {queryError && (
           <div className={styles.errorState}>
             <span>Erreur lors du chargement des membres</span>
-            <Button variant="secondary" size="sm" onClick={() => window.location.reload()}>
+            <Button variant="secondary" size="sm" onClick={() => queryClient.invalidateQueries({ queryKey: queryKeys.team.all })}>
               Reessayer
             </Button>
           </div>

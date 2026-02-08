@@ -12,6 +12,8 @@ import {
   Mail,
   Calendar,
   Package,
+  Trash2,
+  CheckCheck,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -20,9 +22,11 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Badge } from '../components/ui/Badge';
+import { Dropdown, DropdownItem, DropdownDivider } from '../components/ui/Dropdown';
 
 type BadgeVariant = 'default' | 'info' | 'success' | 'warning' | 'error';
 import { useAuthStore } from '../stores/authStore';
+import { useNotifications } from '../stores/uiStore';
 import {
   useStudioConversations,
   useSendMessage,
@@ -55,6 +59,7 @@ const statusColors: Record<ConversationStatus, BadgeVariant> = {
 
 export function Chat() {
   const { studioId } = useAuthStore();
+  const { info, warning } = useNotifications();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery);
@@ -290,9 +295,29 @@ export function Chat() {
                         Resoudre
                       </Button>
                     )}
-                    <Button size="sm" variant="ghost">
-                      <MoreVertical size={16} />
-                    </Button>
+                    <Dropdown
+                      trigger={
+                        <Button size="sm" variant="ghost">
+                          <MoreVertical size={16} />
+                        </Button>
+                      }
+                      align="end"
+                    >
+                      <DropdownItem
+                        icon={<CheckCheck size={16} />}
+                        onClick={() => info('Conversation marquee comme lue')}
+                      >
+                        Marquer comme lu
+                      </DropdownItem>
+                      <DropdownDivider />
+                      <DropdownItem
+                        icon={<Trash2 size={16} />}
+                        destructive
+                        onClick={() => warning('Fonctionnalite bientot disponible', 'La suppression de conversations sera disponible prochainement')}
+                      >
+                        Supprimer conversation
+                      </DropdownItem>
+                    </Dropdown>
                   </div>
                 </div>
 

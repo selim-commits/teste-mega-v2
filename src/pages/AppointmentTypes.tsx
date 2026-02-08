@@ -18,6 +18,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Dropdown, DropdownItem, DropdownDivider } from '../components/ui/Dropdown';
+import { useNotifications } from '../stores/uiStore';
 import styles from './SettingsPage.module.css';
 
 interface AppointmentType {
@@ -73,6 +74,7 @@ export function AppointmentTypes() {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery);
   const [appointmentTypes] = useState<AppointmentType[]>(mockAppointmentTypes);
+  const { info, warning } = useNotifications();
 
   const filteredTypes = appointmentTypes.filter((type) =>
     type.name.toLowerCase().includes(debouncedSearch.toLowerCase())
@@ -142,7 +144,12 @@ export function AppointmentTypes() {
               className={styles.searchInput}
             />
           </div>
-          <Button variant="primary" size="sm" icon={<Plus size={16} />}>
+          <Button
+            variant="primary"
+            size="sm"
+            icon={<Plus size={16} />}
+            onClick={() => info('Fonctionnalite bientot disponible', 'La creation de types de rendez-vous sera disponible prochainement')}
+          >
             Nouveau type
           </Button>
         </div>
@@ -177,13 +184,13 @@ export function AppointmentTypes() {
                     }
                     align="end"
                   >
-                    <DropdownItem icon={<Edit2 size={16} />}>Modifier</DropdownItem>
-                    <DropdownItem icon={<Copy size={16} />}>Dupliquer</DropdownItem>
-                    <DropdownItem icon={type.isActive ? <EyeOff size={16} /> : <Eye size={16} />}>
+                    <DropdownItem icon={<Edit2 size={16} />} onClick={() => info('Fonctionnalite bientot disponible', `La modification de ${type.name} sera disponible prochainement`)}>Modifier</DropdownItem>
+                    <DropdownItem icon={<Copy size={16} />} onClick={() => info('Fonctionnalite bientot disponible', `La duplication de ${type.name} sera disponible prochainement`)}>Dupliquer</DropdownItem>
+                    <DropdownItem icon={type.isActive ? <EyeOff size={16} /> : <Eye size={16} />} onClick={() => info('Fonctionnalite bientot disponible', `Le changement de statut de ${type.name} sera disponible prochainement`)}>
                       {type.isActive ? 'Desactiver' : 'Activer'}
                     </DropdownItem>
                     <DropdownDivider />
-                    <DropdownItem icon={<Trash2 size={16} />} destructive>
+                    <DropdownItem icon={<Trash2 size={16} />} destructive onClick={() => warning('Fonctionnalite bientot disponible', `La suppression de ${type.name} sera disponible prochainement`)}>
                       Supprimer
                     </DropdownItem>
                   </Dropdown>
@@ -215,8 +222,8 @@ export function AppointmentTypes() {
                 </div>
 
                 <div className={styles.cardFooter}>
-                  <Button variant="ghost" size="sm">Voir details</Button>
-                  <Button variant="secondary" size="sm" icon={<Edit2 size={14} />}>
+                  <Button variant="ghost" size="sm" onClick={() => info('Fonctionnalite bientot disponible', `Les details de ${type.name} seront disponibles prochainement`)}>Voir details</Button>
+                  <Button variant="secondary" size="sm" icon={<Edit2 size={14} />} onClick={() => info('Fonctionnalite bientot disponible', `La modification de ${type.name} sera disponible prochainement`)}>
                     Modifier
                   </Button>
                 </div>

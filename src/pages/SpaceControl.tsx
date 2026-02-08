@@ -103,7 +103,7 @@ export function SpaceControl() {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
   const [createFormData, setCreateFormData] = useState<BookingFormData>(initialFormData);
-  const [visibleSpaces, setVisibleSpaces] = useState<Set<string>>(new Set());
+  const [userVisibleSpaces, setUserVisibleSpaces] = useState<Set<string> | null>(null);
 
   // Calculate date range based on view mode
   const dateRange = useMemo(() => {
@@ -173,12 +173,10 @@ export function SpaceControl() {
   const { data: spaces = [], isLoading: spacesLoading } = useActiveSpaces(studioId || '');
   const { data: clients = [], isLoading: clientsLoading } = useActiveClients(studioId || '');
 
-  // Initialize visible spaces when spaces load (React recommended pattern)
-  const [prevSpacesLength, setPrevSpacesLength] = useState(0);
-  if (spaces.length > 0 && spaces.length !== prevSpacesLength && visibleSpaces.size === 0) {
-    setPrevSpacesLength(spaces.length);
-    setVisibleSpaces(new Set(spaces.map(s => s.id)));
-  }
+  // Derive visible spaces: user overrides or all spaces by default
+  const allSpaceIds = useMemo(() => new Set(spaces.map(s => s.id)), [spaces]);
+  const visibleSpaces = userVisibleSpaces ?? allSpaceIds;
+  const setVisibleSpaces = setUserVisibleSpaces;
 
   // Filter bookings by visible spaces
   const filteredBookings = useMemo(() => {
@@ -318,15 +316,13 @@ export function SpaceControl() {
 
   // Toggle space visibility
   const toggleSpaceVisibility = (spaceId: string) => {
-    setVisibleSpaces(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(spaceId)) {
-        newSet.delete(spaceId);
-      } else {
-        newSet.add(spaceId);
-      }
-      return newSet;
-    });
+    const newSet = new Set(visibleSpaces);
+    if (newSet.has(spaceId)) {
+      newSet.delete(spaceId);
+    } else {
+      newSet.add(spaceId);
+    }
+    setVisibleSpaces(newSet);
   };
 
   // Toggle all spaces visibility

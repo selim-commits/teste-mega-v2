@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import {
   format,
   addDays,
@@ -15,6 +15,7 @@ import {
   Search,
   Printer,
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { useAuthStore } from '../stores/authStore';
 import { useBookings } from '../hooks/useBookings';
@@ -28,10 +29,61 @@ const TIME_SLOTS = Array.from({ length: 14 }, (_, i) => {
   return `${hour.toString().padStart(2, '0')}:00`;
 });
 
+// Dropdown option types
+type CalendarView = 'daily' | 'weekly' | 'monthly';
+type CalendarFilter = 'all' | string;
+type ZoomLevel = '0.5x' | '1x' | '2x';
+
+const VIEW_OPTIONS: { value: CalendarView; label: string }[] = [
+  { value: 'daily', label: 'Vue quotidienne' },
+  { value: 'weekly', label: 'Vue hebdomadaire' },
+  { value: 'monthly', label: 'Vue mensuelle' },
+];
+
+const ZOOM_OPTIONS: { value: ZoomLevel; label: string }[] = [
+  { value: '0.5x', label: '0.5x' },
+  { value: '1x', label: '1x' },
+  { value: '2x', label: '2x' },
+];
+
 export function Calendar() {
   const { studioId } = useAuthStore();
+  const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Dropdown states
+  const [viewMode, setViewMode] = useState<CalendarView>('daily');
+  const [calendarFilter, setCalendarFilter] = useState<CalendarFilter>('all');
+  const [zoomLevel, setZoomLevel] = useState<ZoomLevel>('1x');
+  const [openDropdown, setOpenDropdown] = useState<'view' | 'filter' | 'zoom' | 'add' | null>(null);
+
+  // Refs for click-outside handling
+  const viewDropdownRef = useRef<HTMLDivElement>(null);
+  const filterDropdownRef = useRef<HTMLDivElement>(null);
+  const zoomDropdownRef = useRef<HTMLDivElement>(null);
+  const addDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      const target = event.target as Node;
+      if (
+        openDropdown === 'view' && viewDropdownRef.current && !viewDropdownRef.current.contains(target) ||
+        openDropdown === 'filter' && filterDropdownRef.current && !filterDropdownRef.current.contains(target) ||
+        openDropdown === 'zoom' && zoomDropdownRef.current && !zoomDropdownRef.current.contains(target) ||
+        openDropdown === 'add' && addDropdownRef.current && !addDropdownRef.current.contains(target)
+      ) {
+        setOpenDropdown(null);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [openDropdown]);
+
+  const toggleDropdown = (dropdown: 'view' | 'filter' | 'zoom' | 'add') => {
+    setOpenDropdown(prev => prev === dropdown ? null : dropdown);
+  };
 
   // Calculate date range
   const dateRange = useMemo(() => {
@@ -103,16 +155,57 @@ export function Calendar() {
   // Count today's bookings
   const todayBookingsCount = bookings.length;
 
+  // Derive filter options from spaces
+  const filterOptions: { value: CalendarFilter; label: string }[] = useMemo(() => {
+    const options: { value: CalendarFilter; label: string }[] = [
+      { value: 'all', label: 'Tous les calendriers' },
+    ];
+    spaces.forEach(space => {
+      options.push({ value: space.id, label: space.name });
+    });
+    return options;
+  }, [spaces]);
+
   // Header actions
   const headerActions = (
     <>
-      <button className={styles.secondaryBtn}>
+      <button
+        className={styles.secondaryBtn}
+        onClick={() => navigate('/bookings')}
+      >
         BLOQUER UN CRÉNEAU
       </button>
-      <button className={styles.primaryBtn}>
-        AJOUTER
-        <ChevronDown size={16} />
-      </button>
+      <div className={styles.dropdown} ref={addDropdownRef}>
+        <button
+          className={styles.primaryBtn}
+          onClick={() => toggleDropdown('add')}
+        >
+          AJOUTER
+          <ChevronDown size={16} />
+        </button>
+        {openDropdown === 'add' && (
+          <div className={styles.dropdownMenu}>
+            <button
+              className={styles.dropdownMenuItem}
+              onClick={() => {
+                setOpenDropdown(null);
+                navigate('/bookings');
+              }}
+            >
+              Nouvelle réservation
+            </button>
+            <button
+              className={styles.dropdownMenuItem}
+              onClick={() => {
+                setOpenDropdown(null);
+                navigate('/bookings');
+              }}
+            >
+              Bloquer un créneau
+            </button>
+          </div>
+        )}
+      </div>
     </>
   );
 
@@ -137,25 +230,82 @@ export function Calendar() {
             <ChevronRight size={20} />
           </button>
 
-          <div className={styles.dropdown}>
-            <button className={styles.dropdownBtn}>
-              Vue quotidienne
+          <div className={styles.dropdown} ref={viewDropdownRef}>
+            <button
+              className={styles.dropdownBtn}
+              onClick={() => toggleDropdown('view')}
+            >
+              {VIEW_OPTIONS.find(o => o.value === viewMode)?.label}
               <ChevronDown size={16} />
             </button>
+            {openDropdown === 'view' && (
+              <div className={styles.dropdownMenu}>
+                {VIEW_OPTIONS.map(option => (
+                  <button
+                    key={option.value}
+                    className={`${styles.dropdownMenuItem} ${viewMode === option.value ? styles.dropdownMenuItemActive : ''}`}
+                    onClick={() => {
+                      setViewMode(option.value);
+                      setOpenDropdown(null);
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className={styles.dropdown}>
-            <button className={styles.dropdownBtn}>
-              Tous les calendriers
+          <div className={styles.dropdown} ref={filterDropdownRef}>
+            <button
+              className={styles.dropdownBtn}
+              onClick={() => toggleDropdown('filter')}
+            >
+              {filterOptions.find(o => o.value === calendarFilter)?.label ?? 'Tous les calendriers'}
               <ChevronDown size={16} />
             </button>
+            {openDropdown === 'filter' && (
+              <div className={styles.dropdownMenu}>
+                {filterOptions.map(option => (
+                  <button
+                    key={option.value}
+                    className={`${styles.dropdownMenuItem} ${calendarFilter === option.value ? styles.dropdownMenuItemActive : ''}`}
+                    onClick={() => {
+                      setCalendarFilter(option.value);
+                      setOpenDropdown(null);
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className={styles.dropdown}>
-            <button className={styles.dropdownBtn}>
-              1x
+          <div className={styles.dropdown} ref={zoomDropdownRef}>
+            <button
+              className={styles.dropdownBtn}
+              onClick={() => toggleDropdown('zoom')}
+            >
+              {zoomLevel}
               <ChevronDown size={16} />
             </button>
+            {openDropdown === 'zoom' && (
+              <div className={styles.dropdownMenu}>
+                {ZOOM_OPTIONS.map(option => (
+                  <button
+                    key={option.value}
+                    className={`${styles.dropdownMenuItem} ${zoomLevel === option.value ? styles.dropdownMenuItemActive : ''}`}
+                    onClick={() => {
+                      setZoomLevel(option.value);
+                      setOpenDropdown(null);
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
@@ -170,7 +320,7 @@ export function Calendar() {
               className={styles.searchInput}
             />
           </div>
-          <button className={styles.iconBtn} aria-label="Imprimer">
+          <button className={styles.iconBtn} aria-label="Imprimer" onClick={() => window.print()}>
             <Printer size={20} />
           </button>
         </div>

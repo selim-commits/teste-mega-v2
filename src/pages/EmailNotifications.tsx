@@ -15,6 +15,7 @@ import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Badge } from '../components/ui/Badge';
 import { Switch } from '../components/ui/Checkbox';
+import { useToast } from '../components/ui/Toast';
 import styles from './SettingsPage.module.css';
 
 interface EmailTemplate {
@@ -79,6 +80,43 @@ const emailTemplates: EmailTemplate[] = [
 
 export function EmailNotifications() {
   const [templates, setTemplates] = useState(emailTemplates);
+  const { addToast } = useToast();
+
+  const handleComingSoon = (action: string) => {
+    addToast({
+      title: 'Fonctionnalite bientot disponible',
+      description: `${action} sera disponible prochainement.`,
+      variant: 'info',
+      duration: 3000,
+    });
+  };
+
+  const handleNewTemplate = () => {
+    addToast({
+      title: 'Nouveau template',
+      description: 'L\'editeur de templates sera bientot disponible.',
+      variant: 'info',
+      duration: 3000,
+    });
+  };
+
+  const handlePreviewTemplate = (name: string) => {
+    addToast({
+      title: 'Apercu',
+      description: `Apercu du template "${name}" bientot disponible.`,
+      variant: 'info',
+      duration: 3000,
+    });
+  };
+
+  const handleEditTemplate = (name: string) => {
+    addToast({
+      title: 'Modification',
+      description: `L'edition du template "${name}" sera bientot disponible.`,
+      variant: 'info',
+      duration: 3000,
+    });
+  };
 
   const toggleTemplate = (id: string) => {
     setTemplates((prev) =>
@@ -137,7 +175,7 @@ export function EmailNotifications() {
         <Card padding="lg" className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>Parametres generaux</h3>
-            <Button variant="secondary" size="sm" icon={<Settings size={16} />}>
+            <Button variant="secondary" size="sm" icon={<Settings size={16} />} onClick={() => handleComingSoon('Configuration des parametres')}>
               Configurer
             </Button>
           </div>
@@ -150,7 +188,7 @@ export function EmailNotifications() {
                   <span className={styles.listItemSubtitle}>noreply@rooom-os.com</span>
                 </div>
               </div>
-              <Button variant="ghost" size="sm">Modifier</Button>
+              <Button variant="ghost" size="sm" onClick={() => handleComingSoon('Modification de l\'adresse d\'expedition')}>Modifier</Button>
             </div>
             <div className={styles.listItem}>
               <div className={styles.listItemInfo}>
@@ -159,7 +197,7 @@ export function EmailNotifications() {
                   <span className={styles.listItemSubtitle}>Rooom OS Studio</span>
                 </div>
               </div>
-              <Button variant="ghost" size="sm">Modifier</Button>
+              <Button variant="ghost" size="sm" onClick={() => handleComingSoon('Modification du nom d\'expediteur')}>Modifier</Button>
             </div>
           </div>
         </Card>
@@ -168,7 +206,7 @@ export function EmailNotifications() {
         <Card padding="lg" className={styles.sectionCard}>
           <div className={styles.sectionHeader}>
             <h3 className={styles.sectionTitle}>Templates d'emails</h3>
-            <Button variant="primary" size="sm" icon={<Plus size={16} />}>
+            <Button variant="primary" size="sm" icon={<Plus size={16} />} onClick={handleNewTemplate}>
               Nouveau template
             </Button>
           </div>
@@ -202,8 +240,8 @@ export function EmailNotifications() {
                   />
 
                   <div className={styles.listItemActions}>
-                    <Button variant="ghost" size="sm" icon={<Eye size={14} />} />
-                    <Button variant="ghost" size="sm" icon={<Edit2 size={14} />} />
+                    <Button variant="ghost" size="sm" icon={<Eye size={14} />} onClick={() => handlePreviewTemplate(template.name)} />
+                    <Button variant="ghost" size="sm" icon={<Edit2 size={14} />} onClick={() => handleEditTemplate(template.name)} />
                   </div>
                 </div>
               </div>

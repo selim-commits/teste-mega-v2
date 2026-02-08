@@ -83,9 +83,10 @@ export function TeamMemberFormModal({
   }, [formData]);
 
   const handleSubmit = useCallback(() => {
+    if (isSubmitting) return;
     if (!validateForm()) return;
     onSubmit(formData);
-  }, [formData, validateForm, onSubmit]);
+  }, [formData, validateForm, onSubmit, isSubmitting]);
 
   const handleClose = useCallback(() => {
     setFormData(defaultFormData);
@@ -160,6 +161,7 @@ export function TeamMemberFormModal({
           variant="primary"
           onClick={handleSubmit}
           loading={isSubmitting}
+          disabled={isSubmitting}
         >
           {submitLabel}
         </Button>

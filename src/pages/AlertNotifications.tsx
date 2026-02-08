@@ -16,6 +16,7 @@ import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Switch } from '../components/ui/Checkbox';
+import { useToast } from '../components/ui/Toast';
 import styles from './SettingsPage.module.css';
 
 interface AlertSetting {
@@ -76,9 +77,41 @@ const alertSettings: AlertSetting[] = [
   },
 ];
 
+const STORAGE_KEY = 'rooom_alert_prefs';
+
+interface SavedAlertPrefs {
+  alerts: Array<{ id: string; email: boolean; push: boolean; sms: boolean }>;
+  quietHours: boolean;
+}
+
+function loadSavedPrefs(): SavedAlertPrefs | null {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      return JSON.parse(saved) as SavedAlertPrefs;
+    }
+  } catch {
+    // Ignore invalid JSON
+  }
+  return null;
+}
+
+function applyPrefsToAlerts(defaults: AlertSetting[], saved: SavedAlertPrefs | null): AlertSetting[] {
+  if (!saved) return defaults;
+  return defaults.map((alert) => {
+    const savedAlert = saved.alerts.find((a) => a.id === alert.id);
+    if (savedAlert) {
+      return { ...alert, email: savedAlert.email, push: savedAlert.push, sms: savedAlert.sms };
+    }
+    return alert;
+  });
+}
+
 export function AlertNotifications() {
-  const [alerts, setAlerts] = useState(alertSettings);
-  const [quietHours, setQuietHours] = useState(true);
+  const savedPrefs = loadSavedPrefs();
+  const [alerts, setAlerts] = useState(() => applyPrefsToAlerts(alertSettings, savedPrefs));
+  const [quietHours, setQuietHours] = useState(() => savedPrefs?.quietHours ?? true);
+  const { addToast } = useToast();
 
   const toggleChannel = (id: string, channel: 'email' | 'push' | 'sms') => {
     setAlerts((prev) =>
@@ -86,6 +119,29 @@ export function AlertNotifications() {
         alert.id === id ? { ...alert, [channel]: !alert[channel] } : alert
       )
     );
+  };
+
+  const handleSavePreferences = () => {
+    try {
+      const prefsToSave: SavedAlertPrefs = {
+        alerts: alerts.map(({ id, email, push, sms }) => ({ id, email, push, sms })),
+        quietHours,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(prefsToSave));
+      addToast({
+        title: 'Preferences enregistrees',
+        description: 'Vos preferences d\'alertes ont ete sauvegardees avec succes.',
+        variant: 'success',
+        duration: 3000,
+      });
+    } catch {
+      addToast({
+        title: 'Erreur',
+        description: 'Impossible de sauvegarder les preferences.',
+        variant: 'error',
+        duration: 4000,
+      });
+    }
   };
 
   const activeAlerts = alerts.filter((a) => a.email || a.push || a.sms).length;
@@ -230,7 +286,7 @@ export function AlertNotifications() {
 
         {/* Save Button */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'var(--space-4)' }}>
-          <Button variant="primary" icon={<Check size={16} />}>
+          <Button variant="primary" icon={<Check size={16} />} onClick={handleSavePreferences}>
             Enregistrer les preferences
           </Button>
         </div>
