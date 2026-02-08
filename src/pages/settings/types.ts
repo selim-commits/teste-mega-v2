@@ -68,6 +68,23 @@ export interface BillingSettingsData {
   vatNumber: string;
 }
 
+export interface RefundTier {
+  threshold: string;
+  percentage: string;
+}
+
+export interface CancellationPolicySettings {
+  cancellationWindow: string;
+  customWindowHours: string;
+  refundTiers: RefundTier[];
+  lateCancellationFeeEnabled: boolean;
+  lateCancellationFeeAmount: string;
+  noShowFeeEnabled: boolean;
+  noShowFeeAmount: string;
+  gracePeriodMinutes: string;
+  confirmationMessage: string;
+}
+
 // Helper to generate slug from name
 export const generateSlug = (name: string): string => {
   return name
@@ -136,4 +153,20 @@ export const defaultBillingSettings: BillingSettingsData = {
   legalMentions: 'ROOOM Studio - SARL au capital de 10 000 EUR\nRCS Paris B 123 456 789',
   siret: '123 456 789 00012',
   vatNumber: 'FR 12 123456789',
+};
+
+export const defaultCancellationPolicy: CancellationPolicySettings = {
+  cancellationWindow: '48',
+  customWindowHours: '',
+  refundTiers: [
+    { threshold: '72', percentage: '100' },
+    { threshold: '48', percentage: '50' },
+    { threshold: '24', percentage: '0' },
+  ],
+  lateCancellationFeeEnabled: false,
+  lateCancellationFeeAmount: '50',
+  noShowFeeEnabled: false,
+  noShowFeeAmount: '100',
+  gracePeriodMinutes: '15',
+  confirmationMessage: 'Votre reservation a ete annulee avec succes. Un email de confirmation vous a ete envoye. Si un remboursement est applicable, il sera traite sous 5 a 10 jours ouvrables.',
 };

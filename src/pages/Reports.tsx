@@ -11,11 +11,17 @@ import {
   UserPlus,
   CreditCard,
   CalendarCheck,
+  FileSpreadsheet,
+  FileText,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 import { Select } from '../components/ui/Select';
+import { Dropdown, DropdownItem, DropdownLabel } from '../components/ui/Dropdown';
+import { useNotifications } from '../stores/uiStore';
+import { exportCSV, exportPDF } from './reports/exportUtils';
+import type { ReportExportData } from './reports/exportUtils';
 import styles from './Reports.module.css';
 
 // ─── Types ──────────────────────────────────────────────
@@ -335,65 +341,38 @@ export function Reports() {
     [data.spaces]
   );
 
-  // ─── Export CSV ─────────────────────────────────────
+  // ─── Notifications ──────────────────────────────────
+
+  const { success: notifySuccess } = useNotifications();
+
+  // ─── Export Data ───────────────────────────────────
+
+  const exportData: ReportExportData = useMemo(() => ({
+    kpis: data.kpis.map((k) => ({ label: k.label, value: k.value, change: k.change })),
+    monthlyRevenue: data.monthlyRevenue,
+    spaces: data.spaces.map((s) => ({ name: s.name, percentage: s.percentage })),
+    weeklyBookings: data.weeklyBookings,
+    topClients: data.topClients,
+    activities: data.activities.map((a) => ({
+      type: a.type,
+      title: a.title,
+      description: a.description,
+      amount: a.amount,
+      time: a.time,
+    })),
+  }), [data]);
+
+  // ─── Export Handlers ──────────────────────────────
 
   const handleExportCSV = useCallback(() => {
-    const lines: string[] = [];
+    exportCSV(exportData, period);
+    notifySuccess('Export CSV', 'Le rapport a ete telecharge au format CSV.');
+  }, [exportData, period, notifySuccess]);
 
-    // Header
-    lines.push('Section,Metrique,Valeur');
-
-    // KPIs
-    for (const kpi of data.kpis) {
-      lines.push(`KPI,"${kpi.label}","${kpi.value}"`);
-    }
-
-    // Monthly Revenue
-    lines.push('');
-    lines.push('Mois,Revenu');
-    for (const m of data.monthlyRevenue) {
-      lines.push(`${m.month},${m.value}`);
-    }
-
-    // Space Repartition
-    lines.push('');
-    lines.push('Espace,Pourcentage');
-    for (const s of data.spaces) {
-      lines.push(`"${s.name}",${s.percentage}%`);
-    }
-
-    // Weekly Bookings
-    lines.push('');
-    lines.push('Semaine,Reservations');
-    for (const w of data.weeklyBookings) {
-      lines.push(`${w.label},${w.value}`);
-    }
-
-    // Top Clients
-    lines.push('');
-    lines.push('Client,Revenu');
-    for (const c of data.topClients) {
-      lines.push(`"${c.name}",${c.revenue}`);
-    }
-
-    // Activities
-    lines.push('');
-    lines.push('Type,Titre,Description,Montant,Date');
-    for (const a of data.activities) {
-      lines.push(`${a.type},"${a.title}","${a.description}",${a.amount ?? ''},"${a.time}"`);
-    }
-
-    const csv = lines.join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `rooom-rapport-${period}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, [data, period]);
+  const handleExportPDF = useCallback(() => {
+    exportPDF(exportData, period);
+    notifySuccess('Export PDF', 'Le rapport a ete envoye a l\'impression.');
+  }, [exportData, period, notifySuccess]);
 
   // ─── Render ─────────────────────────────────────────
 
@@ -413,14 +392,33 @@ export function Reports() {
             onChange={setPeriod}
           />
           <div className={styles.toolbarActions}>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon={<Download size={16} />}
-              onClick={handleExportCSV}
+            <Dropdown
+              trigger={
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={<Download size={16} />}
+                >
+                  Exporter
+                </Button>
+              }
+              align="end"
+              label="Options d'export"
             >
-              Exporter CSV
-            </Button>
+              <DropdownLabel>Format d'export</DropdownLabel>
+              <DropdownItem
+                icon={<FileSpreadsheet size={16} />}
+                onClick={handleExportCSV}
+              >
+                Exporter en CSV
+              </DropdownItem>
+              <DropdownItem
+                icon={<FileText size={16} />}
+                onClick={handleExportPDF}
+              >
+                Imprimer / PDF
+              </DropdownItem>
+            </Dropdown>
           </div>
         </div>
 

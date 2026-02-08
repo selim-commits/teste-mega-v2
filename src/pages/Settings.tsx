@@ -6,6 +6,7 @@ import {
   CreditCard,
   CalendarCog,
   Plug,
+  ShieldX,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../components/ui/Tabs';
@@ -18,6 +19,7 @@ import { BookingSettingsSection } from './settings/BookingSettingsSection';
 import { NotificationsSection } from './settings/NotificationsSection';
 import { IntegrationsSection } from './settings/IntegrationsSection';
 import { BillingSection } from './settings/BillingSection';
+import { CancellationPolicySection } from './settings/CancellationPolicySection';
 import styles from './Settings.module.css';
 
 // Settings tabs configuration
@@ -25,6 +27,7 @@ const settingsTabs = [
   { id: 'profile', label: 'Profil Studio', icon: Building2 },
   { id: 'hours', label: 'Horaires', icon: Clock },
   { id: 'booking', label: 'Reservations', icon: CalendarCog },
+  { id: 'cancellation', label: 'Annulations', icon: ShieldX },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'integrations', label: 'Integrations', icon: Plug },
   { id: 'billing', label: 'Facturation', icon: CreditCard },
@@ -62,6 +65,9 @@ export function Settings() {
             </TabsContent>
             <TabsContent value="booking">
               <BookingSettingsSection studioId={studioId} />
+            </TabsContent>
+            <TabsContent value="cancellation">
+              <CancellationPolicySection studioId={studioId} />
             </TabsContent>
             <TabsContent value="notifications">
               <NotificationsSection studioId={studioId} />

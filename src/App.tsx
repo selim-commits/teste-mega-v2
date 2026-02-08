@@ -34,6 +34,7 @@ const AlertNotifications = lazy(() => import('./pages/AlertNotifications').then(
 const Tasks = lazy(() => import('./pages/Tasks').then(m => ({ default: m.Tasks })));
 const Automations = lazy(() => import('./pages/Automations').then(m => ({ default: m.Automations })));
 const Revenue = lazy(() => import('./pages/Revenue').then(m => ({ default: m.Revenue })));
+const ClientPortal = lazy(() => import('./pages/ClientPortal').then(m => ({ default: m.ClientPortal })));
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 
 // Minimal loading fallback for page transitions
@@ -66,6 +67,7 @@ function App() {
                     <Route path="/spaces" element={<Calendar />} />
                     <Route path="/bookings" element={<Bookings />} />
                     <Route path="/clients" element={<Clients />} />
+                    <Route path="/client-portal" element={<ClientPortal />} />
                     <Route path="/finance" element={<Finance />} />
                     <Route path="/reports" element={<Reports />} />
 

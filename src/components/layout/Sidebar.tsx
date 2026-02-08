@@ -28,6 +28,7 @@ const navSections: NavSection[] = [
       { label: 'Calendrier', path: '/spaces' },
       { label: 'Page Rendez-vous', path: '/bookings' },
       { label: 'Clients', path: '/clients' },
+      { label: 'Portail Client', path: '/client-portal' },
       { label: 'Factures', path: '/finance' },
       { label: 'Rapports', path: '/reports' },
     ],

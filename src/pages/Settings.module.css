@@ -970,6 +970,83 @@
   border-color: var(--border-strong);
 }
 
+/* Refund Tiers */
+.refundTiersList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.refundTierItem {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+}
+
+.refundTierFields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  flex: 1;
+  min-width: 0;
+}
+
+.refundTierRemove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.refundTierRemove:hover {
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
+  border-color: var(--state-error);
+}
+
+.addTierButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-3);
+  background-color: transparent;
+  border: 2px dashed var(--border-default);
+  border-radius: var(--radius-lg);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.addTierButton:hover {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  background-color: var(--bg-secondary);
+}
+
+/* Currency Suffix */
+.currencySuffix {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
 @media (max-width: 600px) {
   .billingItem {
     grid-template-columns: 1fr;
@@ -991,5 +1068,18 @@
 
   .depositPercentageRow {
     padding-left: 0;
+  }
+
+  .refundTierFields {
+    grid-template-columns: 1fr;
+  }
+
+  .refundTierItem {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .refundTierRemove {
+    align-self: flex-end;
   }
 }
