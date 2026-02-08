@@ -24,6 +24,7 @@ const navSections: NavSection[] = [
   {
     label: 'Aperçu',
     items: [
+      { label: 'Tableau de bord', path: '/dashboard' },
       { label: 'Calendrier', path: '/spaces' },
       { label: 'Page Rendez-vous', path: '/bookings' },
       { label: 'Clients', path: '/clients' },
@@ -37,12 +38,12 @@ const navSections: NavSection[] = [
       { label: 'Disponibilité', path: '/availability' },
       { label: 'Types de rendez-vous', path: '/appointment-types' },
       { label: 'Packs, cadeaux et abonnements', path: '/packs' },
+      { label: 'Inventaire', path: '/inventory' },
       { label: 'Tâches', path: '/tasks' },
       { label: 'Intégrations', path: '/integrations' },
       { label: 'Synchroniser vos différents calendriers', path: '/calendar-sync' },
       { label: 'Paramètres de paiement', path: '/payments' },
       { label: 'Tarification', path: '/revenue' },
-      { label: 'Automations', path: '/automations' },
     ],
   },
   {
@@ -51,6 +52,22 @@ const navSections: NavSection[] = [
       { label: 'E-mails client', path: '/notifications/email' },
       { label: 'Text Messages client', path: '/notifications/sms' },
       { label: 'Alertes relatives aux réservations', path: '/notifications/alerts' },
+    ],
+  },
+  {
+    label: 'Outils avancés',
+    items: [
+      { label: 'Widget Builder', path: '/widgets' },
+      { label: 'Automations', path: '/automations' },
+      { label: 'AI Console', path: '/ai' },
+      { label: 'Messages', path: '/chat' },
+    ],
+  },
+  {
+    label: 'Administration',
+    items: [
+      { label: 'Équipe', path: '/team' },
+      { label: 'Paramètres', path: '/settings' },
     ],
   },
 ];
