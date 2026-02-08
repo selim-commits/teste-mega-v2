@@ -104,17 +104,26 @@ interface GuestGuardProps {
  * ```
  */
 export function GuestGuard({ children, redirectTo = '/' }: GuestGuardProps) {
-  const { user, initialized, loading } = useAuthContext()
+  const { user, initialized } = useAuthContext()
   const location = useLocation()
 
-  // Show nothing while auth is initializing
-  if (!initialized || loading) {
-    return null
+  // In demo mode, show the page immediately (no auth needed)
+  if (isDemoMode) {
+    return <>{children}</>
+  }
+
+  // Wait only for initialization, NOT for loading (operations like signIn)
+  // Otherwise the page disappears during login attempts
+  if (!initialized) {
+    return (
+      <div className="auth-guard-loading">
+        <div className="auth-guard-spinner" />
+      </div>
+    )
   }
 
   // Redirect authenticated users
   if (user) {
-    // Redirect to the page they came from, or the default redirect path
     const from = (location.state as { from?: Location })?.from?.pathname ?? redirectTo
     return <Navigate to={from} replace />
   }

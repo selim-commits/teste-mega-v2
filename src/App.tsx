@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/queryClient';
 import { AuthProvider } from './contexts/AuthContext';
@@ -7,6 +7,7 @@ import { ToastProvider } from './components/ui/Toast';
 import { AppLayout } from './components/layout/AppLayout';
 import { AuthGuard, GuestGuard } from './components/auth/AuthGuard';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { AuthCallback } from './components/auth/AuthCallback';
 
 // Lazy-loaded pages for route-based code splitting
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -52,6 +53,8 @@ function App() {
                 <Routes>
                   {/* Auth pages (outside AuthGuard) */}
                   <Route path="/login" element={<GuestGuard><Login /></GuestGuard>} />
+                  <Route path="/auth/callback" element={<AuthCallback />} />
+                  <Route path="/auth/reset-password" element={<AuthCallback />} />
 
                   <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
                     {/* Aperçu */}
@@ -85,6 +88,9 @@ function App() {
                     <Route path="/team" element={<Team />} />
                     <Route path="/settings" element={<Settings />} />
                   </Route>
+
+                  {/* Catch-all: redirect unknown routes to login */}
+                  <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
               </Suspense>
             </BrowserRouter>
