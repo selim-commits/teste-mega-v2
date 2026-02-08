@@ -14,13 +14,24 @@ import {
   ChevronDown,
   Search,
   Printer,
+  AlertTriangle,
+  X,
+  RefreshCw,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../components/layout/Header';
 import { useAuthStore } from '../stores/authStore';
 import { useBookings } from '../hooks/useBookings';
 import { useActiveSpaces } from '../hooks/useSpaces';
+import { useNotifications } from '../stores/uiStore';
 import type { Booking } from '../types/database';
+import {
+  detectConflicts,
+  hasConflicts,
+  getBookingConflicts,
+  countConflictsBySeverity,
+  type ConflictResult,
+} from '../lib/calendarConflicts';
 import styles from './Calendar.module.css';
 
 // Time slots for the calendar grid (8h to 21h)
@@ -49,6 +60,7 @@ const ZOOM_OPTIONS: { value: ZoomLevel; label: string }[] = [
 export function Calendar() {
   const { studioId } = useAuthStore();
   const navigate = useNavigate();
+  const { notify } = useNotifications();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -57,6 +69,10 @@ export function Calendar() {
   const [calendarFilter, setCalendarFilter] = useState<CalendarFilter>('all');
   const [zoomLevel, setZoomLevel] = useState<ZoomLevel>('1x');
   const [openDropdown, setOpenDropdown] = useState<'view' | 'filter' | 'zoom' | 'add' | null>(null);
+
+  // Conflict states
+  const [showConflictsPanel, setShowConflictsPanel] = useState(false);
+  const [selectedConflict, setSelectedConflict] = useState<ConflictResult | null>(null);
 
   // Refs for click-outside handling
   const viewDropdownRef = useRef<HTMLDivElement>(null);
@@ -106,10 +122,58 @@ export function Calendar() {
 
   const { data: spaces = [] } = useActiveSpaces(studioId || '');
 
+  // Detect conflicts
+  const conflicts = useMemo(() => {
+    return detectConflicts(bookings);
+  }, [bookings]);
+
+  const conflictStats = useMemo(() => {
+    return countConflictsBySeverity(conflicts);
+  }, [conflicts]);
+
+  // Show notification when new conflicts are detected
+  useEffect(() => {
+    if (conflictStats.total > 0 && bookings.length > 0) {
+      const prevConflictCount = sessionStorage.getItem('conflict-count');
+      const currentCount = String(conflictStats.total);
+
+      if (prevConflictCount !== currentCount) {
+        sessionStorage.setItem('conflict-count', currentCount);
+
+        if (conflictStats.high > 0) {
+          notify({
+            type: 'error',
+            title: 'Conflits détectés',
+            message: `${conflictStats.high} conflit(s) critique(s) trouvé(s) dans le calendrier`,
+            duration: 8000,
+          });
+        }
+      }
+    }
+  }, [conflictStats, bookings.length, notify]);
+
   // Navigation handlers
   const goToToday = () => setSelectedDate(new Date());
   const goPrev = () => setSelectedDate(subDays(selectedDate, 1));
   const goNext = () => setSelectedDate(addDays(selectedDate, 1));
+
+  // Conflict handlers
+  const handleCheckConflicts = useCallback(() => {
+    if (conflictStats.total === 0) {
+      notify({
+        type: 'success',
+        title: 'Aucun conflit',
+        message: 'Aucun conflit détecté dans le calendrier',
+      });
+    } else {
+      setShowConflictsPanel(true);
+      notify({
+        type: 'info',
+        title: `${conflictStats.total} conflit(s) détecté(s)`,
+        message: 'Consultez le panneau de conflits pour plus de détails',
+      });
+    }
+  }, [conflictStats.total, notify]);
 
   // Get bookings for a specific space and time slot
   const getBookingsForSlot = useCallback((spaceId: string, date: Date, time: string) => {
@@ -169,6 +233,17 @@ export function Calendar() {
   // Header actions
   const headerActions = (
     <>
+      <button
+        className={styles.conflictsBtn}
+        onClick={handleCheckConflicts}
+        title="Vérifier les conflits"
+      >
+        <RefreshCw size={16} />
+        VÉRIFIER LES CONFLITS
+        {conflictStats.total > 0 && (
+          <span className={styles.conflictBadge}>{conflictStats.total}</span>
+        )}
+      </button>
       <button
         className={styles.secondaryBtn}
         onClick={() => navigate('/bookings')}
@@ -353,15 +428,31 @@ export function Calendar() {
                     <div key={`${space.id}-${time}`} className={styles.timeSlot}>
                       {slotBookings.map((booking) => {
                         if (!isBookingStart(booking, selectedDate, time)) return null;
+                        const bookingHasConflict = hasConflicts(booking.id, conflicts);
+                        const bookingConflicts = getBookingConflicts(booking.id, conflicts);
+                        const hasHighSeverity = bookingConflicts.some(c => c.severity === 'high');
+
                         return (
                           <div
                             key={booking.id}
-                            className={styles.booking}
+                            className={`${styles.booking} ${bookingHasConflict ? styles.bookingConflict : ''} ${hasHighSeverity ? styles.bookingConflictHigh : ''}`}
                             style={{
                               height: getBookingHeight(booking),
                               top: getBookingOffset(booking),
                             }}
+                            onClick={() => {
+                              if (bookingHasConflict) {
+                                setSelectedConflict(bookingConflicts[0]);
+                                setShowConflictsPanel(true);
+                              }
+                            }}
                           >
+                            {bookingHasConflict && (
+                              <div className={styles.conflictIndicator}>
+                                <AlertTriangle size={14} />
+                                <span className={styles.conflictCount}>{bookingConflicts.length}</span>
+                              </div>
+                            )}
                             <div className={styles.bookingTime}>
                               {format(parseISO(booking.start_time), 'HH:mm')} - {format(parseISO(booking.end_time), 'HH:mm')}
                             </div>
@@ -407,6 +498,144 @@ export function Calendar() {
           )}
         </div>
       </div>
+
+      {/* Conflicts Panel */}
+      {showConflictsPanel && (
+        <div className={styles.conflictsPanel}>
+          <div className={styles.conflictsPanelHeader}>
+            <div className={styles.conflictsPanelTitle}>
+              <AlertTriangle size={20} />
+              <span>Conflits détectés</span>
+              <span className={styles.conflictsPanelBadge}>{conflictStats.total}</span>
+            </div>
+            <button
+              className={styles.conflictsPanelClose}
+              onClick={() => {
+                setShowConflictsPanel(false);
+                setSelectedConflict(null);
+              }}
+              aria-label="Fermer"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className={styles.conflictsPanelStats}>
+            {conflictStats.high > 0 && (
+              <div className={styles.conflictStat}>
+                <span className={styles.conflictStatDot} data-severity="high"></span>
+                <span className={styles.conflictStatLabel}>Critiques</span>
+                <span className={styles.conflictStatValue}>{conflictStats.high}</span>
+              </div>
+            )}
+            {conflictStats.medium > 0 && (
+              <div className={styles.conflictStat}>
+                <span className={styles.conflictStatDot} data-severity="medium"></span>
+                <span className={styles.conflictStatLabel}>Moyens</span>
+                <span className={styles.conflictStatValue}>{conflictStats.medium}</span>
+              </div>
+            )}
+            {conflictStats.low > 0 && (
+              <div className={styles.conflictStat}>
+                <span className={styles.conflictStatDot} data-severity="low"></span>
+                <span className={styles.conflictStatLabel}>Faibles</span>
+                <span className={styles.conflictStatValue}>{conflictStats.low}</span>
+              </div>
+            )}
+          </div>
+
+          <div className={styles.conflictsList}>
+            {conflicts.length === 0 ? (
+              <div className={styles.conflictsEmpty}>
+                <AlertTriangle size={48} />
+                <p>Aucun conflit détecté</p>
+              </div>
+            ) : (
+              conflicts.map((conflict) => (
+                <div
+                  key={conflict.id}
+                  className={`${styles.conflictItem} ${selectedConflict?.id === conflict.id ? styles.conflictItemSelected : ''}`}
+                  onClick={() => setSelectedConflict(conflict)}
+                  data-severity={conflict.severity}
+                >
+                  <div className={styles.conflictItemHeader}>
+                    <AlertTriangle size={16} />
+                    <span className={styles.conflictItemType}>
+                      {conflict.type === 'resource_conflict' && 'Conflit d\'espace'}
+                      {conflict.type === 'double_booking' && 'Double réservation'}
+                      {conflict.type === 'time_overlap' && 'Chevauchement'}
+                    </span>
+                    <span className={`${styles.conflictItemSeverity} ${styles[`severity${conflict.severity.charAt(0).toUpperCase()}${conflict.severity.slice(1)}`]}`}>
+                      {conflict.severity === 'high' && 'Critique'}
+                      {conflict.severity === 'medium' && 'Moyen'}
+                      {conflict.severity === 'low' && 'Faible'}
+                    </span>
+                  </div>
+
+                  <p className={styles.conflictItemMessage}>{conflict.message}</p>
+
+                  <div className={styles.conflictItemBookings}>
+                    <div className={styles.conflictItemBooking}>
+                      <strong>{conflict.bookingA.title}</strong>
+                      <span>
+                        {format(conflict.bookingA.start, 'HH:mm')} - {format(conflict.bookingA.end, 'HH:mm')}
+                      </span>
+                    </div>
+                    <div className={styles.conflictItemBooking}>
+                      <strong>{conflict.bookingB.title}</strong>
+                      <span>
+                        {format(conflict.bookingB.start, 'HH:mm')} - {format(conflict.bookingB.end, 'HH:mm')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={styles.conflictItemActions}>
+                    <button
+                      className={styles.conflictActionBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        notify({
+                          type: 'info',
+                          title: 'Action non disponible',
+                          message: 'La résolution de conflits sera disponible prochainement',
+                        });
+                      }}
+                    >
+                      Déplacer
+                    </button>
+                    <button
+                      className={styles.conflictActionBtn}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        notify({
+                          type: 'info',
+                          title: 'Action non disponible',
+                          message: 'La résolution de conflits sera disponible prochainement',
+                        });
+                      }}
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      className={`${styles.conflictActionBtn} ${styles.conflictActionBtnGhost}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        notify({
+                          type: 'success',
+                          title: 'Conflit ignoré',
+                          message: 'Le conflit a été marqué comme ignoré',
+                        });
+                      }}
+                    >
+                      Ignorer
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

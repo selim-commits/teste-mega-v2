@@ -35,6 +35,8 @@ const Tasks = lazy(() => import('./pages/Tasks').then(m => ({ default: m.Tasks }
 const Automations = lazy(() => import('./pages/Automations').then(m => ({ default: m.Automations })));
 const Revenue = lazy(() => import('./pages/Revenue').then(m => ({ default: m.Revenue })));
 const ClientPortal = lazy(() => import('./pages/ClientPortal').then(m => ({ default: m.ClientPortal })));
+const PhotoGallery = lazy(() => import('./pages/PhotoGallery').then(m => ({ default: m.PhotoGallery })));
+const Reviews = lazy(() => import('./pages/Reviews').then(m => ({ default: m.Reviews })));
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 
 // Minimal loading fallback for page transitions
@@ -68,8 +70,10 @@ function App() {
                     <Route path="/bookings" element={<Bookings />} />
                     <Route path="/clients" element={<Clients />} />
                     <Route path="/client-portal" element={<ClientPortal />} />
+                    <Route path="/reviews" element={<Reviews />} />
                     <Route path="/finance" element={<Finance />} />
                     <Route path="/reports" element={<Reports />} />
+                    <Route path="/photo-gallery" element={<PhotoGallery />} />
 
                     {/* Paramètres de l'entreprise */}
                     <Route path="/availability" element={<Availability />} />

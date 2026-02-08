@@ -29,6 +29,8 @@ const navSections: NavSection[] = [
       { label: 'Page Rendez-vous', path: '/bookings' },
       { label: 'Clients', path: '/clients' },
       { label: 'Portail Client', path: '/client-portal' },
+      { label: 'Avis & Notes', path: '/reviews' },
+      { label: 'Galerie Photos', path: '/photo-gallery' },
       { label: 'Factures', path: '/finance' },
       { label: 'Rapports', path: '/reports' },
     ],
