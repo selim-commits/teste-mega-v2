@@ -1,0 +1,688 @@
+/* AlertNotifications Page Styles */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animateIn {
+  animation: fadeInUp var(--duration-slow) var(--ease-out) both;
+}
+
+.animateInLeft {
+  animation: fadeInLeft var(--duration-slow) var(--ease-out) both;
+}
+
+.page {
+  min-height: 100vh;
+  background-color: var(--bg-secondary);
+}
+
+.content {
+  padding: var(--content-padding);
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--card-gap);
+  margin-bottom: var(--section-gap);
+}
+
+@media (max-width: 1200px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.statIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.statLabel {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Section Card */
+.sectionCard {
+  margin-bottom: var(--card-gap);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.sectionSubtitle {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* Alert Categories Grid */
+.alertGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+.alertGridHeader {
+  display: grid;
+  grid-template-columns: 1fr 80px 80px 80px 120px;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-default);
+  margin-bottom: var(--space-2);
+}
+
+.alertGridHeaderLabel {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.alertGridHeaderLabelCenter {
+  composes: alertGridHeaderLabel;
+  justify-content: center;
+}
+
+.alertRow {
+  display: grid;
+  grid-template-columns: 1fr 80px 80px 80px 120px;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.alertRow:hover {
+  background-color: var(--bg-hover);
+}
+
+.alertInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.alertIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.alertText {
+  display: flex;
+  flex-direction: column;
+}
+
+.alertName {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+
+.alertDescription {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.channelToggle {
+  display: flex;
+  justify-content: center;
+}
+
+.prioritySelect {
+  appearance: none;
+  height: 32px;
+  padding: 0 var(--space-6) 0 var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-1) center;
+  transition: border-color var(--duration-fast) var(--ease-default);
+}
+
+.prioritySelect:hover {
+  border-color: var(--border-strong);
+}
+
+.prioritySelect:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+/* Custom Rules */
+.rulesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.ruleItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.ruleItem:hover {
+  background-color: var(--bg-hover);
+}
+
+.ruleInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.ruleTrigger {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: var(--text-base);
+}
+
+.ruleDetails {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.ruleChannelBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.ruleActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.ruleActionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.ruleActionBtn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.ruleActionBtnDanger:hover {
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
+}
+
+.emptyRules {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  gap: var(--space-3);
+  text-align: center;
+  color: var(--text-tertiary);
+}
+
+.emptyRulesTitle {
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.emptyRulesText {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+/* Quiet Hours */
+.quietHoursContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.quietHoursToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.quietHoursToggleInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.quietHoursToggleIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.quietHoursToggleText {
+  display: flex;
+  flex-direction: column;
+}
+
+.quietHoursToggleTitle {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.quietHoursToggleSubtitle {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+.quietHoursTimeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.quietHoursTimeLabel {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  min-width: 40px;
+}
+
+.quietHoursTimeInput {
+  height: 36px;
+  padding: 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-fast) var(--ease-default);
+}
+
+.quietHoursTimeInput:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+.quietHoursTimeInput:disabled {
+  background-color: var(--bg-tertiary);
+  color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.quietHoursDays {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.quietHoursDayChip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+  user-select: none;
+}
+
+.quietHoursDayChip:hover:not(.quietHoursDayChipDisabled) {
+  border-color: var(--border-strong);
+  background-color: var(--bg-hover);
+}
+
+.quietHoursDayChipActive {
+  background-color: var(--accent-primary);
+  color: var(--color-white);
+  border-color: var(--accent-primary);
+}
+
+.quietHoursDayChipActive:hover {
+  background-color: var(--accent-primary-hover);
+}
+
+.quietHoursDayChipDisabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.quietHoursUrgent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--state-warning-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--state-warning);
+}
+
+.quietHoursUrgentInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.quietHoursUrgentIcon {
+  color: var(--state-warning);
+}
+
+.quietHoursUrgentText {
+  display: flex;
+  flex-direction: column;
+}
+
+.quietHoursUrgentTitle {
+  font-weight: 500;
+  color: var(--text-primary);
+  font-size: var(--text-sm);
+}
+
+.quietHoursUrgentSubtitle {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+/* Notification History */
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.historyItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.historyItem:hover {
+  background-color: var(--bg-hover);
+}
+
+.historyIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.historyIconSuccess {
+  composes: historyIcon;
+  background-color: var(--state-success-bg);
+  color: var(--state-success);
+}
+
+.historyIconError {
+  composes: historyIcon;
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
+}
+
+.historyIconWarning {
+  composes: historyIcon;
+  background-color: var(--state-warning-bg);
+  color: var(--state-warning);
+}
+
+.historyIconInfo {
+  composes: historyIcon;
+  background-color: var(--state-info-bg);
+  color: var(--state-info);
+}
+
+.historyContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.historyMessage {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.historyMeta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+}
+
+.historyChannel {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.historyDot {
+  width: 3px;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background-color: var(--text-muted);
+}
+
+.historyStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.historyStatusSuccess {
+  composes: historyStatus;
+  background-color: var(--state-success-bg);
+  color: var(--state-success);
+}
+
+.historyStatusError {
+  composes: historyStatus;
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
+}
+
+.emptyHistory {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  gap: var(--space-3);
+  text-align: center;
+  color: var(--text-tertiary);
+}
+
+/* Modal Form */
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.formLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.formSelect {
+  appearance: none;
+  height: 40px;
+  padding: 0 var(--space-8) 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  transition: border-color var(--duration-fast) var(--ease-default);
+  cursor: pointer;
+}
+
+.formSelect:hover {
+  border-color: var(--border-strong);
+}
+
+.formSelect:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* Save Button Bar */
+.saveBar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--space-4);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .alertGridHeader {
+    display: none;
+  }
+
+  .alertRow {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .channelToggle {
+    justify-content: flex-start;
+  }
+}

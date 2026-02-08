@@ -1,0 +1,516 @@
+/* CalendarSync Page Styles */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInLeft {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animateIn {
+  animation: fadeInUp var(--duration-slow) var(--ease-out) both;
+}
+
+.animateInLeft {
+  animation: fadeInLeft var(--duration-slow) var(--ease-out) both;
+}
+
+.page {
+  min-height: 100vh;
+  background-color: var(--bg-secondary);
+}
+
+.content {
+  padding: var(--content-padding);
+}
+
+/* Stats Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--card-gap);
+  margin-bottom: var(--section-gap);
+}
+
+@media (max-width: 1200px) {
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.statIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.statValue {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.statLabel {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* Provider Cards Grid */
+.providersGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: var(--card-gap);
+  margin-bottom: var(--card-gap);
+}
+
+@media (max-width: 768px) {
+  .providersGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Provider Card */
+.providerCard {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-xl);
+  background-color: var(--bg-primary);
+  overflow: hidden;
+  transition: box-shadow var(--duration-fast) var(--ease-default),
+              border-color var(--duration-fast) var(--ease-default);
+}
+
+.providerCard:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.providerCardConnected {
+  border-color: var(--state-success);
+}
+
+.providerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.providerInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.providerIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xl);
+  background-color: var(--bg-tertiary);
+  flex-shrink: 0;
+}
+
+.providerName {
+  display: flex;
+  flex-direction: column;
+}
+
+.providerTitle {
+  font-weight: 600;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.providerDescription {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.providerBody {
+  padding: var(--space-4) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Connected info bar */
+.connectedInfo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3);
+  background-color: var(--state-success-bg);
+  border-radius: var(--radius-md);
+  gap: var(--space-3);
+}
+
+.connectedInfoText {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.lastSyncText {
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.lastSyncTime {
+  font-weight: 500;
+  color: var(--state-success);
+}
+
+/* Settings section inside provider card */
+.settingsSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.settingRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.settingLabel {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.settingSelect {
+  appearance: none;
+  height: 36px;
+  padding: 0 var(--space-8) 0 var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B6B6B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-2) center;
+  transition: border-color var(--duration-fast) var(--ease-default);
+}
+
+.settingSelect:hover {
+  border-color: var(--border-strong);
+}
+
+.settingSelect:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px var(--accent-primary-light);
+}
+
+/* Calendars checkboxes */
+.calendarsGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.calendarsLabel {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-1);
+}
+
+.calendarCheckboxes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+@media (max-width: 480px) {
+  .calendarCheckboxes {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* iCal URL field */
+.icalUrlField {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.icalUrlLabel {
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.icalUrlWrapper {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.icalUrlInput {
+  flex: 1;
+  height: 36px;
+  padding: 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icalUrlInput:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+/* Disconnected state placeholder */
+.disconnectedMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+  gap: var(--space-3);
+  color: var(--text-tertiary);
+}
+
+.disconnectedMessage svg {
+  color: var(--text-muted);
+}
+
+.disconnectedMessage p {
+  font-size: var(--text-sm);
+  margin: 0;
+  max-width: 240px;
+}
+
+/* Section Card */
+.sectionCard {
+  margin-bottom: var(--card-gap);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.sectionSubtitle {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: var(--space-1) 0 0 0;
+}
+
+/* Conflict resolution settings */
+.conflictSettings {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.conflictRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.conflictRow:hover {
+  background-color: var(--bg-hover);
+}
+
+.conflictRowInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.conflictRowTitle {
+  font-weight: 500;
+  font-size: var(--text-base);
+  color: var(--text-primary);
+}
+
+.conflictRowSubtitle {
+  font-size: var(--text-sm);
+  color: var(--text-tertiary);
+}
+
+/* Sync History / Log */
+.logContainer {
+  margin-bottom: var(--card-gap);
+}
+
+.logList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.logItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  transition: background-color var(--duration-fast) var(--ease-default);
+}
+
+.logItem:hover {
+  background-color: var(--bg-hover);
+}
+
+.logIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logIconImport {
+  background-color: var(--state-info-bg);
+  color: var(--state-info);
+}
+
+.logIconExport {
+  background-color: var(--state-success-bg);
+  color: var(--state-success);
+}
+
+.logIconConflict {
+  background-color: var(--state-warning-bg);
+  color: var(--state-warning);
+}
+
+.logIconError {
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
+}
+
+.logContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.logTitle {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.logDescription {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.logTimestamp {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Empty state for disconnected */
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12);
+  gap: var(--space-4);
+  text-align: center;
+}
+
+.emptyState svg {
+  color: var(--text-muted);
+}
+
+.emptyState h3 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.emptyState p {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 300px;
+}
+
+/* Two columns for conflict section */
+.twoColumns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--card-gap);
+}
+
+@media (max-width: 900px) {
+  .twoColumns {
+    grid-template-columns: 1fr;
+  }
+}
