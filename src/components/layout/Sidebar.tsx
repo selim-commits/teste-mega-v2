@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ChevronDown, X, LogOut } from 'lucide-react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, ChevronDown, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { useAuthContext } from '../../contexts/AuthContext';
 import styles from './Sidebar.module.css';
 
 interface NavItem {
@@ -223,17 +222,6 @@ function MiniCalendar() {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { user, signOut } = useAuthContext();
-
-  const userEmail = user?.email || '';
-  const userName = user?.user_metadata?.full_name || user?.user_metadata?.name || userEmail.split('@')[0];
-  const userInitial = (userName?.[0] || 'U').toUpperCase();
-
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/', { replace: true });
-  };
 
   // Close sidebar on navigation (mobile)
   useEffect(() => {
@@ -260,11 +248,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           <X size={24} />
         </button>
 
-        {/* Logo */}
-        <div className={styles.logo}>
-          <span className={styles.logoText}>acuity:scheduling</span>
-        </div>
-
         {/* Scrollable content: Calendar + Navigation */}
         <nav className={styles.nav}>
           {/* Mini Calendar */}
@@ -290,24 +273,6 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
           ))}
         </nav>
-
-        {/* User Profile at Bottom */}
-        <div className={styles.userProfile}>
-          <div className={styles.userAvatar}>
-            <span>{userInitial}</span>
-          </div>
-          <div className={styles.userInfo}>
-            <span className={styles.userName}>{userName}</span>
-            <span className={styles.userEmail}>{userEmail}</span>
-          </div>
-          <button
-            className={styles.logoutBtn}
-            onClick={handleLogout}
-            aria-label="Se deconnecter"
-          >
-            <LogOut size={18} />
-          </button>
-        </div>
       </aside>
     </>
   );

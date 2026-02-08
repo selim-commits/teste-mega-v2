@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import { Navbar } from './Navbar';
 import { Sidebar } from './Sidebar';
 import styles from './AppLayout.module.css';
 
@@ -12,21 +13,9 @@ export function AppLayout() {
         Aller au contenu principal
       </a>
 
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Navbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
 
-      {/* Mobile Header with Hamburger */}
-      <div className={styles.mobileHeader}>
-        <button
-          className={styles.hamburger}
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Menu"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-        <span className={styles.mobileLogoText}>acuity:scheduling</span>
-      </div>
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <main id="main-content" className={styles.main}>
         <Outlet />

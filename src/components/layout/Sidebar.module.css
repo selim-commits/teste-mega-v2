@@ -2,10 +2,10 @@
 
 .sidebar {
   position: fixed;
-  top: 0;
+  top: 56px; /* Below navbar */
   left: 0;
   width: 320px;
-  height: 100vh;
+  height: calc(100vh - 56px);
   background-color: var(--bg-primary);
   border-right: 1px solid var(--border-default);
   display: flex;

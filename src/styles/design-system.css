@@ -30,13 +30,13 @@
   --border-default: #E5E5E5;
   --border-subtle: #EBEBEB;
   --border-strong: #D1D5DB;
-  --border-focus: #1E3A5F;
+  --border-focus: #1A1A1A;
 
-  /* Accent - Dark Blue */
-  --accent-primary: #1E3A5F;
-  --accent-primary-hover: #152A45;
-  --accent-primary-light: #E8EEF4;
-  --accent-primary-lighter: #F0F5FA;
+  /* Accent - Monochrome Black */
+  --accent-primary: #1A1A1A;
+  --accent-primary-hover: #000000;
+  --accent-primary-light: #F0F0F0;
+  --accent-primary-lighter: #F5F5F5;
 
   /* Semantic Colors */
   --state-success: #22C55E;

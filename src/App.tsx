@@ -37,7 +37,7 @@ const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login }
 function PageLoader() {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
-      <div style={{ width: 32, height: 32, border: '3px solid var(--border-light, #e5e5e5)', borderTopColor: 'var(--accent-primary, #1E3A5F)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <div style={{ width: 32, height: 32, border: '3px solid var(--border-light, #e5e5e5)', borderTopColor: 'var(--accent-primary, #1A1A1A)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
     </div>
   );
 }
