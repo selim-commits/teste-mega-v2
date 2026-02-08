@@ -5,7 +5,7 @@ import { queryClient } from './lib/queryClient';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import { AppLayout } from './components/layout/AppLayout';
-import { AuthGuard } from './components/auth/AuthGuard';
+import { AuthGuard, GuestGuard } from './components/auth/AuthGuard';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Lazy-loaded pages for route-based code splitting
@@ -30,6 +30,7 @@ const Payments = lazy(() => import('./pages/Payments').then(m => ({ default: m.P
 const EmailNotifications = lazy(() => import('./pages/EmailNotifications').then(m => ({ default: m.EmailNotifications })));
 const SMSNotifications = lazy(() => import('./pages/SMSNotifications').then(m => ({ default: m.SMSNotifications })));
 const AlertNotifications = lazy(() => import('./pages/AlertNotifications').then(m => ({ default: m.AlertNotifications })));
+const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 
 // Minimal loading fallback for page transitions
 function PageLoader() {
@@ -49,6 +50,9 @@ function App() {
             <BrowserRouter>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
+                  {/* Auth pages (outside AuthGuard) */}
+                  <Route path="/login" element={<GuestGuard><Login /></GuestGuard>} />
+
                   <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
                     {/* Aperçu */}
                     <Route path="/" element={<Dashboard />} />
