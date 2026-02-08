@@ -37,9 +37,12 @@ const Revenue = lazy(() => import('./pages/Revenue').then(m => ({ default: m.Rev
 const ClientPortal = lazy(() => import('./pages/ClientPortal').then(m => ({ default: m.ClientPortal })));
 const PhotoGallery = lazy(() => import('./pages/PhotoGallery').then(m => ({ default: m.PhotoGallery })));
 const Reviews = lazy(() => import('./pages/Reviews').then(m => ({ default: m.Reviews })));
+const Benchmarking = lazy(() => import('./pages/Benchmarking').then(m => ({ default: m.Benchmarking })));
 const AccessControl = lazy(() => import('./pages/AccessControl').then(m => ({ default: m.AccessControl })));
 const ApiDocs = lazy(() => import('./pages/ApiDocs').then(m => ({ default: m.ApiDocs })));
 const Webhooks = lazy(() => import('./pages/Webhooks').then(m => ({ default: m.Webhooks })));
+const AIPricing = lazy(() => import('./pages/AIPricing').then(m => ({ default: m.AIPricing })));
+const IdentityVerification = lazy(() => import('./pages/IdentityVerification').then(m => ({ default: m.IdentityVerification })));
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
 
 // Minimal loading fallback for page transitions
@@ -73,9 +76,11 @@ function App() {
                     <Route path="/bookings" element={<Bookings />} />
                     <Route path="/clients" element={<Clients />} />
                     <Route path="/client-portal" element={<ClientPortal />} />
+                    <Route path="/identity-verification" element={<IdentityVerification />} />
                     <Route path="/reviews" element={<Reviews />} />
                     <Route path="/finance" element={<Finance />} />
                     <Route path="/reports" element={<Reports />} />
+                    <Route path="/benchmarking" element={<Benchmarking />} />
                     <Route path="/photo-gallery" element={<PhotoGallery />} />
 
                     {/* Paramètres de l'entreprise */}
@@ -99,6 +104,7 @@ function App() {
                     <Route path="/widgets" element={<WidgetBuilder />} />
                     <Route path="/automations" element={<Automations />} />
                     <Route path="/ai" element={<AIConsole />} />
+                    <Route path="/ai-pricing" element={<AIPricing />} />
                     <Route path="/chat" element={<Chat />} />
                     <Route path="/api-docs" element={<ApiDocs />} />
                     <Route path="/webhooks" element={<Webhooks />} />
