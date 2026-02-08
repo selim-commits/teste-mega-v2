@@ -1073,6 +1073,303 @@
   border-radius: var(--radius-md);
 }
 
+/* ============================================
+   CRM ENHANCEMENTS - Client Detail Sidebar
+   ============================================ */
+
+/* CRM Tags */
+.crmTagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.crmTag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid var(--border-default);
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.crmTag:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.crmTag.crmTagActive {
+  border-color: transparent;
+  color: var(--color-white);
+}
+
+/* Client Score Circle */
+.clientScoreCircle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.scoreCircleWrapper {
+  position: relative;
+  width: 96px;
+  height: 96px;
+}
+
+.scoreCircleSvg {
+  width: 96px;
+  height: 96px;
+  transform: rotate(-90deg);
+}
+
+.scoreCircleTrack {
+  fill: none;
+  stroke: var(--border-default);
+  stroke-width: 6;
+}
+
+.scoreCircleProgress {
+  fill: none;
+  stroke-width: 6;
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--duration-slow) var(--ease-default);
+}
+
+.scoreCircleValue {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.scoreCircleNumber {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+  line-height: var(--leading-none);
+}
+
+.scoreCircleSuffix {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.scoreCircleLabel {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* CRM Stats Summary */
+.crmStatsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.crmStatCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+}
+
+.crmStatCardValue {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.crmStatCardLabel {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+/* Activity Timeline */
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: var(--space-6);
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 6px;
+  bottom: 6px;
+  width: 1px;
+  background-color: var(--border-default);
+}
+
+.timelineItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-bottom: var(--space-4);
+}
+
+.timelineItem:last-child {
+  padding-bottom: 0;
+}
+
+.timelineDot {
+  position: absolute;
+  left: calc(-1 * var(--space-6) + 4px);
+  top: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-primary);
+  border: 2px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.timelineDot svg {
+  width: 8px;
+  height: 8px;
+}
+
+.timelineItemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.timelineType {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+}
+
+.timelineDate {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.timelineDescription {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+}
+
+/* Notes Section */
+.notesList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.noteCard {
+  padding: var(--space-3);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  border-left: 2px solid var(--accent-primary);
+}
+
+.noteText {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0 0 var(--space-2) 0;
+  white-space: pre-wrap;
+}
+
+.noteMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.addNoteBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background: none;
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.addNoteBtn:hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.noteForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.noteTextarea {
+  width: 100%;
+  padding: var(--space-3);
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-family: inherit;
+  color: var(--text-primary);
+  resize: vertical;
+  min-height: 80px;
+  line-height: var(--leading-relaxed);
+  transition: border-color var(--duration-fast) var(--ease-default);
+}
+
+.noteTextarea::placeholder {
+  color: var(--text-muted);
+}
+
+.noteTextarea:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.noteFormActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
 /* Mobile Styles */
 @media (max-width: 768px) {
   .content {

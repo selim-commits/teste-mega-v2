@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useDebounce } from '../hooks/useDebounce';
 import {
   MessageCircle,
@@ -14,6 +14,13 @@ import {
   Package,
   Trash2,
   CheckCheck,
+  Smartphone,
+  Users,
+  Zap,
+  StickyNote,
+  Settings,
+  Eye,
+  Lock,
 } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -41,6 +48,21 @@ import type {
 
 import styles from './Chat.module.css';
 
+// ==================== TYPES ====================
+
+type ChannelType = 'email' | 'sms' | 'chat' | 'internal';
+type PriorityLevel = 'haute' | 'normale' | 'basse';
+type ChannelFilter = 'all' | ChannelType;
+type StatusFilterType = 'unread' | 'assigned' | 'waiting' | 'resolved';
+type InputMode = 'message' | 'note';
+
+interface ExtendedConversation extends ChatConversation {
+  channel?: ChannelType;
+  priority?: PriorityLevel;
+}
+
+// ==================== CONSTANTS ====================
+
 const statusLabels: Record<ConversationStatus, string> = {
   active: 'Actif',
   waiting_human: 'En attente',
@@ -57,48 +79,198 @@ const statusColors: Record<ConversationStatus, BadgeVariant> = {
   closed: 'default',
 };
 
+const channelIcons: Record<ChannelType, typeof Mail> = {
+  email: Mail,
+  sms: Smartphone,
+  chat: MessageCircle,
+  internal: Users,
+};
+
+const channelLabels: Record<ChannelType, string> = {
+  email: 'Email',
+  sms: 'SMS',
+  chat: 'Chat',
+  internal: 'Interne',
+};
+
+const channelStyleMap: Record<ChannelType, string> = {
+  email: styles.channelEmail,
+  sms: styles.channelSms,
+  chat: styles.channelChat,
+  internal: styles.channelInternal,
+};
+
+const priorityStyleMap: Record<PriorityLevel, string> = {
+  haute: styles.priorityHaute,
+  normale: styles.priorityNormale,
+  basse: styles.priorityBasse,
+};
+
+const QUICK_REPLIES = [
+  'Bonjour ! Merci pour votre message. Je reviens vers vous rapidement.',
+  'Votre reservation est confirmee pour le [date]. A bientot !',
+  'Merci pour votre paiement. Votre facture est disponible dans votre espace.',
+  'Notre studio est disponible aux horaires suivants : [horaires].',
+  "N'hesitez pas a nous contacter pour toute question supplementaire.",
+  'Nous vous remercions pour votre fidelite. Voici un code promo : MERCI10',
+];
+
+// ==================== HELPERS ====================
+
+/** Assign channel and priority to raw conversations for demo display */
+function enrichConversations(conversations: ChatConversation[]): ExtendedConversation[] {
+  const channels: ChannelType[] = ['email', 'sms', 'chat', 'internal'];
+  const priorities: PriorityLevel[] = ['haute', 'normale', 'normale', 'basse'];
+
+  return conversations.map((conv, index) => ({
+    ...conv,
+    channel: channels[index % channels.length],
+    priority: priorities[index % priorities.length],
+  }));
+}
+
+// ==================== COMPONENT ====================
+
 export function Chat() {
   const { studioId } = useAuthStore();
   const { info, warning } = useNotifications();
+
+  // Selection state
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+
+  // Search
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery);
-  const [statusFilter, setStatusFilter] = useState<ConversationStatus | 'all'>('all');
-  const [newMessage, setNewMessage] = useState('');
-  const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Channel filter
+  const [channelFilter, setChannelFilter] = useState<ChannelFilter>('all');
+
+  // Status filters (multi-select)
+  const [activeStatusFilters, setActiveStatusFilters] = useState<Set<StatusFilterType>>(new Set());
+
+  // Message input
+  const [newMessage, setNewMessage] = useState('');
+  const [inputMode, setInputMode] = useState<InputMode>('message');
+  const [showQuickReplies, setShowQuickReplies] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const quickRepliesRef = useRef<HTMLDivElement>(null);
+
+  // Data hooks
   const { data: conversationsData } = useStudioConversations(studioId || '');
-  const conversations = useMemo(() => (conversationsData || []) as ChatConversation[], [conversationsData]);
+  const rawConversations = useMemo(
+    () => (conversationsData || []) as ChatConversation[],
+    [conversationsData],
+  );
+  const conversations = useMemo(() => enrichConversations(rawConversations), [rawConversations]);
+
   const { data: selectedConversationData } = useConversation(selectedConversationId || '');
-  const selectedConversation = selectedConversationData as (ChatConversation & { messages?: Array<{ id: string; sender_type: string; content: string; created_at: string; metadata?: Record<string, unknown> }> }) | null;
+  const selectedConversation = selectedConversationData as
+    | (ChatConversation & {
+        messages?: Array<{
+          id: string;
+          sender_type: string;
+          content: string;
+          created_at: string;
+          is_internal?: boolean;
+          metadata?: Record<string, unknown>;
+        }>;
+      })
+    | null;
   const sendMessage = useSendMessage();
   const resolveConversation = useResolveConversation();
   const assignConversation = useAssignConversation();
 
-  // Filter conversations
+  // Find the enriched version of the selected conversation for channel/priority display
+  const selectedExtended = useMemo(
+    () => conversations.find((c) => c.id === selectedConversationId) || null,
+    [conversations, selectedConversationId],
+  );
+
+  // ==================== FILTERING ====================
+
   const filteredConversations = useMemo(() => {
     return conversations.filter((conv) => {
+      // Search filter
       const matchesSearch =
         debouncedSearch === '' ||
         conv.visitor_name?.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
         conv.visitor_email?.toLowerCase().includes(debouncedSearch.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || conv.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [conversations, debouncedSearch, statusFilter]);
 
-  // Stats
+      // Channel filter
+      const matchesChannel = channelFilter === 'all' || conv.channel === channelFilter;
+
+      // Status filters (if none selected, show all)
+      let matchesStatus = true;
+      if (activeStatusFilters.size > 0) {
+        const checks: boolean[] = [];
+        if (activeStatusFilters.has('unread')) {
+          checks.push(conv.unread_count > 0);
+        }
+        if (activeStatusFilters.has('assigned')) {
+          checks.push(conv.status === 'with_human');
+        }
+        if (activeStatusFilters.has('waiting')) {
+          checks.push(conv.status === 'waiting_human');
+        }
+        if (activeStatusFilters.has('resolved')) {
+          checks.push(conv.status === 'resolved' || conv.status === 'closed');
+        }
+        matchesStatus = checks.some(Boolean);
+      }
+
+      return matchesSearch && matchesChannel && matchesStatus;
+    });
+  }, [conversations, debouncedSearch, channelFilter, activeStatusFilters]);
+
+  // ==================== STATS ====================
+
   const stats = useMemo(() => {
-    const active = conversations.filter((c) => c.status === 'active' || c.status === 'with_human').length;
+    const active = conversations.filter(
+      (c) => c.status === 'active' || c.status === 'with_human',
+    ).length;
     const waiting = conversations.filter((c) => c.status === 'waiting_human').length;
-    const resolved = conversations.filter((c) => c.status === 'resolved' || c.status === 'closed').length;
+    const resolved = conversations.filter(
+      (c) => c.status === 'resolved' || c.status === 'closed',
+    ).length;
     return { active, waiting, resolved, total: conversations.length };
   }, [conversations]);
+
+  // Channel counts
+  const channelCounts = useMemo(() => {
+    const counts: Record<ChannelType | 'all', number> = {
+      all: conversations.length,
+      email: 0,
+      sms: 0,
+      chat: 0,
+      internal: 0,
+    };
+    conversations.forEach((conv) => {
+      if (conv.channel) {
+        counts[conv.channel]++;
+      }
+    });
+    return counts;
+  }, [conversations]);
+
+  // ==================== EFFECTS ====================
 
   // Scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedConversation]);
+
+  // Close quick replies on outside click
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (quickRepliesRef.current && !quickRepliesRef.current.contains(event.target as Node)) {
+        setShowQuickReplies(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // ==================== HANDLERS ====================
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !selectedConversationId) return;
@@ -109,7 +281,8 @@ export function Chat() {
         message: {
           sender_type: 'human',
           sender_id: studioId || undefined,
-          content: newMessage.trim(),
+          content: inputMode === 'note' ? `[NOTE INTERNE] ${newMessage.trim()}` : newMessage.trim(),
+          metadata: inputMode === 'note' ? { is_internal_note: true } : undefined,
         },
       });
       setNewMessage('');
@@ -131,11 +304,51 @@ export function Chat() {
     });
   };
 
+  const toggleStatusFilter = useCallback((filter: StatusFilterType) => {
+    setActiveStatusFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(filter)) {
+        next.delete(filter);
+      } else {
+        next.add(filter);
+      }
+      return next;
+    });
+  }, []);
+
+  const handleQuickReply = useCallback(
+    (template: string) => {
+      setNewMessage(template);
+      setShowQuickReplies(false);
+    },
+    [],
+  );
+
+  const handleManageTemplates = useCallback(() => {
+    info('Bientot disponible', 'La gestion des templates sera disponible prochainement.');
+    setShowQuickReplies(false);
+  }, [info]);
+
+  // ==================== HELPERS (message detection) ====================
+
+  const isInternalNote = (msg: { content: string; metadata?: Record<string, unknown> }): boolean => {
+    return (
+      msg.content.startsWith('[NOTE INTERNE]') ||
+      (msg.metadata != null && 'is_internal_note' in msg.metadata && msg.metadata.is_internal_note === true)
+    );
+  };
+
+  const getCleanContent = (msg: { content: string }): string => {
+    return msg.content.replace(/^\[NOTE INTERNE\]\s*/, '');
+  };
+
+  // ==================== RENDER ====================
+
   return (
     <div className={styles.page}>
       <Header
-        title="Conversations"
-        subtitle="Gerez vos conversations clients et chatbot"
+        title="Boite de reception"
+        subtitle="Gerez toutes vos conversations clients en un seul endroit"
       />
 
       <div className={styles.content}>
@@ -184,25 +397,58 @@ export function Chat() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
-              <div className={styles.filterButtons}>
+
+              {/* Channel Tabs */}
+              <div className={styles.channelTabs}>
                 <button
-                  className={`${styles.filterBtn} ${statusFilter === 'all' ? styles.active : ''}`}
-                  onClick={() => setStatusFilter('all')}
+                  className={`${styles.channelTab} ${channelFilter === 'all' ? styles.active : ''}`}
+                  onClick={() => setChannelFilter('all')}
                 >
                   Tous
+                  <span className={styles.channelTabCount}>{channelCounts.all}</span>
+                </button>
+                {(Object.keys(channelLabels) as ChannelType[]).map((channel) => {
+                  const Icon = channelIcons[channel];
+                  return (
+                    <button
+                      key={channel}
+                      className={`${styles.channelTab} ${channelFilter === channel ? styles.active : ''}`}
+                      onClick={() => setChannelFilter(channel)}
+                    >
+                      <Icon size={14} />
+                      {channelLabels[channel]}
+                      <span className={styles.channelTabCount}>{channelCounts[channel]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Status Filter Pills */}
+              <div className={styles.filterButtons}>
+                <button
+                  className={`${styles.filterBtn} ${activeStatusFilters.has('unread') ? styles.active : ''}`}
+                  onClick={() => toggleStatusFilter('unread')}
+                >
+                  Non lu
                 </button>
                 <button
-                  className={`${styles.filterBtn} ${statusFilter === 'waiting_human' ? styles.active : ''}`}
-                  onClick={() => setStatusFilter('waiting_human')}
+                  className={`${styles.filterBtn} ${activeStatusFilters.has('assigned') ? styles.active : ''}`}
+                  onClick={() => toggleStatusFilter('assigned')}
+                >
+                  Assigne a moi
+                </button>
+                <button
+                  className={`${styles.filterBtn} ${activeStatusFilters.has('waiting') ? styles.active : ''}`}
+                  onClick={() => toggleStatusFilter('waiting')}
                 >
                   <AlertCircle size={14} />
                   En attente
                 </button>
                 <button
-                  className={`${styles.filterBtn} ${statusFilter === 'active' ? styles.active : ''}`}
-                  onClick={() => setStatusFilter('active')}
+                  className={`${styles.filterBtn} ${activeStatusFilters.has('resolved') ? styles.active : ''}`}
+                  onClick={() => toggleStatusFilter('resolved')}
                 >
-                  Actives
+                  Resolu
                 </button>
               </div>
             </div>
@@ -221,13 +467,37 @@ export function Chat() {
                       selectedConversationId === conv.id ? styles.selected : ''
                     } ${conv.status === 'waiting_human' ? styles.urgent : ''}`}
                     onClick={() => setSelectedConversationId(conv.id)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedConversationId(conv.id); } }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedConversationId(conv.id);
+                      }
+                    }}
                     role="button"
                     tabIndex={0}
                   >
+                    {/* Priority Dot */}
+                    {conv.priority && conv.priority !== 'normale' && (
+                      <span
+                        className={`${styles.priorityDot} ${priorityStyleMap[conv.priority]}`}
+                      />
+                    )}
+
                     <div className={styles.convAvatar}>
                       <User size={20} />
+                      {/* Channel indicator badge */}
+                      {conv.channel && (
+                        <span
+                          className={`${styles.channelIndicator} ${channelStyleMap[conv.channel]}`}
+                        >
+                          {(() => {
+                            const ChIcon = channelIcons[conv.channel];
+                            return <ChIcon size={10} />;
+                          })()}
+                        </span>
+                      )}
                     </div>
+
                     <div className={styles.convInfo}>
                       <div className={styles.convHeader}>
                         <span className={styles.convName}>
@@ -280,6 +550,19 @@ export function Chat() {
                         <Badge variant={statusColors[selectedConversation.status]} size="sm">
                           {statusLabels[selectedConversation.status]}
                         </Badge>
+                        {selectedExtended?.channel && (
+                          <Badge variant="default" size="sm">
+                            {channelLabels[selectedExtended.channel]}
+                          </Badge>
+                        )}
+                        {selectedExtended?.priority && selectedExtended.priority !== 'normale' && (
+                          <Badge
+                            variant={selectedExtended.priority === 'haute' ? 'error' : 'default'}
+                            size="sm"
+                          >
+                            {selectedExtended.priority === 'haute' ? 'Priorite haute' : 'Priorite basse'}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -289,12 +572,13 @@ export function Chat() {
                         Prendre en charge
                       </Button>
                     )}
-                    {selectedConversation.status !== 'resolved' && selectedConversation.status !== 'closed' && (
-                      <Button size="sm" variant="ghost" onClick={handleResolve}>
-                        <CheckCircle2 size={16} />
-                        Resoudre
-                      </Button>
-                    )}
+                    {selectedConversation.status !== 'resolved' &&
+                      selectedConversation.status !== 'closed' && (
+                        <Button size="sm" variant="ghost" onClick={handleResolve}>
+                          <CheckCircle2 size={16} />
+                          Resoudre
+                        </Button>
+                      )}
                     <Dropdown
                       trigger={
                         <Button size="sm" variant="ghost">
@@ -313,7 +597,12 @@ export function Chat() {
                       <DropdownItem
                         icon={<Trash2 size={16} />}
                         destructive
-                        onClick={() => warning('Fonctionnalite bientot disponible', 'La suppression de conversations sera disponible prochainement')}
+                        onClick={() =>
+                          warning(
+                            'Fonctionnalite bientot disponible',
+                            'La suppression de conversations sera disponible prochainement',
+                          )
+                        }
                       >
                         Supprimer conversation
                       </DropdownItem>
@@ -323,79 +612,192 @@ export function Chat() {
 
                 {/* Messages */}
                 <div className={styles.messagesArea}>
-                  {selectedConversation.messages?.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={`${styles.message} ${
-                        msg.sender_type === 'visitor' ? styles.clientMsg : styles.supportMsg
-                      }`}
-                    >
-                      <div className={styles.msgAvatar}>
-                        {msg.sender_type === 'ai' ? (
-                          <Bot size={16} />
-                        ) : msg.sender_type === 'visitor' ? (
-                          <User size={16} />
-                        ) : (
-                          <User size={16} />
-                        )}
-                      </div>
-                      <div className={styles.msgContent}>
-                        <div className={styles.msgHeader}>
-                          <span className={styles.msgSender}>
-                            {msg.sender_type === 'ai'
-                              ? 'YODA AI'
-                              : msg.sender_type === 'visitor'
-                              ? selectedConversation.visitor_name || 'Visiteur'
-                              : 'Support'}
-                          </span>
-                          <span className={styles.msgTime}>
-                            {format(new Date(msg.created_at), 'HH:mm', { locale: fr })}
-                          </span>
+                  {selectedConversation.messages?.map((msg) => {
+                    const noteMsg = isInternalNote(msg);
+                    const msgClass = noteMsg
+                      ? styles.internalNoteMsg
+                      : msg.sender_type === 'visitor'
+                        ? styles.clientMsg
+                        : styles.supportMsg;
+
+                    return (
+                      <div
+                        key={msg.id}
+                        className={`${styles.message} ${msgClass}`}
+                      >
+                        <div className={styles.msgAvatar}>
+                          {noteMsg ? (
+                            <StickyNote size={16} />
+                          ) : msg.sender_type === 'ai' ? (
+                            <Bot size={16} />
+                          ) : msg.sender_type === 'visitor' ? (
+                            <User size={16} />
+                          ) : (
+                            <User size={16} />
+                          )}
                         </div>
-                        <div className={styles.msgText}>{msg.content}</div>
-                        {msg.metadata && typeof msg.metadata === 'object' && 'space_name' in msg.metadata && (
-                          <div className={styles.msgCard}>
-                            <Calendar size={16} />
-                            <div>
-                              <strong>Reservation proposee</strong>
-                              <p>{String((msg.metadata as Record<string, unknown>).space_name)} - {String((msg.metadata as Record<string, unknown>).date || '')}</p>
-                            </div>
+                        <div className={styles.msgContent}>
+                          <div className={styles.msgHeader}>
+                            <span className={styles.msgSender}>
+                              {noteMsg
+                                ? 'Note interne'
+                                : msg.sender_type === 'ai'
+                                  ? 'YODA AI'
+                                  : msg.sender_type === 'visitor'
+                                    ? selectedConversation.visitor_name || 'Visiteur'
+                                    : 'Support'}
+                            </span>
+                            <span className={styles.msgTime}>
+                              {format(new Date(msg.created_at), 'HH:mm', { locale: fr })}
+                            </span>
                           </div>
-                        )}
-                        {msg.metadata && typeof msg.metadata === 'object' && 'pack_name' in msg.metadata && (
-                          <div className={styles.msgCard}>
-                            <Package size={16} />
-                            <div>
-                              <strong>Pack suggere</strong>
-                              <p>{String((msg.metadata as Record<string, unknown>).pack_name)} - {String((msg.metadata as Record<string, unknown>).price || '')}$</p>
-                            </div>
+                          {noteMsg && (
+                            <span className={styles.internalNoteLabel}>
+                              <Lock size={10} />
+                              Note visible uniquement par l&apos;equipe
+                            </span>
+                          )}
+                          <div className={styles.msgText}>
+                            {noteMsg ? getCleanContent(msg) : msg.content}
                           </div>
-                        )}
+                          {msg.metadata &&
+                            typeof msg.metadata === 'object' &&
+                            'space_name' in msg.metadata && (
+                              <div className={styles.msgCard}>
+                                <Calendar size={16} />
+                                <div>
+                                  <strong>Reservation proposee</strong>
+                                  <p>
+                                    {String(
+                                      (msg.metadata as Record<string, unknown>).space_name,
+                                    )}{' '}
+                                    -{' '}
+                                    {String(
+                                      (msg.metadata as Record<string, unknown>).date || '',
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          {msg.metadata &&
+                            typeof msg.metadata === 'object' &&
+                            'pack_name' in msg.metadata && (
+                              <div className={styles.msgCard}>
+                                <Package size={16} />
+                                <div>
+                                  <strong>Pack suggere</strong>
+                                  <p>
+                                    {String(
+                                      (msg.metadata as Record<string, unknown>).pack_name,
+                                    )}{' '}
+                                    -{' '}
+                                    {String(
+                                      (msg.metadata as Record<string, unknown>).price || '',
+                                    )}
+                                    $
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Message Input */}
-                <div className={styles.inputArea}>
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Tapez votre message..."
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        handleSendMessage();
-                      }
-                    }}
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim() || sendMessage.isPending}
+                {/* Input Wrapper */}
+                <div className={styles.inputWrapper}>
+                  {/* Input Mode Toggle */}
+                  <div className={styles.inputModeBar}>
+                    <div className={styles.inputModeToggle}>
+                      <button
+                        className={`${styles.inputModeBtn} ${inputMode === 'message' ? styles.active : ''}`}
+                        onClick={() => setInputMode('message')}
+                      >
+                        <Send size={12} />
+                        Message
+                      </button>
+                      <button
+                        className={`${styles.inputModeBtn} ${inputMode === 'note' ? styles.activeNote : ''}`}
+                        onClick={() => setInputMode('note')}
+                      >
+                        <StickyNote size={12} />
+                        Note interne
+                      </button>
+                    </div>
+                    {inputMode === 'note' && (
+                      <span className={styles.internalNoteHint}>
+                        <Eye size={12} />
+                        Note visible uniquement par l&apos;equipe
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Quick Replies */}
+                  <div className={styles.quickRepliesBar}>
+                    <div className={styles.quickRepliesDropdown} ref={quickRepliesRef}>
+                      <button
+                        className={styles.quickReplyBtn}
+                        onClick={() => setShowQuickReplies(!showQuickReplies)}
+                      >
+                        <Zap size={14} />
+                        Reponses rapides
+                      </button>
+                      {showQuickReplies && (
+                        <div className={styles.quickRepliesMenu}>
+                          <div className={styles.quickRepliesHeader}>
+                            <span>Reponses rapides</span>
+                          </div>
+                          {QUICK_REPLIES.map((template, index) => (
+                            <button
+                              key={index}
+                              className={styles.quickReplyItem}
+                              onClick={() => handleQuickReply(template)}
+                            >
+                              {template}
+                            </button>
+                          ))}
+                          <div className={styles.quickRepliesFooter}>
+                            <button
+                              className={styles.quickRepliesFooterBtn}
+                              onClick={handleManageTemplates}
+                            >
+                              <Settings size={12} />
+                              Gerer les templates
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Message Input */}
+                  <div
+                    className={`${styles.inputArea} ${inputMode === 'note' ? styles.noteMode : ''}`}
                   >
-                    <Send size={18} />
-                  </Button>
+                    <Input
+                      value={newMessage}
+                      onChange={(e) => setNewMessage(e.target.value)}
+                      placeholder={
+                        inputMode === 'note'
+                          ? 'Ecrire une note interne...'
+                          : 'Tapez votre message...'
+                      }
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={!newMessage.trim() || sendMessage.isPending}
+                    >
+                      {inputMode === 'note' ? <StickyNote size={18} /> : <Send size={18} />}
+                    </Button>
+                  </div>
                 </div>
               </>
             ) : (

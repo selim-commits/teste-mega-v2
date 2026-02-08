@@ -25,6 +25,11 @@ import {
   Calendar,
   DollarSign,
   Clock,
+  CreditCard,
+  ShoppingBag,
+  MessageSquare,
+  Send,
+  FileText,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
@@ -96,6 +101,94 @@ const commonTags = [
   'Immobilier',
 ];
 
+// CRM Tag definitions
+const crmTagDefinitions = [
+  { id: 'vip', label: 'VIP', color: '#D97706' },
+  { id: 'regulier', label: 'Regulier', color: '#22C55E' },
+  { id: 'nouveau', label: 'Nouveau', color: '#3B82F6' },
+  { id: 'fidele', label: 'Fidele', color: '#8B5CF6' },
+  { id: 'inactif', label: 'Inactif', color: '#EF4444' },
+] as const;
+
+// Activity types for timeline
+type ActivityType = 'reservation' | 'paiement' | 'pack' | 'message' | 'facture';
+
+interface TimelineActivity {
+  id: string;
+  type: ActivityType;
+  description: string;
+  date: string;
+}
+
+interface ClientNote {
+  id: string;
+  text: string;
+  date: string;
+  author: string;
+}
+
+const activityConfig: Record<ActivityType, { label: string; color: string; icon: typeof Calendar }> = {
+  reservation: { label: 'Reservation', color: 'var(--state-info)', icon: Calendar },
+  paiement: { label: 'Paiement', color: 'var(--state-success)', icon: CreditCard },
+  pack: { label: 'Pack', color: '#8B5CF6', icon: ShoppingBag },
+  message: { label: 'Message', color: 'var(--accent-primary)', icon: MessageSquare },
+  facture: { label: 'Facture', color: 'var(--state-warning)', icon: FileText },
+};
+
+// Generate consistent mock activities per client (seeded by client id)
+function generateMockActivities(clientId: string): TimelineActivity[] {
+  const seed = clientId.charCodeAt(0) + clientId.charCodeAt(clientId.length - 1);
+  const templates: TimelineActivity[] = [
+    { id: `${clientId}-a1`, type: 'reservation', description: 'Reservation Studio A - 2h', date: '2026-02-05T14:00:00' },
+    { id: `${clientId}-a2`, type: 'paiement', description: 'Paiement de 150 \u20AC recu', date: '2026-02-03T10:30:00' },
+    { id: `${clientId}-a3`, type: 'pack', description: 'Pack Premium achete (10 seances)', date: '2026-01-28T16:00:00' },
+    { id: `${clientId}-a4`, type: 'message', description: 'Message envoye : Confirmation de reservation', date: '2026-01-25T09:15:00' },
+    { id: `${clientId}-a5`, type: 'facture', description: 'Facture #2026-042 generee - 450 \u20AC', date: '2026-01-20T11:00:00' },
+    { id: `${clientId}-a6`, type: 'reservation', description: 'Reservation Studio B - 4h (shooting produit)', date: '2026-01-15T13:00:00' },
+  ];
+  // Rotate starting point based on seed for variety
+  const offset = seed % templates.length;
+  return [...templates.slice(offset), ...templates.slice(0, offset)].slice(0, 5 + (seed % 2));
+}
+
+function generateMockNotes(clientId: string): ClientNote[] {
+  const seed = clientId.charCodeAt(0);
+  const templates: ClientNote[][] = [
+    [
+      { id: `${clientId}-n1`, text: 'Client tres professionnel, toujours a l\'heure. Prefere le studio avec lumiere naturelle.', date: '2026-01-15T10:00:00', author: 'Vous' },
+      { id: `${clientId}-n2`, text: 'Interesse par un abonnement mensuel. Relancer en fevrier.', date: '2026-01-08T14:30:00', author: 'Vous' },
+    ],
+    [
+      { id: `${clientId}-n1`, text: 'A demande des tarifs speciaux pour des shootings reguliers. Voir avec la direction.', date: '2026-01-20T09:00:00', author: 'Vous' },
+    ],
+    [
+      { id: `${clientId}-n1`, text: 'Nouveau client recommande par Marie Dupont. Premier shooting reussi.', date: '2026-02-01T16:00:00', author: 'Vous' },
+      { id: `${clientId}-n2`, text: 'Prefere les creneaux du matin. Materiel propre apporte.', date: '2026-01-25T11:00:00', author: 'Vous' },
+    ],
+  ];
+  return templates[seed % templates.length];
+}
+
+function generateMockCrmStats(clientId: string) {
+  const seed = clientId.charCodeAt(0) + clientId.charCodeAt(Math.min(1, clientId.length - 1));
+  const totalSpent = 500 + (seed * 137) % 4500;
+  const nbReservations = 3 + (seed * 7) % 25;
+  const derniereVisite = 1 + (seed * 3) % 30;
+  const frequence = Math.max(0.5, Math.round(((seed * 11) % 40) / 10) / 2);
+  return { totalSpent, nbReservations, derniereVisite, frequence };
+}
+
+function generateClientScore(clientId: string): number {
+  const seed = clientId.charCodeAt(0) + clientId.charCodeAt(Math.min(2, clientId.length - 1));
+  return 20 + (seed * 17) % 80;
+}
+
+function getScoreColor(score: number): string {
+  if (score > 70) return 'var(--state-success)';
+  if (score >= 40) return 'var(--state-warning)';
+  return 'var(--state-error)';
+}
+
 export function Clients() {
   // State
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -117,6 +210,12 @@ export function Clients() {
 
   // Edit mode data for client form modal
   const [editFormData, setEditFormData] = useState<ClientFormData | null>(null);
+
+  // CRM Enhancement State
+  const [clientCrmTags, setClientCrmTags] = useState<Record<string, string[]>>({});
+  const [clientNotes, setClientNotes] = useState<Record<string, ClientNote[]>>({});
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [newNoteText, setNewNoteText] = useState('');
 
   // Hooks
   const { success: showSuccess, error: showError } = useNotifications();
@@ -316,6 +415,34 @@ export function Clients() {
     );
     setCurrentPage(1);
   }, []);
+
+  // CRM: Toggle a CRM tag on the selected client
+  const handleToggleCrmTag = useCallback((clientId: string, tagId: string) => {
+    setClientCrmTags((prev) => {
+      const current = prev[clientId] || [];
+      const updated = current.includes(tagId)
+        ? current.filter((t) => t !== tagId)
+        : [...current, tagId];
+      return { ...prev, [clientId]: updated };
+    });
+  }, []);
+
+  // CRM: Save a new note
+  const handleSaveNote = useCallback((clientId: string) => {
+    if (!newNoteText.trim()) return;
+    const note: ClientNote = {
+      id: `${clientId}-n-${Date.now()}`,
+      text: newNoteText.trim(),
+      date: new Date().toISOString(),
+      author: 'Vous',
+    };
+    setClientNotes((prev) => {
+      const current = prev[clientId] || generateMockNotes(clientId);
+      return { ...prev, [clientId]: [note, ...current] };
+    });
+    setNewNoteText('');
+    setIsAddingNote(false);
+  }, [newNoteText]);
 
   const openEditModal = useCallback((client: Client) => {
     setSelectedClientId(client.id);
@@ -940,6 +1067,89 @@ export function Clients() {
                       <Badge variant="error" size="sm" dot>Inactif</Badge>
                     )}
                   </div>
+                  {/* CRM Tags */}
+                  <div className={styles.crmTagsRow}>
+                    {crmTagDefinitions.map((tag) => {
+                      const isActive = (clientCrmTags[selectedClient.id] || []).includes(tag.id);
+                      return (
+                        <button
+                          key={tag.id}
+                          type="button"
+                          className={`${styles.crmTag} ${isActive ? styles.crmTagActive : ''}`}
+                          style={{
+                            ...(isActive
+                              ? { backgroundColor: tag.color, borderColor: tag.color }
+                              : {}),
+                          }}
+                          onClick={() => handleToggleCrmTag(selectedClient.id, tag.id)}
+                        >
+                          <Tag size={10} />
+                          {tag.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* CRM: Score client circulaire */}
+                <div className={styles.sidebarSection}>
+                  <h4>Score client</h4>
+                  {(() => {
+                    const crmScore = selectedClient.score || generateClientScore(selectedClient.id);
+                    const circumference = 2 * Math.PI * 40;
+                    const offset = circumference - (crmScore / 100) * circumference;
+                    return (
+                      <div className={styles.clientScoreCircle}>
+                        <div className={styles.scoreCircleWrapper}>
+                          <svg className={styles.scoreCircleSvg} viewBox="0 0 96 96">
+                            <circle className={styles.scoreCircleTrack} cx="48" cy="48" r="40" />
+                            <circle
+                              className={styles.scoreCircleProgress}
+                              cx="48" cy="48" r="40"
+                              stroke={getScoreColor(crmScore)}
+                              strokeDasharray={circumference}
+                              strokeDashoffset={offset}
+                            />
+                          </svg>
+                          <div className={styles.scoreCircleValue}>
+                            <span className={styles.scoreCircleNumber}>{crmScore}</span>
+                            <span className={styles.scoreCircleSuffix}>/100</span>
+                          </div>
+                        </div>
+                        <span className={styles.scoreCircleLabel}>
+                          {crmScore > 70 ? 'Excellent' : crmScore >= 40 ? 'Bon' : 'A ameliorer'}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* CRM: Stats resume */}
+                <div className={styles.sidebarSection}>
+                  <h4>Resume CRM</h4>
+                  {(() => {
+                    const crmStats = generateMockCrmStats(selectedClient.id);
+                    return (
+                      <div className={styles.crmStatsGrid}>
+                        <div className={styles.crmStatCard}>
+                          <span className={styles.crmStatCardValue}>{crmStats.totalSpent.toLocaleString('fr-FR')} \u20AC</span>
+                          <span className={styles.crmStatCardLabel}>Total depense</span>
+                        </div>
+                        <div className={styles.crmStatCard}>
+                          <span className={styles.crmStatCardValue}>{crmStats.nbReservations}</span>
+                          <span className={styles.crmStatCardLabel}>Nb reservations</span>
+                        </div>
+                        <div className={styles.crmStatCard}>
+                          <span className={styles.crmStatCardValue}>{crmStats.derniereVisite}j</span>
+                          <span className={styles.crmStatCardLabel}>Derniere visite</span>
+                        </div>
+                        <div className={styles.crmStatCard}>
+                          <span className={styles.crmStatCardValue}>{crmStats.frequence}/mois</span>
+                          <span className={styles.crmStatCardLabel}>Frequence</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 <div className={styles.sidebarSection}>
@@ -1104,12 +1314,101 @@ export function Clients() {
                   </div>
                 )}
 
-                {selectedClient.notes && (
-                  <div className={styles.sidebarSection}>
-                    <h4>Notes</h4>
-                    <p className={styles.notesText}>{selectedClient.notes}</p>
+                {/* CRM: Activity Timeline */}
+                <div className={styles.sidebarSection}>
+                  <h4>Activite recente</h4>
+                  <div className={styles.timeline}>
+                    {generateMockActivities(selectedClient.id).map((activity) => {
+                      const config = activityConfig[activity.type];
+                      const IconComponent = config.icon;
+                      return (
+                        <div key={activity.id} className={styles.timelineItem}>
+                          <div className={styles.timelineDot} style={{ borderColor: config.color }}>
+                            <IconComponent size={8} color={config.color} />
+                          </div>
+                          <div className={styles.timelineItemHeader}>
+                            <span className={styles.timelineType} style={{ color: config.color }}>
+                              {config.label}
+                            </span>
+                            <span className={styles.timelineDate}>
+                              {new Date(activity.date).toLocaleDateString('fr-FR', {
+                                day: 'numeric',
+                                month: 'short',
+                              })}
+                            </span>
+                          </div>
+                          <span className={styles.timelineDescription}>{activity.description}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                )}
+                </div>
+
+                {/* CRM: Notes enrichies */}
+                <div className={styles.sidebarSection}>
+                  <h4>Notes</h4>
+                  <div className={styles.notesList}>
+                    {selectedClient.notes && (
+                      <div className={styles.noteCard}>
+                        <p className={styles.noteText}>{selectedClient.notes}</p>
+                        <div className={styles.noteMeta}>
+                          <span>par Vous</span>
+                          <span>{new Date(selectedClient.created_at).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                      </div>
+                    )}
+                    {(clientNotes[selectedClient.id] || generateMockNotes(selectedClient.id)).map((note) => (
+                      <div key={note.id} className={styles.noteCard}>
+                        <p className={styles.noteText}>{note.text}</p>
+                        <div className={styles.noteMeta}>
+                          <span>par {note.author}</span>
+                          <span>{new Date(note.date).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                      </div>
+                    ))}
+                    {isAddingNote ? (
+                      <div className={styles.noteForm}>
+                        <textarea
+                          className={styles.noteTextarea}
+                          placeholder="Ajouter une note..."
+                          value={newNoteText}
+                          onChange={(e) => setNewNoteText(e.target.value)}
+                          autoFocus
+                        />
+                        <div className={styles.noteFormActions}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setIsAddingNote(false);
+                              setNewNoteText('');
+                            }}
+                          >
+                            Annuler
+                          </Button>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            icon={<Send size={14} />}
+                            onClick={() => handleSaveNote(selectedClient.id)}
+                            disabled={!newNoteText.trim()}
+                          >
+                            Enregistrer
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className={styles.addNoteBtn}
+                        onClick={() => setIsAddingNote(true)}
+                      >
+                        <Plus size={14} />
+                        Ajouter une note
+                      </button>
+                    )}
+                  </div>
+                </div>
 
                 <div className={styles.sidebarSection}>
                   <h4>Informations</h4>
