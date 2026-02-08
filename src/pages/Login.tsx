@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback, type FormEvent, type ReactNode } from 'react';
-import { Eye, EyeOff, AlertCircle, CheckCircle, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, AlertCircle, CheckCircle, X, ArrowRight } from 'lucide-react';
 import { useAuthContext } from '../contexts/AuthContext';
+import { isDemoMode } from '../lib/supabase';
 import styles from './Login.module.css';
 
 type AuthMode = 'login' | 'signup' | 'reset';
@@ -19,7 +21,6 @@ function translateError(message: string): string {
   return ERROR_MESSAGES[message] || message;
 }
 
-/** Scroll-triggered reveal wrapper using IntersectionObserver */
 function RevealSection({ className, children }: { className?: string; children: ReactNode }) {
   const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(() =>
@@ -37,7 +38,7 @@ function RevealSection({ className, children }: { className?: string; children: 
           observer.unobserve(el);
         }
       },
-      { threshold: 0.15, rootMargin: '0px 0px -60px 0px' }
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -76,9 +77,7 @@ function UnderlineInput({
   const hasValue = value.length > 0;
 
   return (
-    <div
-      className={`${styles.inputGroup} ${hasValue ? styles.hasValue : ''} ${focused ? styles.focused : ''}`}
-    >
+    <div className={`${styles.inputGroup} ${hasValue ? styles.hasValue : ''} ${focused ? styles.focused : ''}`}>
       <span className={styles.inputLabel}>{label}</span>
       <input
         type={type}
@@ -106,8 +105,9 @@ function UnderlineInput({
 
 export function Login() {
   const { signIn, signUp, signInWithOAuth, resetPassword, loading } = useAuthContext();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<AuthMode>('signup');
-  const [showModal, setShowModal] = useState(true);
+  const [showModal, setShowModal] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -146,6 +146,13 @@ export function Login() {
     e.preventDefault();
     setError('');
     setSuccessMessage('');
+
+    // In demo mode, bypass auth entirely
+    if (isDemoMode) {
+      navigate('/');
+      return;
+    }
+
     const validationError = validate();
     if (validationError) { setError(validationError); return; }
 
@@ -199,168 +206,172 @@ export function Login() {
   return (
     <div className={styles.page}>
 
-      {/* ===== HERO - Split screen ===== */}
+      {/* ===== HERO ===== */}
       <section className={styles.hero}>
+        <img
+          src="https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=1920&q=85"
+          alt=""
+          className={styles.heroBg}
+        />
+        <div className={styles.heroOverlay} />
+
         <header className={styles.header}>
           <span className={styles.logo}>Rooom</span>
           <nav className={styles.headerNav}>
-            <button className={styles.headerLink} onClick={() => openModal('login')}>
-              Se connecter
-            </button>
+            <button className={styles.headerLink} onClick={() => openModal('login')}>Connexion</button>
             <button className={styles.headerCta} onClick={() => openModal('signup')}>
               Commencer
             </button>
           </nav>
         </header>
 
-        <div className={styles.heroSplit}>
-          <div className={styles.heroText}>
-            <span className={styles.heroBadge}>Nouveau — Widgets embed personnalisables</span>
+        <div className={styles.heroBottom}>
+          <div className={styles.heroContent}>
+            <p className={styles.heroEyebrow}>Studio Management Platform</p>
             <h1 className={styles.heroHeadline}>
-              Gerez votre studio creatif, <em>simplement.</em>
+              L&apos;art de gerer<br />un studio creatif
             </h1>
-            <p className={styles.heroTagline}>
-              Reservations, clients, facturation et analytics — tout reunis dans une plateforme pensee pour les photographes et videoastes.
+          </div>
+          <div className={styles.heroAside}>
+            <p className={styles.heroDesc}>
+              Reservations, clients, facturation et analytics reunis dans une plateforme concue pour les photographes et videoastes.
             </p>
-            <div className={styles.heroCtas}>
-              <button className={`${styles.ctaButton} ${styles.ctaButtonDark}`} onClick={() => openModal('signup')}>
-                Essayer gratuitement
-              </button>
-              <button className={styles.ctaButtonGhost} onClick={() => openModal('login')}>
-                Voir la demo
-              </button>
-            </div>
-          </div>
-
-          <div className={styles.heroVisual}>
-            <div className={styles.heroMockup}>
-              <img
-                src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=900&q=85"
-                alt="Dashboard Rooom OS"
-                className={styles.heroMockupImg}
-              />
-            </div>
+            <button className={styles.heroCtaLink} onClick={() => openModal('signup')}>
+              Essayer gratuitement <ArrowRight size={16} />
+            </button>
           </div>
         </div>
       </section>
 
-      {/* ===== LOGOS BAR ===== */}
-      <section className={styles.logosBar}>
-        <div className={styles.logosWrap}>
-          <span className={styles.logoItem}>Reservations</span>
-          <span className={styles.logoDot} />
-          <span className={styles.logoItem}>Clients</span>
-          <span className={styles.logoDot} />
-          <span className={styles.logoItem}>Facturation</span>
-          <span className={styles.logoDot} />
-          <span className={styles.logoItem}>Equipements</span>
-          <span className={styles.logoDot} />
-          <span className={styles.logoItem}>Analytics</span>
-          <span className={styles.logoDot} />
-          <span className={styles.logoItem}>Chat</span>
-          <span className={styles.logoDot} />
-          <span className={styles.logoItem}>Widgets</span>
+      {/* ===== MARQUEE ===== */}
+      <div className={styles.marquee} aria-hidden="true">
+        <div className={styles.marqueeTrack}>
+          {[...Array(2)].map((_, i) => (
+            <div className={styles.marqueeGroup} key={i}>
+              <span>Reservations</span>
+              <span className={styles.marqueeDot} />
+              <span>Clients</span>
+              <span className={styles.marqueeDot} />
+              <span>Facturation</span>
+              <span className={styles.marqueeDot} />
+              <span>Inventaire</span>
+              <span className={styles.marqueeDot} />
+              <span>Analytics</span>
+              <span className={styles.marqueeDot} />
+              <span>Chat en direct</span>
+              <span className={styles.marqueeDot} />
+              <span>Widgets</span>
+              <span className={styles.marqueeDot} />
+              <span>Equipes</span>
+              <span className={styles.marqueeDot} />
+            </div>
+          ))}
         </div>
-      </section>
+      </div>
 
-      {/* ===== FEATURE 1 ===== */}
-      <RevealSection className={styles.featSection}>
-        <div className={styles.featGrid}>
-          <div className={styles.featImageWrap}>
+      {/* ===== EDITORIAL SECTION 1 ===== */}
+      <RevealSection className={styles.editorialSection}>
+        <div className={styles.editorialGrid}>
+          <div className={styles.editorialQuote}>
+            <blockquote className={styles.pullQuote}>
+              <span className={styles.pullQuoteMark}>&ldquo;</span>
+              Simplifier la gestion, pour se concentrer sur la creation.
+            </blockquote>
+          </div>
+          <div className={styles.editorialImage}>
             <img
               src="https://images.unsplash.com/photo-1542038784456-1ea8e935640e?w=800&q=80"
-              alt="Interface de gestion de studio"
-              className={styles.featImage}
+              alt="Photographe en studio"
+              className={styles.editImg}
             />
           </div>
-          <div className={styles.featText}>
-            <span className={styles.sectionEyebrow}>Gestion simplifiee</span>
-            <h2 className={styles.sectionHeadline}>
-              Votre studio, simplifie.
-            </h2>
-            <p className={styles.sectionBody}>
-              Une seule interface pour gerer l&apos;ensemble de votre activite. Des reservations a la facturation, chaque outil est pense pour vous faire gagner du temps.
+          <div className={styles.editorialText}>
+            <span className={styles.eyebrow}>01 — Tout-en-un</span>
+            <h2 className={styles.editorialHeadline}>Votre studio, unifie.</h2>
+            <p className={styles.editorialBody}>
+              Reservations en ligne, gestion des clients, suivi financier et inventaire d&apos;equipements. Une seule plateforme remplace vos dix outils.
             </p>
-            <button className={`${styles.ctaButton} ${styles.ctaButtonDark}`} onClick={() => openModal('signup')}>
-              Decouvrir
-            </button>
           </div>
         </div>
       </RevealSection>
 
-      {/* ===== FEATURE 2 - reversed ===== */}
-      <RevealSection className={styles.featSection}>
-        <div className={`${styles.featGrid} ${styles.featGridReversed}`}>
-          <div className={styles.featImageWrap}>
+      {/* ===== EDITORIAL SECTION 2 ===== */}
+      <RevealSection className={styles.editorialSection}>
+        <div className={styles.editorialGridReversed}>
+          <div className={styles.editorialText}>
+            <span className={styles.eyebrow}>02 — Experience premium</span>
+            <h2 className={styles.editorialHeadline}>Concu pour les creatifs.</h2>
+            <p className={styles.editorialBody}>
+              Interface epuree, widgets personnalisables pour votre site, et tableau de bord qui vous donne la vision complete de votre activite.
+            </p>
+          </div>
+          <div className={styles.editorialImage}>
             <img
               src="https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=800&q=80"
-              alt="Photographe en action"
-              className={styles.featImage}
+              alt="Equipement de studio"
+              className={styles.editImg}
             />
           </div>
-          <div className={styles.featText}>
-            <span className={styles.sectionEyebrow}>Fait pour les creatifs</span>
-            <h2 className={styles.sectionHeadline}>
-              Concu pour les creatifs.
-            </h2>
-            <p className={styles.sectionBody}>
-              Tableau de bord intuitif, gestion d&apos;equipe et suivi financier. Concentrez-vous sur votre art, Rooom s&apos;occupe du reste.
-            </p>
-            <button className={`${styles.ctaButton} ${styles.ctaButtonDark}`} onClick={() => openModal('signup')}>
-              Decouvrir
-            </button>
+        </div>
+      </RevealSection>
+
+      {/* ===== STATS ===== */}
+      <RevealSection className={styles.statsSection}>
+        <div className={styles.statsInner}>
+          <div className={styles.stat}>
+            <span className={styles.statNumber}>500+</span>
+            <span className={styles.statLabel}>Studios</span>
+          </div>
+          <div className={styles.statDivider} />
+          <div className={styles.stat}>
+            <span className={styles.statNumber}>12k</span>
+            <span className={styles.statLabel}>Reservations / mois</span>
+          </div>
+          <div className={styles.statDivider} />
+          <div className={styles.stat}>
+            <span className={styles.statNumber}>99.9%</span>
+            <span className={styles.statLabel}>Uptime</span>
           </div>
         </div>
       </RevealSection>
 
-      {/* ===== STATS STRIP ===== */}
-      <RevealSection className={styles.statsStrip}>
-        <div className={styles.statsGrid}>
-          <div>
-            <div className={styles.statNumber}>500+</div>
-            <div className={styles.statLabel}>Studios actifs</div>
-          </div>
-          <div>
-            <div className={styles.statNumber}>12k</div>
-            <div className={styles.statLabel}>Reservations / mois</div>
-          </div>
-          <div>
-            <div className={styles.statNumber}>99.9%</div>
-            <div className={styles.statLabel}>Disponibilite</div>
-          </div>
-        </div>
-      </RevealSection>
+      {/* ===== FULL IMAGE BREAK ===== */}
+      <section className={styles.imageBreak}>
+        <img
+          src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1600&q=80"
+          alt="Studio creatif"
+          className={styles.imageBreakImg}
+        />
+      </section>
 
-      {/* ===== TRUST CTA ===== */}
-      <RevealSection className={styles.trustSection}>
-        <h2 className={styles.trustHeadline}>
-          La plateforme premium pour les studios creatifs.
+      {/* ===== CTA SECTION ===== */}
+      <RevealSection className={styles.ctaSection}>
+        <p className={styles.ctaEyebrow}>Pret a commencer ?</p>
+        <h2 className={styles.ctaHeadline}>
+          Votre studio merite<br />mieux qu&apos;un tableur.
         </h2>
-        <p className={styles.trustBody}>
-          Rejoignez des centaines de studios photo et video qui font confiance a Rooom pour gerer leur activite au quotidien.
-        </p>
-        <button className={`${styles.ctaButton} ${styles.ctaButtonDark}`} onClick={() => openModal('signup')}>
-          Commencer gratuitement
+        <button className={styles.ctaButton} onClick={() => openModal('signup')}>
+          Essayer gratuitement <ArrowRight size={16} />
         </button>
       </RevealSection>
 
       {/* ===== FOOTER ===== */}
       <footer className={styles.footer}>
-        <div className={styles.footerGrid}>
-          <div className={styles.footerCol}>
+        <div className={styles.footerInner}>
+          <div className={styles.footerLeft}>
             <span className={styles.footerBrand}>Rooom</span>
-            <p className={styles.footerDesc}>
-              La plateforme de gestion pour les studios creatifs.
-            </p>
+            <p className={styles.footerDesc}>La plateforme de gestion<br />pour les studios creatifs.</p>
           </div>
-          <div className={styles.footerCol}>
-            <span className={styles.footerColTitle}>Produit</span>
-            <button className={styles.footerLink} onClick={() => openModal('signup')}>Creer un compte</button>
-            <button className={styles.footerLink} onClick={() => openModal('login')}>Se connecter</button>
-          </div>
-          <div className={styles.footerCol}>
-            <span className={styles.footerColTitle}>Support</span>
-            <span className={styles.footerLink}>contact@rooom.studio</span>
+          <div className={styles.footerRight}>
+            <div className={styles.footerCol}>
+              <span className={styles.footerColTitle}>Produit</span>
+              <button className={styles.footerLink} onClick={() => openModal('signup')}>Creer un compte</button>
+              <button className={styles.footerLink} onClick={() => openModal('login')}>Se connecter</button>
+            </div>
+            <div className={styles.footerCol}>
+              <span className={styles.footerColTitle}>Contact</span>
+              <span className={styles.footerLink}>contact@rooom.studio</span>
+            </div>
           </div>
         </div>
         <div className={styles.footerBottom}>
@@ -433,7 +444,14 @@ export function Login() {
                 </button>
               </form>
 
-              {mode !== 'reset' && (
+              {isDemoMode ? (
+                <>
+                  <div className={styles.divider}>ou</div>
+                  <button type="button" className={styles.demoButton} onClick={() => navigate('/')}>
+                    Entrer en mode demo
+                  </button>
+                </>
+              ) : mode !== 'reset' && (
                 <>
                   <div className={styles.divider}>ou</div>
                   <button type="button" className={styles.oauthButton} onClick={() => handleOAuth('google')} disabled={loading}>
