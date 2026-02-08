@@ -278,12 +278,12 @@
 }
 
 .channelIndicator.channelEmail {
-  background: #3B82F6;
+  background: var(--state-info);
   color: var(--color-white);
 }
 
 .channelIndicator.channelSms {
-  background: #10B981;
+  background: var(--state-success);
   color: var(--color-white);
 }
 
@@ -293,7 +293,7 @@
 }
 
 .channelIndicator.channelInternal {
-  background: #F59E0B;
+  background: var(--state-warning);
   color: var(--color-white);
 }
 

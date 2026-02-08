@@ -1345,8 +1345,8 @@
 }
 
 .agingBucketOrange {
-  background-color: #FFF7ED;
-  border-left-color: #F97316;
+  background-color: var(--state-warning-light, #FFFBEB);
+  border-left-color: var(--state-warning);
 }
 
 .agingBucketRed {

@@ -1,69 +1,47 @@
 # Rooom OS - Dette Technique
 
 > Tracking des problemes connus et améliorations a faire.
-> Mis a jour: 2026-02-07
+> Mis a jour: 2026-02-08
+
+## Resolus
+
+| # | Probleme | Resolution |
+|---|----------|-----------|
+| 1 | Aucun test automatise | 134 tests Vitest + RTL (stores, hooks, composants) |
+| 2 | Settings.tsx 40% | Ameliore a ~85% avec persistence localStorage |
+| 4 | Pas de validation formulaires | useFormValidation + validations.ts (Zod-like) |
+| 5 | `as any` eparpilles | 0 casts - types corriges dans chatService, base |
+| 6 | Demo mode disperse | Centralise dans mockData.ts (7 filter functions) |
+| 7 | Violations design system (spacings) | Spacings convertis en var(--space-X) |
+| 9 | Math.random() pour IDs | crypto.randomUUID() + crypto.getRandomValues() partout |
+| 15 | Modals sans focus trap | Focus trap implemente dans Modal.tsx |
+| 18 | Accessibility gaps | skip-to-content, aria-live, reduced-motion, htmlFor+id |
+
+---
 
 ## P0 - Critiques
 
-### 1. Aucun test automatise
-- **Impact**: Aucune garantie de non-regression
-- **Etat**: 0 fichier test, pas de framework configure
-- **Action**: Installer Vitest + React Testing Library
-- **Fichiers**: package.json, vite.config.ts
-
-### 2. Settings.tsx - 40% complete
-- **Impact**: Les parametres ne persistent pas
-- **Etat**: Tout en local state, aucune connexion Supabase
-- **Action**: Connecter au service settings existant
-- **Fichiers**: src/pages/Settings.tsx, src/services/settings.ts
-
 ### 3. AIConsole - Reponses mock
 - **Impact**: Feature inutilisable en production
-- **Etat**: chatAIService retourne des reponses simulees
-- **Action**: Integrer un vrai LLM (OpenAI, Anthropic)
+- **Etat**: chatAIService retourne des reponses simulees (intentionnel en demo)
+- **Action**: Integrer un vrai LLM (OpenAI, Anthropic) quand backend pret
 - **Fichiers**: src/services/chatAIService.ts, src/pages/AIConsole.tsx
-
-### 4. Pas de validation formulaires
-- **Impact**: Donnees invalides envoyees au backend
-- **Etat**: Aucune validation client-side
-- **Action**: Integrer Zod pour la validation
-- **Fichiers**: Tous les formulaires (Clients, Bookings, Finance, etc.)
-
-### 5. `as any` eparpilles
-- **Impact**: Perte de securite TypeScript
-- **Etat**: Casts dans services/base.ts, services/packs.ts, etc.
-- **Action**: Corriger les types, supprimer les casts
-- **Fichiers**: src/services/base.ts, src/services/packs.ts, src/services/bookings.ts
 
 ---
 
 ## P1 - Importants
 
-### 6. Demo mode disperse
-- **Impact**: Code duplique, maintenance difficile
-- **Etat**: `isDemoMode` verifie dans 11 fichiers hooks separement
-- **Action**: Centraliser dans un service wrapper ou middleware React Query
-- **Fichiers**: src/hooks/use*.ts (11 fichiers)
-
-### 7. 239 violations design system
+### 7b. Couleurs hardcodees CSS
 - **Impact**: Inconsistance visuelle
-- **Detail**:
-  - 66 couleurs hardcodees (AIConsole.module.css: 25, embeds: 41)
-  - 173 spacings hardcodes (embeds: 122, pages: 51)
-- **Action**: Remplacer par des variables CSS
-- **Fichiers**: src/pages/*.module.css, src/embed*/**/*.css
+- **Etat**: ~77 couleurs hex dans les CSS modules (hors embed)
+- **Action**: En cours de correction - batch 8
+- **Fichiers**: src/pages/*.module.css, src/components/*.module.css
 
 ### 8. Pas de gestion d'erreurs centralisee
 - **Impact**: Erreurs non formatees pour l'utilisateur
-- **Etat**: Services throw raw, hooks rely on React Query error
+- **Etat**: Error boundaries + React Query error state implementes
 - **Action**: Creer ApiError type + error handler + toast automatique
 - **Fichiers**: src/types/, src/lib/, src/hooks/
-
-### 9. generateId() avec Math.random()
-- **Impact**: IDs potentiellement non uniques en production
-- **Etat**: `src/lib/utils.ts` utilise Math.random()
-- **Action**: Remplacer par `crypto.randomUUID()`
-- **Fichiers**: src/lib/utils.ts
 
 ### 10. Breakpoints responsive incohérents
 - **Impact**: Comportement inconsistant entre pages
@@ -80,7 +58,7 @@
 ### 12. Locale hardcodee fr-FR
 - **Impact**: Pas de support multi-langue
 - **Etat**: Toutes les dates/monnaies hardcodees en fr-FR
-- **Action**: Creer un contexte Locale ou integrer i18next si multi-langue prevu
+- **Action**: Integrer i18next si multi-langue prevu (task #113)
 - **Fichiers**: src/lib/utils.ts, src/components/layout/Sidebar.tsx
 
 ---
@@ -89,15 +67,13 @@
 
 ### 13. Dark mode non implemente
 - Variables CSS definies (`--dark-*`) mais pas de toggle UI
+- Task #114 planifiee
 - Fichiers: src/stores/uiStore.ts, src/styles/design-system.css
 
 ### 14. Tables limitees
-- Pas de tri par colonne, pas de selection bulk, pas de virtualisation
+- Pas de tri par colonne natif, pas de selection bulk, pas de virtualisation
+- Task #112 (bulk operations) planifiee
 - Fichiers: src/components/ui/Table.tsx
-
-### 15. Modals sans focus trap
-- Le focus peut s'echapper du modal vers le contenu derriere
-- Fichiers: src/components/ui/Modal.tsx
 
 ### 16. Pas d'optimistic updates
 - Les mutations attendent la reponse serveur avant de mettre a jour l'UI
@@ -107,10 +83,6 @@
 - La generation de QR codes pour l'equipement est un stub
 - Fichiers: src/services/equipment.ts
 
-### 18. Accessibility gaps
-- Pas de skip-to-content, pas d'aria-live, pas de reduced motion
-- Fichiers: src/components/layout/AppLayout.tsx, src/components/ui/
-
 ### 19. packsStore sans persistence
 - Seul store sans persistence Zustand
 - Fichiers: src/stores/packsStore.ts
@@ -118,3 +90,15 @@
 ### 20. Naming DB vs Code
 - `studio_id` (DB) vs `studioId` (code) - inconsistant dans les filtres
 - Fichiers: src/services/*.ts, src/hooks/*.ts
+
+---
+
+## Backlog Features (tasks #101-#126)
+
+Voir TaskList dans Claude Code pour la liste complete des features planifiees.
+Categories: Cancellation policy, Client portal, Automation builder, PWA, Export,
+Photo gallery, Task-booking link, Reviews, Guest journey, Equipment-space,
+Calendar conflict, Bulk ops, i18n, Dark mode, Push notifications, Multi-currency,
+Report builder, Supabase migration, Double-booking prevention, API docs,
+Webhooks, Smart lock, AI pricing, Market benchmarking, Identity verification,
+Owner portal.

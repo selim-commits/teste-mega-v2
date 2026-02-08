@@ -32,6 +32,7 @@ npm run dev      # Serveur dev (Vite)
 npm run build    # Build production (tsc + vite)
 npm run lint     # ESLint
 npm run preview  # Preview build
+npm run test     # Vitest (134 tests)
 ```
 
 ## Conventions rapides
@@ -40,9 +41,11 @@ npm run preview  # Preview build
 - Composants: CSS Modules (`.module.css`)
 - Hooks: React Query pour les donnees, Zustand pour l'etat UI
 - Services: CRUD pattern avec Supabase
-- Types: Stricts, jamais `any`
+- Types: Stricts, jamais `any` (0 casts `as any` dans le codebase)
+- IDs: `crypto.randomUUID()` (jamais `Math.random()`)
 - Commits: `type(scope): description` (feat, fix, style, refactor, chore)
 - Locale: FR par defaut (`fr-FR`)
+- A11y: `htmlFor`+`id` sur tous les labels, `aria-live` pour les annonces, `prefers-reduced-motion` supporte
 
 ## Mode Demo
 
@@ -68,11 +71,18 @@ Prefixes CSS embed: `--rooom-*`
 - `.claude/context/TECH-DEBT.md` - Dette technique connue
 - `.claude/agents/` - 10 agents specialises (design, feature, polish, debug, supabase, testing, demo-mode, embed-widget, performance, accessibility)
 
+## Pages (30+)
+
+Dashboard, Calendar, Bookings, Clients, Finance, Revenue, Packs, Team, Inventory,
+SpaceControl, Settings, Chat, AIConsole, Tasks, Automations, Reports, WidgetBuilder,
+AppointmentTypes, Availability, EmailNotifications, SMSNotifications, AlertNotifications,
+Integrations, CalendarSync, Payments, Login
+
 ## Points d'attention
 
-- Settings.tsx est a 40% (pas de persistence Supabase)
-- AIConsole utilise des reponses mock (pas de vrai LLM)
-- 239 violations du design system (66 couleurs + 173 spacings hardcodes)
-- Aucun test automatise (pas de Vitest/Jest)
-- Demo mode disperse dans 11 fichiers hooks
-- Validation de formulaires absente cote client
+- Settings.tsx ameliore a ~85% (persistence localStorage, Supabase a venir)
+- AIConsole utilise des reponses mock (pas de vrai LLM - intentionnel pour demo)
+- Demo mode centralise dans `src/lib/mockData.ts`
+- 134 tests automatises (Vitest + React Testing Library)
+- ESLint: 0 errors, 2 warnings
+- Validation formulaires via `src/hooks/useFormValidation.ts` + `src/lib/validations.ts`
