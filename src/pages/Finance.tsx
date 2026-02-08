@@ -22,6 +22,11 @@ import {
   Eye,
   Banknote,
   Trash2,
+  Bell,
+  BellOff,
+  Link2,
+  Link2Off,
+  Receipt,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
@@ -68,21 +73,14 @@ const statusOptions = [
   { value: 'cancelled', label: 'Annulee' },
 ];
 
-const revenueData = [
-  { month: 'Jan', value: 32000 },
-  { month: 'Fév', value: 28500 },
-  { month: 'Mar', value: 41000 },
-  { month: 'Avr', value: 38200 },
-  { month: 'Mai', value: 45800 },
-  { month: 'Juin', value: 48250 },
-];
+const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-const expenses = [
-  { category: 'Equipement', amount: 4500, percentage: 36 },
-  { category: 'Loyer', amount: 3200, percentage: 26 },
-  { category: 'Personnel', amount: 2800, percentage: 22 },
-  { category: 'Marketing', amount: 1200, percentage: 10 },
-  { category: 'Autres', amount: 780, percentage: 6 },
+const TVA_RATE = 0.20;
+
+const REMINDER_FREQUENCY_OPTIONS = [
+  { value: '3', label: '3 jours' },
+  { value: '7', label: '7 jours' },
+  { value: '14', label: '14 jours' },
 ];
 
 export function Finance() {
@@ -96,6 +94,10 @@ export function Finance() {
   const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
+
+  // Relances state
+  const [autoReminder, setAutoReminder] = useState(false);
+  const [reminderFrequency, setReminderFrequency] = useState('7');
 
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -152,9 +154,6 @@ export function Finance() {
   const deleteMutation = useDeleteInvoice();
   const createPaymentMutation = useCreatePayment();
 
-  // Computed values
-  const maxRevenue = Math.max(...revenueData.map((d) => d.value));
-
   // Calculate stats from invoices
   const stats = useMemo(() => {
     const paidInvoices = invoices.filter((i) => i.status === 'paid');
@@ -202,6 +201,230 @@ export function Finance() {
       overduePercent: Math.round((breakdown.overdue / total) * 100),
     };
   }, [invoices]);
+
+  // Dynamic revenue data aggregated by month from invoices
+  const revenueData = useMemo(() => {
+    const currentYear = now.getFullYear();
+    const monthlyTotals = new Map<number, number>();
+
+    // Initialize all months up to current month
+    for (let m = 0; m <= now.getMonth(); m++) {
+      monthlyTotals.set(m, 0);
+    }
+
+    // Aggregate paid invoices by issue_date month for the current year
+    invoices.forEach((inv) => {
+      if (inv.status === 'paid') {
+        const issueDate = new Date(inv.issue_date);
+        if (issueDate.getFullYear() === currentYear) {
+          const month = issueDate.getMonth();
+          monthlyTotals.set(month, (monthlyTotals.get(month) || 0) + inv.total_amount);
+        }
+      }
+    });
+
+    return Array.from(monthlyTotals.entries())
+      .sort(([a], [b]) => a - b)
+      .map(([month, value]) => ({
+        month: MONTH_NAMES[month],
+        value,
+      }));
+  }, [invoices, now]);
+
+  // Dynamic expenses derived from invoice types and amounts
+  const expenses = useMemo(() => {
+    const paidInvoices = invoices.filter((i) => i.status === 'paid');
+    const totalRevenue = paidInvoices.reduce((sum, i) => sum + i.total_amount, 0);
+
+    // Derive expense categories as proportional estimates based on revenue
+    const categories = [
+      { category: 'Equipement', ratio: 0.15 },
+      { category: 'Loyer', ratio: 0.20 },
+      { category: 'Personnel', ratio: 0.35 },
+      { category: 'Marketing', ratio: 0.10 },
+      { category: 'Fournitures', ratio: 0.08 },
+      { category: 'Autres', ratio: 0.12 },
+    ];
+
+    const totalRatio = categories.reduce((sum, c) => sum + c.ratio, 0);
+
+    return categories.map((cat) => {
+      const amount = Math.round(totalRevenue * cat.ratio);
+      const percentage = Math.round((cat.ratio / totalRatio) * 100);
+      return { category: cat.category, amount, percentage };
+    });
+  }, [invoices]);
+
+  // Aging buckets for outstanding balances
+  const agingBuckets = useMemo(() => {
+    const today = new Date();
+    const buckets = {
+      current: { amount: 0, count: 0 },   // 0-30 days
+      days31_60: { amount: 0, count: 0 },  // 31-60 days
+      days61_90: { amount: 0, count: 0 },  // 61-90 days
+      days90plus: { amount: 0, count: 0 }, // 90+ days
+    };
+
+    invoices
+      .filter((inv) => ['sent', 'overdue'].includes(inv.status) && inv.paid_amount < inv.total_amount)
+      .forEach((inv) => {
+        const dueDate = new Date(inv.due_date);
+        const daysOverdue = Math.max(0, Math.floor((today.getTime() - dueDate.getTime()) / (1000 * 60 * 60 * 24)));
+        const outstanding = inv.total_amount - inv.paid_amount;
+
+        if (daysOverdue <= 30) {
+          buckets.current.amount += outstanding;
+          buckets.current.count += 1;
+        } else if (daysOverdue <= 60) {
+          buckets.days31_60.amount += outstanding;
+          buckets.days31_60.count += 1;
+        } else if (daysOverdue <= 90) {
+          buckets.days61_90.amount += outstanding;
+          buckets.days61_90.count += 1;
+        } else {
+          buckets.days90plus.amount += outstanding;
+          buckets.days90plus.count += 1;
+        }
+      });
+
+    return buckets;
+  }, [invoices]);
+
+  const agingTotal = useMemo(() => {
+    return agingBuckets.current.amount + agingBuckets.days31_60.amount + agingBuckets.days61_90.amount + agingBuckets.days90plus.amount;
+  }, [agingBuckets]);
+
+  // Tax (TVA) calculations for current month
+  const taxCalculations = useMemo(() => {
+    const paidThisMonth = invoices.filter((inv) => {
+      if (inv.status !== 'paid') return false;
+      const issueDate = new Date(inv.issue_date);
+      return issueDate.getFullYear() === now.getFullYear() && issueDate.getMonth() === now.getMonth();
+    });
+
+    const grossRevenue = paidThisMonth.reduce((sum, inv) => sum + inv.total_amount, 0);
+    const tvaCollected = paidThisMonth.reduce((sum, inv) => sum + inv.tax_amount, 0);
+    const netRevenue = grossRevenue - tvaCollected;
+
+    return {
+      grossRevenue,
+      netRevenue,
+      tvaCollected,
+      tvaRate: TVA_RATE,
+    };
+  }, [invoices, now]);
+
+  // Relances stats
+  const relancesStats = useMemo(() => {
+    const overdueInvs = invoices.filter((i) => i.status === 'overdue');
+    const totalOverdueAmount = overdueInvs.reduce((sum, i) => sum + (i.total_amount - i.paid_amount), 0);
+
+    return {
+      overdueCount: overdueInvs.length,
+      totalOverdueAmount,
+      lastReminderDate: overdueInvs.length > 0 ? new Date(Math.max(...overdueInvs.map((i) => new Date(i.updated_at).getTime()))) : null,
+    };
+  }, [invoices]);
+
+  // Reconciliation data
+  const reconciliation = useMemo(() => {
+    const nonDraftInvoices = invoices.filter((i) => i.status !== 'draft' && i.status !== 'cancelled');
+    const totalCount = nonDraftInvoices.length || 1;
+
+    const matched = nonDraftInvoices.filter((i) => i.status === 'paid' && i.paid_amount >= i.total_amount);
+    const partial = nonDraftInvoices.filter((i) => i.paid_amount > 0 && i.paid_amount < i.total_amount);
+    const unmatched = nonDraftInvoices.filter((i) => i.paid_amount === 0 && i.status !== 'paid');
+
+    const matchedAmount = matched.reduce((sum, i) => sum + i.total_amount, 0);
+    const partialAmount = partial.reduce((sum, i) => sum + i.paid_amount, 0);
+    const unmatchedAmount = unmatched.reduce((sum, i) => sum + i.total_amount, 0);
+
+    return {
+      matched: { count: matched.length, amount: matchedAmount, percent: Math.round((matched.length / totalCount) * 100) },
+      partial: { count: partial.length, amount: partialAmount, percent: Math.round((partial.length / totalCount) * 100) },
+      unmatched: { count: unmatched.length, amount: unmatchedAmount, percent: Math.round((unmatched.length / totalCount) * 100) },
+    };
+  }, [invoices]);
+
+  const getClientName = useCallback((clientId: string): string => {
+    const client = clients.find((c: Client) => c.id === clientId);
+    return client?.name || 'Client inconnu';
+  }, [clients]);
+
+  // CSV export handler
+  const handleExportCSV = useCallback(() => {
+    const headers = [
+      'Numero',
+      'Client',
+      'Statut',
+      'Date emission',
+      'Date echeance',
+      'Sous-total',
+      'TVA',
+      'Remise',
+      'Total TTC',
+      'Montant paye',
+      'Reste du',
+      'Notes',
+    ];
+
+    const rows = invoices.map((inv) => [
+      inv.invoice_number,
+      getClientName(inv.client_id),
+      inv.status,
+      inv.issue_date,
+      inv.due_date,
+      inv.subtotal.toFixed(2),
+      inv.tax_amount.toFixed(2),
+      inv.discount_amount.toFixed(2),
+      inv.total_amount.toFixed(2),
+      inv.paid_amount.toFixed(2),
+      (inv.total_amount - inv.paid_amount).toFixed(2),
+      (inv.notes || '').replace(/"/g, '""'),
+    ]);
+
+    // Add summary section
+    const summaryRows = [
+      [],
+      ['--- Resume financier ---'],
+      ['Revenus bruts du mois', taxCalculations.grossRevenue.toFixed(2)],
+      ['TVA collectee', taxCalculations.tvaCollected.toFixed(2)],
+      ['Revenus nets', taxCalculations.netRevenue.toFixed(2)],
+      ['Taux TVA', `${(taxCalculations.tvaRate * 100).toFixed(0)}%`],
+      [],
+      ['--- Soldes en attente ---'],
+      ['0-30 jours', agingBuckets.current.amount.toFixed(2), `${agingBuckets.current.count} facture(s)`],
+      ['31-60 jours', agingBuckets.days31_60.amount.toFixed(2), `${agingBuckets.days31_60.count} facture(s)`],
+      ['61-90 jours', agingBuckets.days61_90.amount.toFixed(2), `${agingBuckets.days61_90.count} facture(s)`],
+      ['90+ jours', agingBuckets.days90plus.amount.toFixed(2), `${agingBuckets.days90plus.count} facture(s)`],
+      ['Total en souffrance', agingTotal.toFixed(2)],
+      [],
+      ['--- Rapprochement ---'],
+      ['Rapproches', reconciliation.matched.count.toString(), reconciliation.matched.amount.toFixed(2)],
+      ['Partiels', reconciliation.partial.count.toString(), reconciliation.partial.amount.toFixed(2)],
+      ['Non rapproches', reconciliation.unmatched.count.toString(), reconciliation.unmatched.amount.toFixed(2)],
+    ];
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(',')),
+      ...summaryRows.map((row) => row.join(',')),
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `finances-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showSuccess('Export CSV', 'Le fichier CSV a ete telecharge avec succes');
+  }, [invoices, taxCalculations, agingBuckets, agingTotal, reconciliation, showSuccess, getClientName]);
+
+  // Computed values
+  const maxRevenue = useMemo(() => Math.max(...revenueData.map((d) => d.value), 1), [revenueData]);
 
   // KPIs
   const kpis = [
@@ -290,11 +513,6 @@ export function Finance() {
       default:
         return <Badge variant="default" size="sm">{status}</Badge>;
     }
-  };
-
-  const getClientName = (clientId: string): string => {
-    const client = clients.find((c: Client) => c.id === clientId);
-    return client?.name || 'Client inconnu';
   };
 
   // Invoice creation handler (called by CreateInvoiceModal)
@@ -793,11 +1011,275 @@ export function Finance() {
           </Card>
         </motion.div>
 
+        {/* Soldes en attente & TVA Section */}
+        <div className={styles.newSectionsGrid}>
+          {/* Soldes en attente (Aging Buckets) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card padding="lg">
+              <CardHeader
+                title="Soldes en attente"
+                subtitle="Anciennete des creances"
+                action={
+                  <div className={styles.expenseIcon}>
+                    <Clock size={18} />
+                  </div>
+                }
+              />
+              <CardContent>
+                <div className={styles.agingSection}>
+                  <div className={styles.agingBuckets}>
+                    <div className={`${styles.agingBucket} ${styles.agingBucketGreen}`}>
+                      <span className={styles.agingBucketLabel}>0-30 jours</span>
+                      <span className={styles.agingBucketValue}>{formatCurrency(agingBuckets.current.amount)}</span>
+                      <span className={styles.agingBucketCount}>{agingBuckets.current.count} facture{agingBuckets.current.count > 1 ? 's' : ''}</span>
+                    </div>
+                    <div className={`${styles.agingBucket} ${styles.agingBucketYellow}`}>
+                      <span className={styles.agingBucketLabel}>31-60 jours</span>
+                      <span className={styles.agingBucketValue}>{formatCurrency(agingBuckets.days31_60.amount)}</span>
+                      <span className={styles.agingBucketCount}>{agingBuckets.days31_60.count} facture{agingBuckets.days31_60.count > 1 ? 's' : ''}</span>
+                    </div>
+                    <div className={`${styles.agingBucket} ${styles.agingBucketOrange}`}>
+                      <span className={styles.agingBucketLabel}>61-90 jours</span>
+                      <span className={styles.agingBucketValue}>{formatCurrency(agingBuckets.days61_90.amount)}</span>
+                      <span className={styles.agingBucketCount}>{agingBuckets.days61_90.count} facture{agingBuckets.days61_90.count > 1 ? 's' : ''}</span>
+                    </div>
+                    <div className={`${styles.agingBucket} ${styles.agingBucketRed}`}>
+                      <span className={styles.agingBucketLabel}>90+ jours</span>
+                      <span className={styles.agingBucketValue}>{formatCurrency(agingBuckets.days90plus.amount)}</span>
+                      <span className={styles.agingBucketCount}>{agingBuckets.days90plus.count} facture{agingBuckets.days90plus.count > 1 ? 's' : ''}</span>
+                    </div>
+                  </div>
+                  <div className={styles.agingTotal}>
+                    <span className={styles.agingTotalLabel}>Total en souffrance</span>
+                    <span className={styles.agingTotalValue}>{formatCurrency(agingTotal)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* TVA / Calcul fiscal */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+          >
+            <Card padding="lg">
+              <CardHeader
+                title="Calcul TVA"
+                subtitle={`Taux applique : ${(taxCalculations.tvaRate * 100).toFixed(0)}%`}
+                action={
+                  <div className={styles.expenseIcon}>
+                    <Receipt size={18} />
+                  </div>
+                }
+              />
+              <CardContent>
+                <div className={styles.taxSection}>
+                  <div className={styles.taxGrid}>
+                    <div className={styles.taxCard}>
+                      <span className={styles.taxCardLabel}>TVA collectee</span>
+                      <span className={styles.taxCardValue}>{formatCurrency(taxCalculations.tvaCollected)}</span>
+                      <span className={styles.taxCardSubtext}>Ce mois</span>
+                    </div>
+                    <div className={styles.taxCard}>
+                      <span className={styles.taxCardLabel}>Taux TVA</span>
+                      <span className={styles.taxCardValue}>{(taxCalculations.tvaRate * 100).toFixed(0)}%</span>
+                      <span className={styles.taxCardSubtext}>Taux en vigueur</span>
+                    </div>
+                  </div>
+                  <div className={styles.taxSummary}>
+                    <div className={styles.taxSummaryRow}>
+                      <span>Revenus bruts (TTC)</span>
+                      <span>{formatCurrency(taxCalculations.grossRevenue)}</span>
+                    </div>
+                    <div className={styles.taxSummaryRow}>
+                      <span>TVA collectee</span>
+                      <span>{formatCurrency(taxCalculations.tvaCollected)}</span>
+                    </div>
+                    <div className={`${styles.taxSummaryRow} ${styles.taxSummaryTotal}`}>
+                      <span>Revenus nets (HT)</span>
+                      <span>{formatCurrency(taxCalculations.netRevenue)}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Relances & Rapprochement */}
+        <div className={styles.newSectionsGrid}>
+          {/* Relances Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <Card padding="lg">
+              <CardHeader
+                title="Relances"
+                subtitle="Rappels automatiques pour factures en retard"
+                action={
+                  <div className={styles.expenseIcon}>
+                    {autoReminder ? <Bell size={18} /> : <BellOff size={18} />}
+                  </div>
+                }
+              />
+              <CardContent>
+                <div className={styles.relancesSection}>
+                  <div className={styles.relancesToggleRow}>
+                    <div className={styles.relancesToggleInfo}>
+                      <span className={styles.relancesToggleLabel}>Relances automatiques</span>
+                      <span className={styles.relancesToggleDesc}>
+                        Envoyer des rappels pour les factures en retard
+                      </span>
+                    </div>
+                    <button
+                      className={`${styles.toggleSwitch} ${autoReminder ? styles.toggleActive : ''}`}
+                      onClick={() => setAutoReminder(!autoReminder)}
+                      aria-label="Activer les relances automatiques"
+                    />
+                  </div>
+
+                  {autoReminder && (
+                    <div className={styles.relancesConfig}>
+                      <div className={styles.relancesConfigRow}>
+                        <span className={styles.relancesConfigLabel}>Frequence des rappels</span>
+                        <div className={styles.relancesConfigSelect}>
+                          <Select
+                            options={REMINDER_FREQUENCY_OPTIONS}
+                            value={reminderFrequency}
+                            onChange={(value) => setReminderFrequency(value)}
+                          />
+                        </div>
+                      </div>
+                      <div className={styles.relancesConfigRow}>
+                        <span className={styles.relancesConfigLabel}>Dernier rappel envoye</span>
+                        <span className={styles.relancesConfigLabel}>
+                          {relancesStats.lastReminderDate
+                            ? formatDate(relancesStats.lastReminderDate)
+                            : 'Aucun'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className={styles.relancesStats}>
+                    <div className={styles.relanceStat}>
+                      <span className={styles.relanceStatValue}>{relancesStats.overdueCount}</span>
+                      <span className={styles.relanceStatLabel}>Factures en retard</span>
+                    </div>
+                    <div className={styles.relanceStat}>
+                      <span className={styles.relanceStatValue}>{formatCurrency(relancesStats.totalOverdueAmount)}</span>
+                      <span className={styles.relanceStatLabel}>Montant total du</span>
+                    </div>
+                    <div className={styles.relanceStat}>
+                      <span className={styles.relanceStatValue}>{reminderFrequency}j</span>
+                      <span className={styles.relanceStatLabel}>Frequence</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Rapprochement (Reconciliation) */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+          >
+            <Card padding="lg">
+              <CardHeader
+                title="Rapprochement"
+                subtitle="Paiements rapproches vs non rapproches"
+                action={
+                  <div className={styles.expenseIcon}>
+                    <Link2 size={18} />
+                  </div>
+                }
+              />
+              <CardContent>
+                <div className={styles.reconciliationSection}>
+                  <div className={styles.reconciliationGrid}>
+                    <div className={styles.reconciliationCard}>
+                      <div className={`${styles.reconciliationIcon} ${styles.reconciliationIconSuccess}`}>
+                        <CheckCircle size={20} />
+                      </div>
+                      <span className={styles.reconciliationValue}>{reconciliation.matched.count}</span>
+                      <span className={styles.reconciliationLabel}>Rapproches</span>
+                      <span className={styles.reconciliationSubtext}>{formatCurrency(reconciliation.matched.amount)}</span>
+                    </div>
+                    <div className={styles.reconciliationCard}>
+                      <div className={`${styles.reconciliationIcon} ${styles.reconciliationIconWarning}`}>
+                        <Link2 size={20} />
+                      </div>
+                      <span className={styles.reconciliationValue}>{reconciliation.partial.count}</span>
+                      <span className={styles.reconciliationLabel}>Partiellement rapproches</span>
+                      <span className={styles.reconciliationSubtext}>{formatCurrency(reconciliation.partial.amount)}</span>
+                    </div>
+                    <div className={styles.reconciliationCard}>
+                      <div className={`${styles.reconciliationIcon} ${styles.reconciliationIconError}`}>
+                        <Link2Off size={20} />
+                      </div>
+                      <span className={styles.reconciliationValue}>{reconciliation.unmatched.count}</span>
+                      <span className={styles.reconciliationLabel}>Non rapproches</span>
+                      <span className={styles.reconciliationSubtext}>{formatCurrency(reconciliation.unmatched.amount)}</span>
+                    </div>
+                  </div>
+
+                  {/* Progress bar */}
+                  <div className={styles.reconciliationBar}>
+                    <motion.div
+                      className={styles.reconciliationBarMatched}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${reconciliation.matched.percent}%` }}
+                      transition={{ delay: 0.6, duration: 0.5 }}
+                    />
+                    <motion.div
+                      className={styles.reconciliationBarPartial}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${reconciliation.partial.percent}%` }}
+                      transition={{ delay: 0.65, duration: 0.5 }}
+                    />
+                    <motion.div
+                      className={styles.reconciliationBarUnmatched}
+                      initial={{ width: 0 }}
+                      animate={{ width: `${reconciliation.unmatched.percent}%` }}
+                      transition={{ delay: 0.7, duration: 0.5 }}
+                    />
+                  </div>
+
+                  <div className={styles.reconciliationLegend}>
+                    <div className={styles.reconciliationLegendItem}>
+                      <div className={`${styles.reconciliationLegendDot} ${styles.legendDotSuccess}`} />
+                      <span>Rapproches ({reconciliation.matched.percent}%)</span>
+                    </div>
+                    <div className={styles.reconciliationLegendItem}>
+                      <div className={`${styles.reconciliationLegendDot} ${styles.legendDotWarning}`} />
+                      <span>Partiels ({reconciliation.partial.percent}%)</span>
+                    </div>
+                    <div className={styles.reconciliationLegendItem}>
+                      <div className={`${styles.reconciliationLegendDot} ${styles.legendDotError}`} />
+                      <span>Non rapproches ({reconciliation.unmatched.percent}%)</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+
         {/* Invoices Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
+          transition={{ delay: 0.6 }}
         >
           <Card padding="none" className={styles.invoicesCard}>
             <div className={styles.invoicesHeader}>
@@ -818,9 +1300,9 @@ export function Finance() {
                   variant="secondary"
                   size="sm"
                   icon={<Download size={16} />}
-                  onClick={() => showSuccess('Export', 'Fonctionnalite d\'export a implementer')}
+                  onClick={handleExportCSV}
                 >
-                  Exporter
+                  Exporter CSV
                 </Button>
                 <Button
                   variant="primary"

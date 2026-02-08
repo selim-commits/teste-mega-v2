@@ -1,65 +1,68 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { useToast } from '../../components/ui/Toast';
-import {
-  useSettings,
-  useUpdateNotificationSettings,
-} from '../../hooks/useSettings';
+import { useNotifications } from '../../stores/uiStore';
 import type { NotificationSettings } from './types';
 import { defaultNotificationSettings } from './types';
 import styles from '../Settings.module.css';
+
+const STORAGE_KEY = 'rooom-settings-notifications';
+
+function loadFromStorage(): NotificationSettings | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored) as NotificationSettings;
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
+function saveToStorage(data: NotificationSettings): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 interface NotificationsSectionProps {
   studioId: string;
 }
 
-export function NotificationsSection({ studioId }: NotificationsSectionProps) {
-  const { addToast } = useToast();
-  const [settings, setSettings] = useState<NotificationSettings>(defaultNotificationSettings);
-  const { data: studioSettings } = useSettings(studioId);
-  const updateNotificationSettings = useUpdateNotificationSettings(studioId);
+export function NotificationsSection({ studioId: _studioId }: NotificationsSectionProps) {
+  const { success, error: notifyError } = useNotifications();
+  const [settings, setSettings] = useState<NotificationSettings>(() => {
+    return loadFromStorage() || defaultNotificationSettings;
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Sync form with fetched data (React recommended pattern for prop-driven state)
-  const [prevStudioSettings, setPrevStudioSettings] = useState(studioSettings);
-  if (studioSettings !== prevStudioSettings) {
-    setPrevStudioSettings(studioSettings);
-    if (studioSettings?.notifications) {
-      const n = studioSettings.notifications;
-      setSettings({
-        emailEnabled: n.emailEnabled ?? defaultNotificationSettings.emailEnabled,
-        smsEnabled: n.smsEnabled ?? defaultNotificationSettings.smsEnabled,
-        reminder24h: n.reminder24h ?? defaultNotificationSettings.reminder24h,
-        reminder48h: n.reminder48h ?? defaultNotificationSettings.reminder48h,
-        reminder1Week: n.reminder1Week ?? defaultNotificationSettings.reminder1Week,
-        newBookingAlert: n.newBookingAlert ?? defaultNotificationSettings.newBookingAlert,
-        cancellationAlert: n.cancellationAlert ?? defaultNotificationSettings.cancellationAlert,
-        paymentAlert: n.paymentAlert ?? defaultNotificationSettings.paymentAlert,
-      });
+  // Sync state on mount from localStorage
+  useEffect(() => {
+    const stored = loadFromStorage();
+    if (stored) {
+      setSettings(stored);
     }
-  }
+  }, []);
 
-  const handleSave = async () => {
+  const handleSave = () => {
+    setIsSaving(true);
     try {
-      await updateNotificationSettings.mutateAsync(settings);
-      addToast({
-        title: 'Notifications mises a jour',
-        description: 'Vos preferences de notifications ont ete enregistrees.',
-        variant: 'success',
-        duration: 5000,
-      });
+      saveToStorage(settings);
+      success(
+        'Notifications mises a jour',
+        'Vos preferences de notifications ont ete enregistrees.'
+      );
     } catch {
-      addToast({
-        title: 'Erreur',
-        description: 'Impossible de sauvegarder les preferences.',
-        variant: 'error',
-        duration: 5000,
-      });
+      notifyError(
+        'Erreur',
+        'Impossible de sauvegarder les preferences.'
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
-
-  const isLoading = updateNotificationSettings.isPending;
 
   return (
     <div className={styles.animateIn}>
@@ -239,7 +242,7 @@ export function NotificationsSection({ studioId }: NotificationsSectionProps) {
               variant="primary"
               icon={<Save size={16} />}
               onClick={handleSave}
-              loading={isLoading}
+              loading={isSaving}
             >
               Enregistrer
             </Button>

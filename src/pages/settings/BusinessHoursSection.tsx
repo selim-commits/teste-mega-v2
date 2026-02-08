@@ -1,16 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { useToast } from '../../components/ui/Toast';
-import {
-  useSettings,
-  useUpdateBusinessHours,
-} from '../../hooks/useSettings';
-import type { StudioSettings } from '../../services/settings';
+import { useNotifications } from '../../stores/uiStore';
 import type { BusinessHours, DayHours } from './types';
 import { defaultBusinessHours } from './types';
 import styles from '../Settings.module.css';
+
+const STORAGE_KEY = 'rooom-settings-hours';
 
 const dayLabels: Record<keyof BusinessHours, string> = {
   monday: 'Lundi',
@@ -22,38 +19,42 @@ const dayLabels: Record<keyof BusinessHours, string> = {
   sunday: 'Dimanche',
 };
 
+function loadFromStorage(): BusinessHours | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored) as BusinessHours;
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
+function saveToStorage(data: BusinessHours): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 interface BusinessHoursSectionProps {
   studioId: string;
 }
 
-export function BusinessHoursSection({ studioId }: BusinessHoursSectionProps) {
-  const { addToast } = useToast();
-  const [hours, setHours] = useState<BusinessHours>(defaultBusinessHours);
-  const { data: studioSettings } = useSettings(studioId);
-  const updateBusinessHours = useUpdateBusinessHours(studioId);
+export function BusinessHoursSection({ studioId: _studioId }: BusinessHoursSectionProps) {
+  const { success, error: notifyError } = useNotifications();
+  const [hours, setHours] = useState<BusinessHours>(() => {
+    return loadFromStorage() || defaultBusinessHours;
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Sync form with fetched data (React recommended pattern for prop-driven state)
-  const [prevStudioSettings, setPrevStudioSettings] = useState(studioSettings);
-  if (studioSettings !== prevStudioSettings) {
-    setPrevStudioSettings(studioSettings);
-    if (studioSettings?.businessHours) {
-      const bh = studioSettings.businessHours;
-      const mapped = { ...defaultBusinessHours };
-      for (const day of Object.keys(mapped) as Array<keyof BusinessHours>) {
-        if (bh[day]) {
-          mapped[day] = {
-            enabled: bh[day].enabled ?? mapped[day].enabled,
-            openTime: bh[day].openTime ?? mapped[day].openTime,
-            closeTime: bh[day].closeTime ?? mapped[day].closeTime,
-            splitEnabled: bh[day].splitEnabled ?? false,
-            splitStartTime: bh[day].splitStartTime ?? '',
-            splitEndTime: bh[day].splitEndTime ?? '',
-          };
-        }
-      }
-      setHours(mapped);
+  // Sync state on mount from localStorage
+  useEffect(() => {
+    const stored = loadFromStorage();
+    if (stored) {
+      setHours(stored);
     }
-  }
+  }, []);
 
   const updateDay = (day: keyof BusinessHours, updates: Partial<DayHours>) => {
     setHours(prev => ({
@@ -62,26 +63,36 @@ export function BusinessHoursSection({ studioId }: BusinessHoursSectionProps) {
     }));
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
+    // Validate: enabled days must have open/close times
+    for (const day of Object.keys(hours) as Array<keyof BusinessHours>) {
+      if (hours[day].enabled) {
+        if (!hours[day].openTime || !hours[day].closeTime) {
+          notifyError(
+            'Erreur de validation',
+            `Veuillez definir les heures d'ouverture et de fermeture pour ${dayLabels[day]}.`
+          );
+          return;
+        }
+      }
+    }
+
+    setIsSaving(true);
     try {
-      await updateBusinessHours.mutateAsync({ ...hours } as StudioSettings['businessHours']);
-      addToast({
-        title: 'Horaires mis a jour',
-        description: 'Les heures d\'ouverture ont ete enregistrees.',
-        variant: 'success',
-        duration: 5000,
-      });
+      saveToStorage(hours);
+      success(
+        'Horaires mis a jour',
+        "Les heures d'ouverture ont ete enregistrees."
+      );
     } catch {
-      addToast({
-        title: 'Erreur',
-        description: 'Impossible de sauvegarder les horaires.',
-        variant: 'error',
-        duration: 5000,
-      });
+      notifyError(
+        'Erreur',
+        'Impossible de sauvegarder les horaires.'
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
-
-  const isLoading = updateBusinessHours.isPending;
 
   return (
     <div className={styles.animateIn}>
@@ -165,7 +176,7 @@ export function BusinessHoursSection({ studioId }: BusinessHoursSectionProps) {
               variant="primary"
               icon={<Save size={16} />}
               onClick={handleSave}
-              loading={isLoading}
+              loading={isSaving}
             >
               Enregistrer
             </Button>

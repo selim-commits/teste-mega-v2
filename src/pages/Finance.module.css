@@ -1280,3 +1280,486 @@
     font-size: var(--text-xl);
   }
 }
+
+/* ===== New Sections Grid ===== */
+.newSectionsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--card-gap);
+  margin-bottom: var(--section-gap);
+}
+
+@media (max-width: 1024px) {
+  .newSectionsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Soldes en attente (Aging Buckets) ===== */
+.agingSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.agingBuckets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .agingBuckets {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .agingBuckets {
+    grid-template-columns: 1fr;
+  }
+}
+
+.agingBucket {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border-left: 3px solid;
+  transition: transform var(--duration-fast) var(--ease-default);
+}
+
+.agingBucket:hover {
+  transform: translateY(-2px);
+}
+
+.agingBucketGreen {
+  background-color: var(--state-success-bg);
+  border-left-color: var(--state-success);
+}
+
+.agingBucketYellow {
+  background-color: var(--state-warning-bg);
+  border-left-color: var(--state-warning);
+}
+
+.agingBucketOrange {
+  background-color: #FFF7ED;
+  border-left-color: #F97316;
+}
+
+.agingBucketRed {
+  background-color: var(--state-error-bg);
+  border-left-color: var(--state-error);
+}
+
+.agingBucketLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.agingBucketValue {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.agingBucketCount {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.agingTotal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  margin-top: var(--space-2);
+}
+
+.agingTotalLabel {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.agingTotalValue {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--state-error);
+}
+
+/* ===== TVA / Tax Section ===== */
+.taxSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.taxGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  .taxGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.taxCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.taxCardLabel {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.taxCardValue {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.taxCardSubtext {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.taxSummary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.taxSummaryRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.taxSummaryRow span:last-child {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.taxSummaryTotal {
+  padding-top: var(--space-2);
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--border-default);
+}
+
+.taxSummaryTotal span {
+  font-weight: 600 !important;
+}
+
+.taxSummaryTotal span:last-child {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--state-success) !important;
+}
+
+/* ===== Relances Section ===== */
+.relancesSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.relancesToggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.relancesToggleInfo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.relancesToggleLabel {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.relancesToggleDesc {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.toggleSwitch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background-color: var(--border-default);
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-default);
+  flex-shrink: 0;
+}
+
+.toggleSwitch.toggleActive {
+  background-color: var(--state-success);
+}
+
+.toggleSwitch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: var(--color-white);
+  border-radius: var(--radius-full);
+  transition: transform var(--duration-fast) var(--ease-default);
+  box-shadow: var(--shadow-sm);
+}
+
+.toggleSwitch.toggleActive::after {
+  transform: translateX(20px);
+}
+
+.relancesConfig {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.relancesConfigRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.relancesConfigLabel {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.relancesConfigSelect {
+  flex: 1;
+  max-width: 200px;
+}
+
+.relancesStats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+@media (max-width: 480px) {
+  .relancesStats {
+    grid-template-columns: 1fr;
+  }
+}
+
+.relanceStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+}
+
+.relanceStatValue {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.relanceStatLabel {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ===== Rapprochement (Reconciliation) ===== */
+.reconciliationSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.reconciliationGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-3);
+}
+
+@media (max-width: 768px) {
+  .reconciliationGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.reconciliationCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background-color: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.reconciliationIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reconciliationIconSuccess {
+  background-color: var(--state-success-bg);
+  color: var(--state-success);
+}
+
+.reconciliationIconWarning {
+  background-color: var(--state-warning-bg);
+  color: var(--state-warning);
+}
+
+.reconciliationIconError {
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
+}
+
+.reconciliationValue {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+}
+
+.reconciliationLabel {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.reconciliationSubtext {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+}
+
+.reconciliationBar {
+  display: flex;
+  height: 8px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  background-color: var(--bg-tertiary);
+}
+
+.reconciliationBarMatched {
+  background-color: var(--state-success);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+.reconciliationBarPartial {
+  background-color: var(--state-warning);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+.reconciliationBarUnmatched {
+  background-color: var(--state-error);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+.reconciliationLegend {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.reconciliationLegendItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.reconciliationLegendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+}
+
+.legendDotSuccess {
+  background-color: var(--state-success);
+}
+
+.legendDotWarning {
+  background-color: var(--state-warning);
+}
+
+.legendDotError {
+  background-color: var(--state-error);
+}
+
+/* ===== Three Column Grid ===== */
+.threeColGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--card-gap);
+  margin-bottom: var(--section-gap);
+}
+
+@media (max-width: 1024px) {
+  .threeColGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Border Light utility ===== */
+.borderLight {
+  border-bottom: 1px solid var(--border-light);
+}

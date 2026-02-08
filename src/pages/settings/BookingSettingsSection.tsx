@@ -1,101 +1,114 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
+import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
-import { useToast } from '../../components/ui/Toast';
-import {
-  useSettings,
-  useUpdateBookingSettings,
-} from '../../hooks/useSettings';
+import { useNotifications } from '../../stores/uiStore';
 import type { BookingSettings } from './types';
 import { defaultBookingSettings } from './types';
 import styles from '../Settings.module.css';
 
-const durationOptions = [
+const STORAGE_KEY = 'rooom-settings-booking';
+
+const minDurationOptions = [
   { value: '30', label: '30 minutes' },
   { value: '60', label: '1 heure' },
   { value: '120', label: '2 heures' },
-  { value: '240', label: 'Demi-journee (4h)' },
+  { value: '180', label: '3 heures' },
+  { value: '240', label: '4 heures' },
+];
+
+const maxDurationOptions = [
+  { value: '60', label: '1 heure' },
+  { value: '120', label: '2 heures' },
+  { value: '180', label: '3 heures' },
+  { value: '240', label: '4 heures' },
   { value: '480', label: 'Journee complete (8h)' },
 ];
 
 const bufferOptions = [
-  { value: '0', label: 'Pas de tampon' },
+  { value: '0', label: '0 minute' },
   { value: '15', label: '15 minutes' },
   { value: '30', label: '30 minutes' },
-  { value: '60', label: '1 heure' },
+  { value: '60', label: '60 minutes' },
 ];
 
-const minAdvanceOptions = [
-  { value: '1', label: '1 heure' },
-  { value: '2', label: '2 heures' },
-  { value: '24', label: '24 heures' },
-  { value: '48', label: '48 heures' },
-  { value: '168', label: '1 semaine' },
-];
+function loadFromStorage(): BookingSettings | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored) as BookingSettings;
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
 
-const maxAdvanceOptions = [
-  { value: '7', label: '1 semaine' },
-  { value: '14', label: '2 semaines' },
-  { value: '30', label: '1 mois' },
-  { value: '90', label: '3 mois' },
-  { value: '180', label: '6 mois' },
-  { value: '365', label: '1 an' },
-];
+function saveToStorage(data: BookingSettings): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 interface BookingSettingsSectionProps {
   studioId: string;
 }
 
-export function BookingSettingsSection({ studioId }: BookingSettingsSectionProps) {
-  const { addToast } = useToast();
-  const [settings, setSettings] = useState<BookingSettings>(defaultBookingSettings);
-  const { data: studioSettings } = useSettings(studioId);
-  const updateBookingSettings = useUpdateBookingSettings(studioId);
+export function BookingSettingsSection({ studioId: _studioId }: BookingSettingsSectionProps) {
+  const { success, error: notifyError } = useNotifications();
+  const [settings, setSettings] = useState<BookingSettings>(() => {
+    return loadFromStorage() || defaultBookingSettings;
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Sync form with fetched data (React recommended pattern for prop-driven state)
-  const [prevStudioSettings, setPrevStudioSettings] = useState(studioSettings);
-  if (studioSettings !== prevStudioSettings) {
-    setPrevStudioSettings(studioSettings);
-    if (studioSettings?.booking) {
-      const b = studioSettings.booking;
-      setSettings({
-        defaultDuration: b.defaultDuration?.toString() ?? defaultBookingSettings.defaultDuration,
-        bufferTime: b.bufferTime?.toString() ?? defaultBookingSettings.bufferTime,
-        minAdvanceTime: b.minAdvanceTime?.toString() ?? defaultBookingSettings.minAdvanceTime,
-        maxAdvanceTime: b.maxAdvanceTime?.toString() ?? defaultBookingSettings.maxAdvanceTime,
-        cancellationPolicy: b.cancellationPolicy ?? defaultBookingSettings.cancellationPolicy,
-      });
+  // Sync state on mount from localStorage
+  useEffect(() => {
+    const stored = loadFromStorage();
+    if (stored) {
+      setSettings(stored);
     }
-  }
+  }, []);
 
-  const handleSave = async () => {
+  const handleSave = () => {
+    // Validate deposit percentage
+    if (settings.depositRequired) {
+      const pct = parseInt(settings.depositPercentage);
+      if (isNaN(pct) || pct < 1 || pct > 100) {
+        notifyError(
+          'Erreur de validation',
+          'Le pourcentage d\'acompte doit etre entre 1 et 100.'
+        );
+        return;
+      }
+    }
+
+    // Validate min < max duration
+    if (parseInt(settings.defaultDuration) > parseInt(settings.maxDuration)) {
+      notifyError(
+        'Erreur de validation',
+        'La duree minimum ne peut pas depasser la duree maximum.'
+      );
+      return;
+    }
+
+    setIsSaving(true);
     try {
-      await updateBookingSettings.mutateAsync({
-        defaultDuration: parseInt(settings.defaultDuration),
-        bufferTime: parseInt(settings.bufferTime),
-        minAdvanceTime: parseInt(settings.minAdvanceTime),
-        maxAdvanceTime: parseInt(settings.maxAdvanceTime),
-        cancellationPolicy: settings.cancellationPolicy,
-      });
-      addToast({
-        title: 'Parametres mis a jour',
-        description: 'Les parametres de reservation ont ete enregistres.',
-        variant: 'success',
-        duration: 5000,
-      });
+      saveToStorage(settings);
+      success(
+        'Parametres mis a jour',
+        'Les parametres de reservation ont ete enregistres.'
+      );
     } catch {
-      addToast({
-        title: 'Erreur',
-        description: 'Impossible de sauvegarder les parametres.',
-        variant: 'error',
-        duration: 5000,
-      });
+      notifyError(
+        'Erreur',
+        'Impossible de sauvegarder les parametres.'
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
-
-  const isLoading = updateBookingSettings.isPending;
 
   return (
     <div className={styles.animateIn}>
@@ -108,39 +121,36 @@ export function BookingSettingsSection({ studioId }: BookingSettingsSectionProps
         </div>
 
         <Card padding="lg" className={styles.formCard}>
+          <h3 className={styles.subsectionTitle}>Durees</h3>
+
           <div className={styles.formRow}>
             <Select
-              label="Duree par defaut"
-              options={durationOptions}
+              label="Duree minimum de reservation"
+              options={minDurationOptions}
               value={settings.defaultDuration}
               onChange={(value) => setSettings(prev => ({ ...prev, defaultDuration: value }))}
               fullWidth
             />
             <Select
-              label="Temps tampon entre reservations"
-              options={bufferOptions}
-              value={settings.bufferTime}
-              onChange={(value) => setSettings(prev => ({ ...prev, bufferTime: value }))}
+              label="Duree maximum de reservation"
+              options={maxDurationOptions}
+              value={settings.maxDuration}
+              onChange={(value) => setSettings(prev => ({ ...prev, maxDuration: value }))}
               fullWidth
             />
           </div>
 
-          <div className={styles.formRow}>
-            <Select
-              label="Delai minimum avant reservation"
-              options={minAdvanceOptions}
-              value={settings.minAdvanceTime}
-              onChange={(value) => setSettings(prev => ({ ...prev, minAdvanceTime: value }))}
-              fullWidth
-            />
-            <Select
-              label="Delai maximum avant reservation"
-              options={maxAdvanceOptions}
-              value={settings.maxAdvanceTime}
-              onChange={(value) => setSettings(prev => ({ ...prev, maxAdvanceTime: value }))}
-              fullWidth
-            />
-          </div>
+          <Select
+            label="Temps tampon entre reservations"
+            options={bufferOptions}
+            value={settings.bufferTime}
+            onChange={(value) => setSettings(prev => ({ ...prev, bufferTime: value }))}
+            fullWidth
+          />
+        </Card>
+
+        <Card padding="lg" className={styles.formCard}>
+          <h3 className={styles.subsectionTitle}>Politique d'annulation</h3>
 
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="booking-cancellation-policy">Politique d'annulation</label>
@@ -156,13 +166,66 @@ export function BookingSettingsSection({ studioId }: BookingSettingsSectionProps
               Cette politique sera affichee aux clients lors de la reservation.
             </span>
           </div>
+        </Card>
+
+        <Card padding="lg" className={styles.formCard}>
+          <h3 className={styles.subsectionTitle}>Acompte et confirmation</h3>
+
+          <div className={styles.notificationList}>
+            <div className={styles.notificationItem}>
+              <div className={styles.notificationInfo}>
+                <span className={styles.notificationLabel}>Acompte requis</span>
+                <span className={styles.notificationDescription}>
+                  Demander un acompte lors de la reservation
+                </span>
+              </div>
+              <label className={styles.toggle} aria-label="Acompte requis">
+                <input
+                  type="checkbox"
+                  checked={settings.depositRequired}
+                  onChange={(e) => setSettings(prev => ({ ...prev, depositRequired: e.target.checked }))}
+                />
+                <span className={styles.toggleSlider}></span>
+              </label>
+            </div>
+
+            {settings.depositRequired && (
+              <div className={styles.depositPercentageRow}>
+                <Input
+                  label="Pourcentage d'acompte"
+                  type="number"
+                  placeholder="30"
+                  value={settings.depositPercentage}
+                  onChange={(e) => setSettings(prev => ({ ...prev, depositPercentage: e.target.value }))}
+                  hint="Pourcentage du montant total (1-100)"
+                />
+              </div>
+            )}
+
+            <div className={styles.notificationItem}>
+              <div className={styles.notificationInfo}>
+                <span className={styles.notificationLabel}>Confirmation automatique</span>
+                <span className={styles.notificationDescription}>
+                  Confirmer automatiquement les reservations sans validation manuelle
+                </span>
+              </div>
+              <label className={styles.toggle} aria-label="Confirmation automatique">
+                <input
+                  type="checkbox"
+                  checked={settings.autoConfirm}
+                  onChange={(e) => setSettings(prev => ({ ...prev, autoConfirm: e.target.checked }))}
+                />
+                <span className={styles.toggleSlider}></span>
+              </label>
+            </div>
+          </div>
 
           <div className={styles.formActions}>
             <Button
               variant="primary"
               icon={<Save size={16} />}
               onClick={handleSave}
-              loading={isLoading}
+              loading={isSaving}
             >
               Enregistrer
             </Button>

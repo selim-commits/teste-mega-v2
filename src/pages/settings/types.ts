@@ -15,6 +15,7 @@ export interface StudioProfile {
   country: string;
   timezone: string;
   currency: string;
+  businessType: string;
 }
 
 export interface DayHours {
@@ -38,10 +39,14 @@ export interface BusinessHours {
 
 export interface BookingSettings {
   defaultDuration: string;
+  maxDuration: string;
   bufferTime: string;
   minAdvanceTime: string;
   maxAdvanceTime: string;
   cancellationPolicy: string;
+  depositRequired: boolean;
+  depositPercentage: string;
+  autoConfirm: boolean;
 }
 
 export interface NotificationSettings {
@@ -89,6 +94,7 @@ export const defaultStudioProfile: StudioProfile = {
   country: 'France',
   timezone: 'Europe/Paris',
   currency: 'EUR',
+  businessType: 'studio-mixte',
 };
 
 export const defaultBusinessHours: BusinessHours = {
@@ -103,10 +109,14 @@ export const defaultBusinessHours: BusinessHours = {
 
 export const defaultBookingSettings: BookingSettings = {
   defaultDuration: '60',
+  maxDuration: '480',
   bufferTime: '15',
   minAdvanceTime: '24',
   maxAdvanceTime: '90',
   cancellationPolicy: 'Les annulations doivent etre effectuees au moins 48 heures avant la reservation. Les annulations tardives peuvent entrainer des frais.',
+  depositRequired: false,
+  depositPercentage: '30',
+  autoConfirm: false,
 };
 
 export const defaultNotificationSettings: NotificationSettings = {

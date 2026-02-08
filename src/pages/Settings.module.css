@@ -224,7 +224,7 @@
   display: flex;
   justify-content: flex-end;
   padding-top: var(--space-4);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--border-subtle);
 }
 
 /* Upload Area */
@@ -314,7 +314,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .scheduleItem:last-child {
@@ -429,7 +429,7 @@
   grid-template-columns: 1fr 60px 60px;
   gap: var(--space-4);
   padding-bottom: var(--space-3);
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .notificationColumnLabel {
@@ -453,7 +453,7 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .notificationItem:last-child {
@@ -665,7 +665,7 @@
 .integrationStatus {
   margin-top: var(--space-3);
   padding-top: var(--space-3);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .statusIndicator {
@@ -797,7 +797,7 @@
 
 .planActions {
   padding-top: var(--space-4);
-  border-top: 1px solid var(--border-light);
+  border-top: 1px solid var(--border-subtle);
 }
 
 /* Payment Method */
@@ -856,7 +856,7 @@
   gap: var(--space-4);
   align-items: center;
   padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .billingItem:last-child {
@@ -881,6 +881,95 @@
   color: var(--text-primary);
 }
 
+/* Plan Name Row */
+.planNameRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Deposit Percentage Row */
+.depositPercentageRow {
+  padding: var(--space-3) 0 var(--space-3) var(--space-8);
+}
+
+/* Usage Grid */
+.usageGrid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.usageStat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.usageStatHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.usageStatLabel {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.usageStatValue {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.usageStatMax {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.usageProgressBar {
+  width: 100%;
+  height: 6px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.usageProgressFill {
+  height: 100%;
+  background-color: var(--accent-primary);
+  border-radius: var(--radius-full);
+  transition: width var(--duration-slow) var(--ease-out);
+}
+
+/* Billing Item Actions */
+.billingItemActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.invoiceDownloadButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: transparent;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.invoiceDownloadButton:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
 @media (max-width: 600px) {
   .billingItem {
     grid-template-columns: 1fr;
@@ -898,5 +987,9 @@
   .paymentMethod {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .depositPercentageRow {
+    padding-left: 0;
   }
 }

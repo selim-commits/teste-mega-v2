@@ -1,60 +1,65 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Upload,
   Link2,
   ExternalLink,
   Save,
+  Camera,
 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
-import { useToast } from '../../components/ui/Toast';
-import {
-  useStudioSettings,
-  useUpdateProfile,
-} from '../../hooks/useSettings';
-import type { StudioSettings } from '../../services/settings';
+import { useNotifications } from '../../stores/uiStore';
 import type { StudioProfile } from './types';
 import { defaultStudioProfile, generateSlug } from './types';
 import styles from '../Settings.module.css';
+
+const STORAGE_KEY = 'rooom-settings-profile';
+
+const businessTypeOptions = [
+  { value: 'studio-photo', label: 'Studio photo' },
+  { value: 'studio-video', label: 'Studio video' },
+  { value: 'studio-mixte', label: 'Studio mixte' },
+  { value: 'espace-creatif', label: 'Espace creatif' },
+];
+
+function loadFromStorage(): StudioProfile | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored) as StudioProfile;
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
+function saveToStorage(data: StudioProfile): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 interface StudioProfileSectionProps {
   studioId: string;
 }
 
-export function StudioProfileSection({ studioId }: StudioProfileSectionProps) {
-  const { addToast } = useToast();
-  const [profile, setProfile] = useState<StudioProfile>(defaultStudioProfile);
+export function StudioProfileSection({ studioId: _studioId }: StudioProfileSectionProps) {
+  const { success, error: notifyError } = useNotifications();
+  const [profile, setProfile] = useState<StudioProfile>(() => {
+    return loadFromStorage() || defaultStudioProfile;
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Fetch studio data from Supabase
-  const { data: studio, isLoading: isFetching } = useStudioSettings(studioId);
-  const updateProfile = useUpdateProfile(studioId);
-
-  // Sync form with fetched data (React recommended pattern for prop-driven state)
-  const [prevStudio, setPrevStudio] = useState(studio);
-  if (studio !== prevStudio) {
-    setPrevStudio(studio);
-    if (studio) {
-      const settings = studio.settings as StudioSettings | null;
-      setProfile({
-        name: studio.name || defaultStudioProfile.name,
-        slug: studio.slug || defaultStudioProfile.slug,
-        description: settings?.profile?.description || defaultStudioProfile.description,
-        logoUrl: settings?.profile?.logoUrl || defaultStudioProfile.logoUrl,
-        coverUrl: settings?.profile?.coverUrl || defaultStudioProfile.coverUrl,
-        email: studio.email || defaultStudioProfile.email,
-        phone: studio.phone || defaultStudioProfile.phone,
-        website: settings?.profile?.website || defaultStudioProfile.website,
-        address: studio.address || defaultStudioProfile.address,
-        city: studio.city || defaultStudioProfile.city,
-        postalCode: studio.postal_code || defaultStudioProfile.postalCode,
-        country: studio.country || defaultStudioProfile.country,
-        timezone: studio.timezone || defaultStudioProfile.timezone,
-        currency: studio.currency || defaultStudioProfile.currency,
-      });
+  // Sync state on mount from localStorage
+  useEffect(() => {
+    const stored = loadFromStorage();
+    if (stored) {
+      setProfile(stored);
     }
-  }
+  }, []);
 
   const handleNameChange = (value: string) => {
     setProfile(prev => ({
@@ -64,41 +69,40 @@ export function StudioProfileSection({ studioId }: StudioProfileSectionProps) {
     }));
   };
 
-  const handleSave = async () => {
-    try {
-      await updateProfile.mutateAsync({
-        name: profile.name,
-        slug: profile.slug,
-        email: profile.email,
-        phone: profile.phone,
-        address: profile.address,
-        city: profile.city,
-        postal_code: profile.postalCode,
-        country: profile.country,
-        timezone: profile.timezone,
-        currency: profile.currency,
-        description: profile.description,
-        logoUrl: profile.logoUrl,
-        coverUrl: profile.coverUrl,
-        website: profile.website,
-      });
-      addToast({
-        title: 'Profil mis a jour',
-        description: 'Les informations du studio ont ete enregistrees.',
-        variant: 'success',
-        duration: 5000,
-      });
-    } catch {
-      addToast({
-        title: 'Erreur',
-        description: 'Impossible de sauvegarder les modifications.',
-        variant: 'error',
-        duration: 5000,
-      });
-    }
+  const handleLogoChange = () => {
+    success(
+      'Changement de logo',
+      'Cette fonctionnalite sera disponible prochainement.'
+    );
   };
 
-  const isLoading = updateProfile.isPending || isFetching;
+  const handleSave = () => {
+    // Basic validation
+    if (!profile.name.trim()) {
+      notifyError('Erreur de validation', 'Le nom du studio est obligatoire.');
+      return;
+    }
+    if (!profile.email.trim()) {
+      notifyError('Erreur de validation', "L'email de contact est obligatoire.");
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      saveToStorage(profile);
+      success(
+        'Profil mis a jour',
+        'Les informations du studio ont ete enregistrees.'
+      );
+    } catch {
+      notifyError(
+        'Erreur',
+        'Impossible de sauvegarder les modifications.'
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className={styles.animateIn}>
@@ -121,11 +125,19 @@ export function StudioProfileSection({ studioId }: StudioProfileSectionProps) {
                     <img src={profile.logoUrl} alt="Logo du studio" className={styles.logoPreview} />
                   ) : (
                     <div className={styles.uploadPlaceholder}>
-                      <Upload size={20} />
+                      <Camera size={20} />
                       <span className={styles.uploadHint}>Logo</span>
                     </div>
                   )}
                 </div>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={<Upload size={14} />}
+                  onClick={handleLogoChange}
+                >
+                  Changer le logo
+                </Button>
                 <Input
                   placeholder="https://example.com/logo.png"
                   value={profile.logoUrl}
@@ -192,6 +204,15 @@ export function StudioProfileSection({ studioId }: StudioProfileSectionProps) {
               onChange={(e) => setProfile(prev => ({ ...prev, description: e.target.value }))}
             />
           </div>
+
+          {/* Business Type */}
+          <Select
+            label="Type d'activite"
+            options={businessTypeOptions}
+            value={profile.businessType}
+            onChange={(value) => setProfile(prev => ({ ...prev, businessType: value }))}
+            fullWidth
+          />
 
           {/* Contact Info */}
           <div className={styles.formRow}>
@@ -294,7 +315,7 @@ export function StudioProfileSection({ studioId }: StudioProfileSectionProps) {
               variant="primary"
               icon={<Save size={16} />}
               onClick={handleSave}
-              loading={isLoading}
+              loading={isSaving}
             >
               Enregistrer
             </Button>

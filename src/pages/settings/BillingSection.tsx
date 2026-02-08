@@ -1,17 +1,21 @@
-import { useState } from 'react';
-import { Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import {
+  Save,
+  Check,
+  Download,
+  ArrowUpRight,
+} from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Select } from '../../components/ui/Select';
-import { useToast } from '../../components/ui/Toast';
-import {
-  useSettings,
-  useUpdateBillingSettings,
-} from '../../hooks/useSettings';
+import { Badge } from '../../components/ui/Badge';
+import { useNotifications } from '../../stores/uiStore';
 import type { BillingSettingsData } from './types';
 import { defaultBillingSettings } from './types';
 import styles from '../Settings.module.css';
+
+const STORAGE_KEY = 'rooom-settings-billing';
 
 const vatRateOptions = [
   { value: '0', label: '0% (Exonere)' },
@@ -20,58 +24,87 @@ const vatRateOptions = [
   { value: '20', label: '20% (Taux normal)' },
 ];
 
+const mockInvoices = [
+  { id: 'INV-2026-001', date: '01 janv. 2026', description: 'Abonnement Pro - Janvier 2026', amount: '49,00 \u20ac', status: 'Payee' },
+  { id: 'INV-2025-012', date: '01 dec. 2025', description: 'Abonnement Pro - Decembre 2025', amount: '49,00 \u20ac', status: 'Payee' },
+  { id: 'INV-2025-011', date: '01 nov. 2025', description: 'Abonnement Pro - Novembre 2025', amount: '49,00 \u20ac', status: 'Payee' },
+  { id: 'INV-2025-010', date: '01 oct. 2025', description: 'Abonnement Pro - Octobre 2025', amount: '49,00 \u20ac', status: 'Payee' },
+];
+
+const usageStats = [
+  { label: 'Reservations ce mois', value: '24', max: '100' },
+  { label: 'Membres de l\'equipe', value: '3', max: '10' },
+  { label: 'Espaces actifs', value: '2', max: '5' },
+];
+
+function loadFromStorage(): BillingSettingsData | null {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) return JSON.parse(stored) as BillingSettingsData;
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
+function saveToStorage(data: BillingSettingsData): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 interface BillingSectionProps {
   studioId: string;
 }
 
-export function BillingSection({ studioId }: BillingSectionProps) {
-  const { addToast } = useToast();
-  const [settings, setSettings] = useState<BillingSettingsData>(defaultBillingSettings);
-  const { data: studioSettings } = useSettings(studioId);
-  const updateBillingSettings = useUpdateBillingSettings(studioId);
+export function BillingSection({ studioId: _studioId }: BillingSectionProps) {
+  const { success, error: notifyError, info } = useNotifications();
+  const [settings, setSettings] = useState<BillingSettingsData>(() => {
+    return loadFromStorage() || defaultBillingSettings;
+  });
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Sync form with fetched data (React recommended pattern for prop-driven state)
-  const [prevStudioSettings, setPrevStudioSettings] = useState(studioSettings);
-  if (studioSettings !== prevStudioSettings) {
-    setPrevStudioSettings(studioSettings);
-    if (studioSettings?.billing) {
-      const b = studioSettings.billing;
-      setSettings({
-        vatRate: b.vatRate ?? defaultBillingSettings.vatRate,
-        paymentTerms: b.paymentTerms ?? defaultBillingSettings.paymentTerms,
-        legalMentions: b.legalMentions ?? defaultBillingSettings.legalMentions,
-        siret: b.siret ?? defaultBillingSettings.siret,
-        vatNumber: b.vatNumber ?? defaultBillingSettings.vatNumber,
-      });
+  // Sync state on mount from localStorage
+  useEffect(() => {
+    const stored = loadFromStorage();
+    if (stored) {
+      setSettings(stored);
     }
-  }
+  }, []);
 
-  const handleSave = async () => {
+  const handleSave = () => {
+    setIsSaving(true);
     try {
-      await updateBillingSettings.mutateAsync({
-        vatRate: settings.vatRate,
-        vatNumber: settings.vatNumber,
-        siret: settings.siret,
-        paymentTerms: settings.paymentTerms,
-        legalMentions: settings.legalMentions,
-      });
-      addToast({
-        title: 'Facturation mise a jour',
-        description: 'Les informations de facturation ont ete enregistrees.',
-        variant: 'success',
-        duration: 5000,
-      });
+      saveToStorage(settings);
+      success(
+        'Facturation mise a jour',
+        'Les informations de facturation ont ete enregistrees.'
+      );
     } catch {
-      addToast({
-        title: 'Erreur',
-        description: 'Impossible de sauvegarder les informations.',
-        variant: 'error',
-        duration: 5000,
-      });
+      notifyError(
+        'Erreur',
+        'Impossible de sauvegarder les informations.'
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
-  const isLoading = updateBillingSettings.isPending;
+  const handleUpgrade = () => {
+    info(
+      'Mise a niveau',
+      'Contactez-nous a contact@rooom.studio pour passer au plan Enterprise.'
+    );
+  };
+
+  const handleDownloadInvoice = (invoiceId: string) => {
+    info(
+      'Telechargement',
+      `La facture ${invoiceId} sera disponible prochainement.`
+    );
+  };
 
   return (
     <div className={styles.animateIn}>
@@ -79,9 +112,82 @@ export function BillingSection({ studioId }: BillingSectionProps) {
         <div className={styles.sectionHeader}>
           <h2 className={styles.sectionTitle}>Facturation</h2>
           <p className={styles.sectionDescription}>
-            Configurez vos informations de facturation et mentions legales
+            Gerez votre abonnement et vos informations de facturation
           </p>
         </div>
+
+        {/* Current Plan */}
+        <Card padding="lg" className={styles.formCard}>
+          <div className={styles.planHeader}>
+            <div className={styles.planInfo}>
+              <div className={styles.planNameRow}>
+                <h3 className={styles.subsectionTitle}>Plan actuel</h3>
+                <Badge variant="success">Pro</Badge>
+              </div>
+              <div className={styles.planPrice}>
+                <span className={styles.priceAmount}>49\u20ac</span>
+                <span className={styles.pricePeriod}>/mois</span>
+              </div>
+            </div>
+            <Button
+              variant="secondary"
+              icon={<ArrowUpRight size={16} />}
+              onClick={handleUpgrade}
+            >
+              Passer a Enterprise
+            </Button>
+          </div>
+
+          <div className={styles.planFeatures}>
+            <div className={styles.planFeature}>
+              <Check size={16} className={styles.featureIcon} />
+              <span>Jusqu'a 100 reservations par mois</span>
+            </div>
+            <div className={styles.planFeature}>
+              <Check size={16} className={styles.featureIcon} />
+              <span>10 membres d'equipe</span>
+            </div>
+            <div className={styles.planFeature}>
+              <Check size={16} className={styles.featureIcon} />
+              <span>5 espaces configurables</span>
+            </div>
+            <div className={styles.planFeature}>
+              <Check size={16} className={styles.featureIcon} />
+              <span>Widget de reservation personnalisable</span>
+            </div>
+            <div className={styles.planFeature}>
+              <Check size={16} className={styles.featureIcon} />
+              <span>Notifications email et SMS</span>
+            </div>
+          </div>
+        </Card>
+
+        {/* Usage Stats */}
+        <Card padding="lg" className={styles.formCard}>
+          <h3 className={styles.subsectionTitle}>Utilisation ce mois</h3>
+          <p className={styles.subsectionDescription}>
+            Suivi de votre consommation par rapport aux limites du plan
+          </p>
+
+          <div className={styles.usageGrid}>
+            {usageStats.map((stat) => (
+              <div key={stat.label} className={styles.usageStat}>
+                <div className={styles.usageStatHeader}>
+                  <span className={styles.usageStatLabel}>{stat.label}</span>
+                  <span className={styles.usageStatValue}>
+                    {stat.value} <span className={styles.usageStatMax}>/ {stat.max}</span>
+                  </span>
+                </div>
+                <div className={styles.usageProgressBar}>
+                  <div
+                    className={styles.usageProgressFill}
+                    style={{ width: `${(parseInt(stat.value) / parseInt(stat.max)) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
 
         {/* Tax Settings */}
         <Card padding="lg" className={styles.formCard}>
@@ -163,10 +269,39 @@ export function BillingSection({ studioId }: BillingSectionProps) {
               variant="primary"
               icon={<Save size={16} />}
               onClick={handleSave}
-              loading={isLoading}
+              loading={isSaving}
             >
               Enregistrer
             </Button>
+          </div>
+        </Card>
+
+        {/* Invoice History */}
+        <Card padding="lg" className={styles.formCard}>
+          <h3 className={styles.subsectionTitle}>Historique des factures</h3>
+          <p className={styles.subsectionDescription}>
+            Retrouvez toutes vos factures passees
+          </p>
+
+          <div className={styles.billingHistory}>
+            {mockInvoices.map((invoice) => (
+              <div key={invoice.id} className={styles.billingItem}>
+                <span className={styles.billingDate}>{invoice.date}</span>
+                <span className={styles.billingDescription}>{invoice.description}</span>
+                <span className={styles.billingAmount}>{invoice.amount}</span>
+                <div className={styles.billingItemActions}>
+                  <Badge variant="success" size="sm">{invoice.status}</Badge>
+                  <button
+                    type="button"
+                    className={styles.invoiceDownloadButton}
+                    onClick={() => handleDownloadInvoice(invoice.id)}
+                    aria-label={`Telecharger ${invoice.id}`}
+                  >
+                    <Download size={14} />
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </Card>
       </div>

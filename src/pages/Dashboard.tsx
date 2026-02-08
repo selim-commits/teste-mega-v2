@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Calendar,
@@ -14,6 +14,11 @@ import {
   Activity,
   AlertCircle,
   TrendingUp,
+  Plus,
+  UserPlus,
+  FileText,
+  CreditCard,
+  RefreshCw,
 } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
@@ -31,19 +36,35 @@ import {
   useActiveClients,
   useBookings,
   useActiveSpaces,
+  useRecentPayments,
 } from '../hooks';
 import { useTeamMembersByUser } from '../hooks/useTeam';
 import type { Booking, Equipment } from '../types/database';
 import styles from './Dashboard.module.css';
 
-// Helper function to format booking time
+// --- Time Period Types ---
+type TimePeriod = 'today' | 'week' | 'month' | 'quarter';
+
+interface PeriodConfig {
+  label: string;
+  key: TimePeriod;
+}
+
+const PERIOD_OPTIONS: PeriodConfig[] = [
+  { label: "Aujourd'hui", key: 'today' },
+  { label: 'Cette semaine', key: 'week' },
+  { label: 'Ce mois', key: 'month' },
+  { label: 'Ce trimestre', key: 'quarter' },
+];
+
+// --- Helper Functions ---
+
 function formatBookingTime(startTime: string, endTime: string): string {
   const start = new Date(startTime);
   const end = new Date(endTime);
   return `${start.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}`;
 }
 
-// Helper function to get booking status for display
 function getBookingDisplayStatus(booking: Booking): 'active' | 'upcoming' | 'completed' {
   const now = new Date();
   const start = new Date(booking.start_time);
@@ -54,7 +75,6 @@ function getBookingDisplayStatus(booking: Booking): 'active' | 'upcoming' | 'com
   return 'upcoming';
 }
 
-// Helper function to format relative time
 function formatRelativeTime(date: string): string {
   const now = new Date();
   const then = new Date(date);
@@ -63,13 +83,12 @@ function formatRelativeTime(date: string): string {
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
 
-  if (diffMins < 1) return 'A l\'instant';
+  if (diffMins < 1) return "A l'instant";
   if (diffMins < 60) return `Il y a ${diffMins} min`;
   if (diffHours < 24) return `Il y a ${diffHours}h`;
   return `Il y a ${diffDays}j`;
 }
 
-// Helper to calculate average booking duration in hours
 function calculateAverageBookingDuration(bookings: Booking[]): string {
   if (!bookings || bookings.length === 0) return '0h';
 
@@ -86,7 +105,6 @@ function calculateAverageBookingDuration(bookings: Booking[]): string {
   return `${hours}h ${mins}m`;
 }
 
-// Helper to get bookings for the last 7 days
 interface DailyBookingData {
   date: string;
   dayName: string;
@@ -121,7 +139,6 @@ function getLast7DaysBookings(bookings: Booking[]): DailyBookingData[] {
   return result.map(d => ({ ...d, maxCount }));
 }
 
-// Helper to check if a booking is tomorrow
 function isTomorrow(dateStr: string): boolean {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
@@ -130,16 +147,98 @@ function isTomorrow(dateStr: string): boolean {
   return bookingDate === tomorrowStr;
 }
 
-// Helper to check if a booking is today
 function isToday(dateStr: string): boolean {
   const today = new Date().toISOString().split('T')[0];
   const bookingDate = new Date(dateStr).toISOString().split('T')[0];
   return bookingDate === today;
 }
 
+/** Get date range for the selected period */
+function getPeriodDateRange(period: TimePeriod): { start: Date; end: Date; prevStart: Date; prevEnd: Date } {
+  const now = new Date();
+  let start: Date;
+  let end: Date;
+  let prevStart: Date;
+  let prevEnd: Date;
+
+  switch (period) {
+    case 'today': {
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+      prevStart = new Date(start);
+      prevStart.setDate(prevStart.getDate() - 1);
+      prevEnd = new Date(end);
+      prevEnd.setDate(prevEnd.getDate() - 1);
+      break;
+    }
+    case 'week': {
+      const dayOfWeek = now.getDay();
+      const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate() + mondayOffset);
+      end = new Date(now);
+      prevStart = new Date(start);
+      prevStart.setDate(prevStart.getDate() - 7);
+      prevEnd = new Date(start);
+      prevEnd.setDate(prevEnd.getDate() - 1);
+      prevEnd.setHours(23, 59, 59, 999);
+      break;
+    }
+    case 'month': {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = new Date(now);
+      prevStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      prevEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      break;
+    }
+    case 'quarter': {
+      const qMonth = Math.floor(now.getMonth() / 3) * 3;
+      start = new Date(now.getFullYear(), qMonth, 1);
+      end = new Date(now);
+      prevStart = new Date(now.getFullYear(), qMonth - 3, 1);
+      prevEnd = new Date(now.getFullYear(), qMonth, 0, 23, 59, 59, 999);
+      break;
+    }
+  }
+
+  return { start, end, prevStart, prevEnd };
+}
+
+/** Filter bookings by period */
+function filterBookingsByPeriod(bookings: Booking[], start: Date, end: Date): Booking[] {
+  return bookings.filter(booking => {
+    const bookingDate = new Date(booking.start_time);
+    return bookingDate >= start && bookingDate <= end;
+  });
+}
+
+/** Format the last updated timestamp */
+function formatLastUpdated(): string {
+  return new Date().toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+/** Translate payment method to French */
+function translatePaymentMethod(method: string): string {
+  const methods: Record<string, string> = {
+    card: 'Carte',
+    bank_transfer: 'Virement',
+    transfer: 'Virement',
+    cash: 'Especes',
+    check: 'Cheque',
+    other: 'Autre',
+  };
+  return methods[method] || method;
+}
+
+// --- Main Component ---
+
 export function Dashboard() {
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('month');
+  const [lastUpdated] = useState<string>(formatLastUpdated);
 
   // Get user's team memberships to find their studioId
   const { data: teamMemberships, isLoading: teamLoading } = useTeamMembersByUser(user?.id || '');
@@ -192,6 +291,12 @@ export function Dashboard() {
     isLoading: spacesLoading
   } = useActiveSpaces(studioId);
 
+  // Fetch recent payments for revenue feed
+  const {
+    data: recentPaymentsData,
+    isLoading: paymentsLoading
+  } = useRecentPayments(studioId, 5);
+
   // Fetch last 7 days bookings for chart
   const sevenDaysAgo = useMemo(() => {
     const date = new Date();
@@ -215,6 +320,58 @@ export function Dashboard() {
     endDate: tomorrow
   });
 
+  // --- Period-based filtering ---
+  const periodRange = useMemo(() => getPeriodDateRange(selectedPeriod), [selectedPeriod]);
+
+  const periodBookings = useMemo(() => {
+    if (!recentBookings) return [];
+    return filterBookingsByPeriod(recentBookings, periodRange.start, periodRange.end);
+  }, [recentBookings, periodRange]);
+
+  const prevPeriodBookings = useMemo(() => {
+    if (!recentBookings) return [];
+    return filterBookingsByPeriod(recentBookings, periodRange.prevStart, periodRange.prevEnd);
+  }, [recentBookings, periodRange]);
+
+  // Compute period-sensitive metrics
+  const periodStats = useMemo(() => {
+    const currentCount = periodBookings.length;
+    const prevCount = prevPeriodBookings.length;
+
+    const currentRevenue = periodBookings
+      .filter(b => b.status === 'completed' || b.status === 'confirmed')
+      .reduce((sum, b) => sum + (b.total_amount || 0), 0);
+
+    const prevRevenue = prevPeriodBookings
+      .filter(b => b.status === 'completed' || b.status === 'confirmed')
+      .reduce((sum, b) => sum + (b.total_amount || 0), 0);
+
+    const bookingsChange = prevCount > 0
+      ? Math.round(((currentCount - prevCount) / prevCount) * 100)
+      : currentCount > 0 ? 100 : 0;
+
+    const revenueChange = prevRevenue > 0
+      ? Math.round(((currentRevenue - prevRevenue) / prevRevenue) * 100)
+      : currentRevenue > 0 ? 100 : 0;
+
+    return {
+      bookingsCount: currentCount,
+      bookingsChange,
+      revenue: currentRevenue,
+      revenueChange,
+    };
+  }, [periodBookings, prevPeriodBookings]);
+
+  // Get the label for "vs previous period"
+  const periodComparisonLabel = useMemo(() => {
+    switch (selectedPeriod) {
+      case 'today': return 'vs hier';
+      case 'week': return 'vs semaine dern.';
+      case 'month': return 'vs mois dernier';
+      case 'quarter': return 'vs trimestre dern.';
+    }
+  }, [selectedPeriod]);
+
   // Calculate equipment stats
   const equipmentStats = useMemo(() => {
     if (!equipment) return { total: 0, available: 0 };
@@ -227,9 +384,8 @@ export function Dashboard() {
   const occupancyRate = useMemo(() => {
     if (!activeSpaces || activeSpaces.length === 0 || !todayBookings) return 0;
 
-    // Calculate hours booked today vs total available hours
     const totalSpaces = activeSpaces.length;
-    const workingHours = 12; // Assume 12 working hours per day
+    const workingHours = 12;
     const totalAvailableHours = totalSpaces * workingHours;
 
     const bookedHours = todayBookings.reduce((sum, booking) => {
@@ -267,20 +423,38 @@ export function Dashboard() {
     return calculateAverageBookingDuration(recentBookings || []);
   }, [recentBookings]);
 
-  // Get recent activity items
+  // Get recent activity items (expanded to 8)
   const recentActivity = useMemo(() => {
     if (!recentBookings) return [];
 
     return recentBookings
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-      .slice(0, 4)
-      .map(booking => ({
-        id: booking.id,
-        action: booking.status === 'completed' ? 'Reservation terminee' : 'Nouvelle reservation',
-        details: booking.title,
-        time: formatRelativeTime(booking.created_at),
-        type: 'booking' as const,
-      }));
+      .slice(0, 8)
+      .map(booking => {
+        let action: string;
+        let variant: 'booking' | 'completed' | 'cancelled' = 'booking';
+
+        if (booking.status === 'completed') {
+          action = 'Reservation terminee';
+          variant = 'completed';
+        } else if (booking.status === 'cancelled') {
+          action = 'Reservation annulee';
+          variant = 'cancelled';
+        } else if (booking.status === 'confirmed') {
+          action = 'Reservation confirmee';
+        } else {
+          action = 'Nouvelle reservation';
+        }
+
+        return {
+          id: booking.id,
+          action,
+          details: booking.title,
+          time: formatRelativeTime(booking.created_at),
+          type: variant,
+          amount: booking.total_amount || 0,
+        };
+      });
   }, [recentBookings]);
 
   // Generate alerts from maintenance equipment
@@ -301,6 +475,11 @@ export function Dashboard() {
   }, [maintenanceEquipment]);
 
   const hasError = statsError || bookingsError || equipmentError;
+
+  // Quick action handlers
+  const handleQuickAction = useCallback((path: string) => {
+    navigate(path);
+  }, [navigate]);
 
   // Show loading state while determining studioId
   if (teamLoading) {
@@ -333,7 +512,7 @@ export function Dashboard() {
             <div className={styles.emptyState}>
               <AlertCircle size={48} />
               <h3>Aucun studio trouve</h3>
-              <p>Vous n'etes associe a aucun studio. Veuillez contacter votre administrateur.</p>
+              <p>Vous n&apos;etes associe a aucun studio. Veuillez contacter votre administrateur.</p>
             </div>
           </Card>
         </div>
@@ -373,31 +552,83 @@ export function Dashboard() {
       />
 
       <div className={styles.content}>
+        {/* Top Bar: Period Selector + Last Updated */}
+        <div className={styles.topBar}>
+          <div className={styles.periodSelector}>
+            {PERIOD_OPTIONS.map((option) => (
+              <button
+                key={option.key}
+                className={`${styles.periodBtn} ${selectedPeriod === option.key ? styles.periodBtnActive : ''}`}
+                onClick={() => setSelectedPeriod(option.key)}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          <div className={styles.lastUpdated}>
+            <RefreshCw size={12} />
+            <span>Mis a jour a {lastUpdated}</span>
+          </div>
+        </div>
+
+        {/* Quick Actions Bar */}
+        <div className={styles.quickActions}>
+          <button className={styles.quickActionBtn} onClick={() => handleQuickAction('/bookings')}>
+            <div className={styles.quickActionIcon}>
+              <Plus size={16} />
+            </div>
+            <span>Nouvelle reservation</span>
+          </button>
+          <button className={styles.quickActionBtn} onClick={() => handleQuickAction('/clients')}>
+            <div className={styles.quickActionIcon}>
+              <UserPlus size={16} />
+            </div>
+            <span>Nouveau client</span>
+          </button>
+          <button className={styles.quickActionBtn} onClick={() => handleQuickAction('/finance')}>
+            <div className={styles.quickActionIcon}>
+              <FileText size={16} />
+            </div>
+            <span>Creer facture</span>
+          </button>
+          <button className={styles.quickActionBtn} onClick={() => handleQuickAction('/spaces')}>
+            <div className={styles.quickActionIcon}>
+              <Calendar size={16} />
+            </div>
+            <span>Voir calendrier</span>
+          </button>
+        </div>
+
         {/* KPI Cards */}
         <div className={styles.kpiGrid}>
           <div className={styles.animateIn}>
-            {statsLoading ? (
+            {statsLoading || recentBookingsLoading ? (
               <KPICardSkeleton />
             ) : (
               <KPICard
-                title="Revenus du mois"
-                value={formatCurrency(stats?.totalRevenue || 0)}
-                change={stats?.revenueGrowth || 0}
+                title="Revenus"
+                value={formatCurrency(selectedPeriod === 'month' ? (stats?.totalRevenue || 0) : periodStats.revenue)}
+                change={selectedPeriod === 'month' ? (stats?.revenueGrowth || 0) : periodStats.revenueChange}
                 icon={<DollarSign size={20} />}
-                trend={stats?.revenueGrowth && stats.revenueGrowth >= 0 ? 'up' : 'down'}
+                trend={(selectedPeriod === 'month' ? (stats?.revenueGrowth || 0) : periodStats.revenueChange) >= 0 ? 'up' : 'down'}
+                comparisonLabel={periodComparisonLabel}
+                previousValue={selectedPeriod !== 'month' && periodStats.revenueChange !== 0
+                  ? formatCurrency(periodStats.revenue / (1 + periodStats.revenueChange / 100))
+                  : undefined}
               />
             )}
           </div>
           <div className={styles.animateIn}>
-            {statsLoading ? (
+            {statsLoading || recentBookingsLoading ? (
               <KPICardSkeleton />
             ) : (
               <KPICard
                 title="Reservations"
-                value={String(stats?.totalBookings || 0)}
-                change={stats?.bookingsGrowth || 0}
+                value={String(selectedPeriod === 'month' ? (stats?.totalBookings || 0) : periodStats.bookingsCount)}
+                change={selectedPeriod === 'month' ? (stats?.bookingsGrowth || 0) : periodStats.bookingsChange}
                 icon={<Calendar size={20} />}
-                trend={stats?.bookingsGrowth && stats.bookingsGrowth >= 0 ? 'up' : 'down'}
+                trend={(selectedPeriod === 'month' ? (stats?.bookingsGrowth || 0) : periodStats.bookingsChange) >= 0 ? 'up' : 'down'}
+                comparisonLabel={periodComparisonLabel}
               />
             )}
           </div>
@@ -411,6 +642,7 @@ export function Dashboard() {
                 change={0}
                 icon={<Activity size={20} />}
                 trend={occupancyRate >= 50 ? 'up' : 'down'}
+                comparisonLabel={periodComparisonLabel}
               />
             )}
           </div>
@@ -424,6 +656,7 @@ export function Dashboard() {
                 change={stats?.clientsGrowth || 0}
                 icon={<Users size={20} />}
                 trend={stats?.clientsGrowth && stats.clientsGrowth >= 0 ? 'up' : 'down'}
+                comparisonLabel={periodComparisonLabel}
               />
             )}
           </div>
@@ -609,7 +842,7 @@ export function Dashboard() {
             </Card>
           </div>
 
-          {/* Recent Activity */}
+          {/* Recent Activity - Enhanced */}
           <div className={`${styles.animateIn} ${styles.bentoWide}`}>
             <Card padding="lg">
               <CardHeader
@@ -623,7 +856,7 @@ export function Dashboard() {
               <CardContent>
                 {recentBookingsLoading ? (
                   <div className={styles.activityList}>
-                    {[1, 2, 3, 4].map((i) => (
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
                       <ActivityItemSkeleton key={i} />
                     ))}
                   </div>
@@ -635,7 +868,13 @@ export function Dashboard() {
                         action={activity.action}
                         details={activity.details}
                         time={activity.time}
-                        icon={<Calendar size={14} />}
+                        icon={
+                          activity.type === 'completed' ? <CheckCircle size={14} /> :
+                          activity.type === 'cancelled' ? <AlertCircle size={14} /> :
+                          <Calendar size={14} />
+                        }
+                        variant={activity.type}
+                        amount={activity.amount}
                       />
                     ))}
                   </div>
@@ -648,22 +887,66 @@ export function Dashboard() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Revenus recents */}
+          <div className={`${styles.animateIn} ${styles.bentoMedium}`}>
+            <Card padding="lg">
+              <CardHeader
+                title="Revenus recents"
+                subtitle="5 dernieres transactions"
+                action={
+                  <Button variant="ghost" size="sm" onClick={() => navigate('/finance')}>
+                    Voir tout
+                  </Button>
+                }
+              />
+              <CardContent>
+                {paymentsLoading ? (
+                  <div className={styles.revenueList}>
+                    {[1, 2, 3, 4, 5].map((i) => (
+                      <RevenueItemSkeleton key={i} />
+                    ))}
+                  </div>
+                ) : recentPaymentsData && recentPaymentsData.length > 0 ? (
+                  <div className={styles.revenueList}>
+                    {recentPaymentsData.slice(0, 5).map((payment) => (
+                      <RevenueItem
+                        key={payment.id}
+                        amount={payment.amount}
+                        method={translatePaymentMethod(payment.method)}
+                        reference={payment.reference || '-'}
+                        date={formatRelativeTime(payment.created_at)}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className={styles.noActivity}>
+                    <CreditCard size={24} />
+                    <p>Aucun paiement recent</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-// Sub-components
+// --- Sub-components ---
+
 interface KPICardProps {
   title: string;
   value: string;
   change: number;
   icon: React.ReactNode;
   trend: 'up' | 'down';
+  comparisonLabel: string;
+  previousValue?: string;
 }
 
-function KPICard({ title, value, change, icon, trend }: KPICardProps) {
+function KPICard({ title, value, change, icon, trend, comparisonLabel, previousValue }: KPICardProps) {
   const isPositive = trend === 'up';
 
   return (
@@ -682,8 +965,13 @@ function KPICard({ title, value, change, icon, trend }: KPICardProps) {
         <span className={isPositive ? styles.kpiUp : styles.kpiDown}>
           {Math.abs(change)}%
         </span>
-        <span className={styles.kpiPeriod}>vs mois dernier</span>
+        <span className={styles.kpiPeriod}>{comparisonLabel}</span>
       </div>
+      {previousValue && (
+        <div className={styles.kpiPrevious}>
+          Precedent : {previousValue}
+        </div>
+      )}
     </Card>
   );
 }
@@ -782,16 +1070,23 @@ interface ActivityItemProps {
   details: string;
   time: string;
   icon: React.ReactNode;
+  variant?: 'booking' | 'completed' | 'cancelled';
+  amount?: number;
 }
 
-function ActivityItem({ action, details, time, icon }: ActivityItemProps) {
+function ActivityItem({ action, details, time, icon, variant = 'booking', amount }: ActivityItemProps) {
   return (
     <div className={styles.activityItem}>
-      <div className={styles.activityIcon}>{icon}</div>
+      <div className={`${styles.activityIcon} ${styles[`activityIcon_${variant}`]}`}>
+        {icon}
+      </div>
       <div className={styles.activityContent}>
         <div className={styles.activityAction}>{action}</div>
         <div className={styles.activityDetails}>{details}</div>
       </div>
+      {amount != null && amount > 0 && (
+        <div className={styles.activityAmount}>{formatCurrency(amount)}</div>
+      )}
       <div className={styles.activityTime}>{time}</div>
     </div>
   );
@@ -806,6 +1101,41 @@ function ActivityItemSkeleton() {
         <Skeleton width={160} height={12} />
       </div>
       <Skeleton width={60} height={12} />
+    </div>
+  );
+}
+
+interface RevenueItemProps {
+  amount: number;
+  method: string;
+  reference: string;
+  date: string;
+}
+
+function RevenueItem({ amount, method, reference, date }: RevenueItemProps) {
+  return (
+    <div className={styles.revenueItem}>
+      <div className={styles.revenueItemIcon}>
+        <CreditCard size={14} />
+      </div>
+      <div className={styles.revenueItemContent}>
+        <div className={styles.revenueItemAmount}>{formatCurrency(amount)}</div>
+        <div className={styles.revenueItemMeta}>{method} &middot; {reference}</div>
+      </div>
+      <div className={styles.revenueItemDate}>{date}</div>
+    </div>
+  );
+}
+
+function RevenueItemSkeleton() {
+  return (
+    <div className={styles.revenueItem}>
+      <Skeleton variant="circular" width={28} height={28} />
+      <div className={styles.revenueItemContent}>
+        <Skeleton width={80} height={14} />
+        <Skeleton width={120} height={12} />
+      </div>
+      <Skeleton width={50} height={12} />
     </div>
   );
 }

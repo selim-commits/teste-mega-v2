@@ -18,6 +18,102 @@
   padding: var(--content-padding);
 }
 
+/* Top Bar: Period Selector + Last Updated */
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.periodSelector {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  background-color: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-1);
+}
+
+.periodBtn {
+  padding: var(--space-2) var(--space-3);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+  white-space: nowrap;
+}
+
+.periodBtn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
+}
+
+.periodBtnActive {
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.lastUpdated {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Quick Actions Bar */
+.quickActions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+  margin-bottom: var(--section-gap);
+}
+
+.quickActionBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.quickActionBtn:hover {
+  border-color: var(--border-strong);
+  background-color: var(--bg-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.quickActionIcon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent-primary-light);
+  border-radius: var(--radius-md);
+  color: var(--accent-primary);
+  flex-shrink: 0;
+}
+
 /* KPI Grid */
 .kpiGrid {
   display: grid;
@@ -99,6 +195,13 @@
 .kpiPeriod {
   color: var(--text-tertiary);
   margin-left: var(--space-1);
+}
+
+.kpiPrevious {
+  font-family: var(--font-sans);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin-top: var(--space-1);
 }
 
 /* Bento Grid */
@@ -353,7 +456,7 @@
   font-size: var(--text-sm);
   font-weight: 500;
   color: var(--text-primary);
-  margin-bottom: 2px;
+  margin-bottom: var(--space-1);
 }
 
 .alertMessage {
@@ -386,6 +489,22 @@
   flex-shrink: 0;
 }
 
+/* Activity icon variants */
+.activityIcon_booking {
+  background-color: var(--state-info-bg);
+  color: var(--state-info);
+}
+
+.activityIcon_completed {
+  background-color: var(--state-success-bg);
+  color: var(--state-success);
+}
+
+.activityIcon_cancelled {
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
+}
+
 .activityContent {
   flex: 1;
   min-width: 0;
@@ -400,9 +519,77 @@
 .activityDetails {
   font-size: var(--text-xs);
   color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activityAmount {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
 }
 
 .activityTime {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Revenue List */
+.revenueList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.revenueItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.revenueItem:last-child {
+  border-bottom: none;
+}
+
+.revenueItemIcon {
+  width: 28px;
+  height: 28px;
+  background-color: var(--state-success-bg);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--state-success);
+  flex-shrink: 0;
+}
+
+.revenueItemContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.revenueItemAmount {
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.revenueItemMeta {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.revenueItemDate {
   font-size: var(--text-xs);
   color: var(--text-muted);
   white-space: nowrap;
@@ -515,7 +702,7 @@
   background: linear-gradient(to top, var(--accent-primary), var(--accent-primary-light));
   border-radius: var(--radius-sm);
   min-height: 4px;
-  transition: height var(--duration-normal) var(--ease-default);
+  transition: height var(--duration-slow) var(--ease-default);
 }
 
 .chartLabel {
@@ -537,6 +724,30 @@
 @media (max-width: 768px) {
   .content {
     padding: var(--space-4);
+  }
+
+  .topBar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  .periodSelector {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .quickActions {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
+  }
+
+  .quickActionBtn {
+    padding: var(--space-3);
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-2);
   }
 
   .kpiValue {
@@ -564,6 +775,15 @@
   .statValue {
     font-size: var(--text-lg);
   }
+
+  .activityItem {
+    flex-wrap: wrap;
+  }
+
+  .activityAmount {
+    order: 3;
+    font-size: var(--text-xs);
+  }
 }
 
 @media (max-width: 480px) {
@@ -580,5 +800,18 @@
   .bentoWide,
   .bentoSmall {
     grid-column: span 1;
+  }
+
+  .quickActions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .quickActionBtn span {
+    font-size: var(--text-xs);
+  }
+
+  .periodBtn {
+    font-size: var(--text-xs);
+    padding: var(--space-1) var(--space-2);
   }
 }
