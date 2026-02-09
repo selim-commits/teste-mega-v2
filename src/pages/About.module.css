@@ -1,0 +1,291 @@
+/* Rooom OS — About Page */
+
+.page {
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  overflow-x: hidden;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(48px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.revealVisible { opacity: 1; transform: translateY(0); }
+
+/* Hero */
+.hero {
+  text-align: center;
+  padding: 80px 48px 64px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.heroEyebrow {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 0 16px 0;
+}
+
+.heroTitle {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin: 0 0 16px 0;
+}
+
+.heroSubtitle {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Story */
+.storySection {
+  padding: 0 48px 100px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.storyGrid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.storyImage {
+  overflow: hidden;
+}
+
+.storyImg {
+  width: 100%;
+  height: 480px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.storyImage:hover .storyImg {
+  transform: scale(1.03);
+}
+
+.storyContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+.storyTitle {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.storyText {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.75;
+  margin: 0;
+}
+
+/* Stats */
+.statsSection {
+  padding: 80px 48px;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.statsGrid {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 80px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.statNumber {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: clamp(36px, 4vw, 56px);
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+}
+
+/* Team */
+.teamSection {
+  padding: 100px 48px;
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.teamEyebrow {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 0 16px 0;
+}
+
+.teamTitle {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0 0 56px 0;
+}
+
+.teamGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 32px;
+}
+
+.teamCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.teamImage {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  filter: grayscale(100%);
+  transition: filter 0.4s;
+}
+
+.teamCard:hover .teamImage {
+  filter: grayscale(0%);
+}
+
+.teamName {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.teamRole {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+/* CTA */
+.ctaSection {
+  padding: 120px 48px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ctaEyebrow {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 0 20px 0;
+}
+
+.ctaHeadline {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin: 0 0 40px 0;
+  text-wrap: balance;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 40px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: gap 0.3s;
+}
+
+.ctaButton:hover { gap: 18px; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .hero { padding: 48px 20px 40px; }
+  .storySection { padding: 0 20px 64px; }
+  .storyGrid { grid-template-columns: 1fr; gap: 32px; }
+  .storyImg { height: 320px; }
+  .statsSection { padding: 48px 20px; }
+  .statsGrid { gap: 32px; flex-wrap: wrap; }
+  .teamSection { padding: 64px 20px; }
+  .teamGrid { grid-template-columns: repeat(2, 1fr); gap: 32px; }
+  .ctaSection { padding: 80px 20px; }
+}
+
+@media (max-width: 480px) {
+  .statsGrid { gap: 24px; }
+  .teamGrid { grid-template-columns: 1fr; }
+  .ctaButton { height: 52px; padding: 0 28px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .storyImg { transition: none; }
+  .teamImage { transition: none; }
+  .ctaButton { transition: none; }
+}

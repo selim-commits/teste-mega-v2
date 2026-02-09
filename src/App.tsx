@@ -5,6 +5,7 @@ import { queryClient } from './lib/queryClient';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './components/ui/Toast';
 import { AppLayout } from './components/layout/AppLayout';
+import { PublicLayout } from './components/layout/PublicLayout';
 import { AuthGuard, GuestGuard } from './components/auth/AuthGuard';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthCallback } from './components/auth/AuthCallback';
@@ -45,6 +46,18 @@ const AIPricing = lazy(() => import('./pages/AIPricing').then(m => ({ default: m
 const IdentityVerification = lazy(() => import('./pages/IdentityVerification').then(m => ({ default: m.IdentityVerification })));
 const OwnerPortal = lazy(() => import('./pages/OwnerPortal').then(m => ({ default: m.OwnerPortal })));
 const Login = lazy(() => import('./pages/Login').then(m => ({ default: m.Login })));
+const Landing = lazy(() => import('./pages/Landing').then(m => ({ default: m.Landing })));
+
+// Public pages
+const Features = lazy(() => import('./pages/Features').then(m => ({ default: m.Features })));
+const Pricing = lazy(() => import('./pages/Pricing').then(m => ({ default: m.Pricing })));
+const Contact = lazy(() => import('./pages/Contact').then(m => ({ default: m.Contact })));
+const About = lazy(() => import('./pages/About').then(m => ({ default: m.About })));
+const Privacy = lazy(() => import('./pages/legal/Privacy').then(m => ({ default: m.Privacy })));
+const Terms = lazy(() => import('./pages/legal/Terms').then(m => ({ default: m.Terms })));
+
+// Onboarding
+const Onboarding = lazy(() => import('./pages/onboarding/Onboarding').then(m => ({ default: m.Onboarding })));
 
 // Minimal loading fallback for page transitions
 function PageLoader() {
@@ -64,14 +77,29 @@ function App() {
             <BrowserRouter>
               <Suspense fallback={<PageLoader />}>
                 <Routes>
-                  {/* Homepage / Landing page (visible to unauthenticated users) */}
-                  <Route path="/" element={<GuestGuard redirectTo="/dashboard"><Login /></GuestGuard>} />
-                  <Route path="/login" element={<Navigate to="/" replace />} />
+                  {/* Public pages with PublicLayout (header + footer) */}
+                  <Route element={<PublicLayout />}>
+                    <Route path="/" element={<Landing />} />
+                    <Route path="/features" element={<Features />} />
+                    <Route path="/pricing" element={<Pricing />} />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/about" element={<About />} />
+                    <Route path="/privacy" element={<Privacy />} />
+                    <Route path="/terms" element={<Terms />} />
+                  </Route>
+
+                  {/* Auth pages (standalone, no layout) */}
+                  <Route path="/login" element={<GuestGuard><Login /></GuestGuard>} />
+                  <Route path="/signup" element={<GuestGuard><Login /></GuestGuard>} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/auth/reset-password" element={<AuthCallback />} />
 
+                  {/* Onboarding (auth required, no sidebar) */}
+                  <Route path="/onboarding" element={<AuthGuard><Onboarding /></AuthGuard>} />
+
+                  {/* App (auth required + sidebar) */}
                   <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
-                    {/* Aperçu */}
+                    {/* Apercu */}
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/spaces" element={<Calendar />} />
                     <Route path="/bookings" element={<Bookings />} />
@@ -84,7 +112,7 @@ function App() {
                     <Route path="/benchmarking" element={<Benchmarking />} />
                     <Route path="/photo-gallery" element={<PhotoGallery />} />
 
-                    {/* Paramètres de l'entreprise */}
+                    {/* Parametres de l'entreprise */}
                     <Route path="/availability" element={<Availability />} />
                     <Route path="/appointment-types" element={<AppointmentTypes />} />
                     <Route path="/inventory" element={<Inventory />} />
@@ -101,7 +129,7 @@ function App() {
                     <Route path="/notifications/sms" element={<SMSNotifications />} />
                     <Route path="/notifications/alerts" element={<AlertNotifications />} />
 
-                    {/* Outils avancés */}
+                    {/* Outils avances */}
                     <Route path="/widgets" element={<WidgetBuilder />} />
                     <Route path="/automations" element={<Automations />} />
                     <Route path="/ai" element={<AIConsole />} />
@@ -118,7 +146,7 @@ function App() {
                     <Route path="/settings" element={<Settings />} />
                   </Route>
 
-                  {/* Catch-all: redirect unknown routes to login */}
+                  {/* Catch-all: redirect unknown routes to landing */}
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </Suspense>

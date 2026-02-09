@@ -1,14 +1,11 @@
 // src/embed/components/Confirmation.tsx
+import { useMemo } from 'react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useEmbedStore } from '../store/embedStore';
 
 export function Confirmation() {
   const { bookingResult, studio, reset } = useEmbedStore();
-
-  if (!bookingResult) {
-    return null;
-  }
 
   const formatCurrency = (amount: number) => {
     const currency = studio?.currency || 'EUR';
@@ -24,7 +21,6 @@ export function Confirmation() {
   };
 
   const formatTime = (timeString: string) => {
-    // Handle both ISO datetime and time-only formats
     if (timeString.includes('T')) {
       const date = new Date(timeString);
       return format(date, 'HH:mm', { locale: fr });
@@ -32,173 +28,138 @@ export function Confirmation() {
     return timeString;
   };
 
+  // Generate calendar links
+  const calendarLinks = useMemo(() => {
+    if (!bookingResult) return null;
+
+    const title = encodeURIComponent(
+      `${bookingResult.service.name} - ${studio?.name || 'Rooom'}`
+    );
+    const startDate = new Date(bookingResult.startTime);
+    const endDate = new Date(bookingResult.endTime);
+
+    // Google Calendar format: YYYYMMDDTHHmmssZ
+    const googleStart = format(startDate, "yyyyMMdd'T'HHmmss");
+    const googleEnd = format(endDate, "yyyyMMdd'T'HHmmss");
+    const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${googleStart}/${googleEnd}`;
+
+    // ICS format for Outlook/Apple
+    const icsStart = format(startDate, "yyyyMMdd'T'HHmmss");
+    const icsEnd = format(endDate, "yyyyMMdd'T'HHmmss");
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'BEGIN:VEVENT',
+      `DTSTART:${icsStart}`,
+      `DTEND:${icsEnd}`,
+      `SUMMARY:${bookingResult.service.name} - ${studio?.name || 'Rooom'}`,
+      `DESCRIPTION:Ref: ${bookingResult.reference}`,
+      'END:VEVENT',
+      'END:VCALENDAR',
+    ].join('\r\n');
+
+    const icsBlob = new Blob([icsContent], { type: 'text/calendar' });
+    const icsUrl = URL.createObjectURL(icsBlob);
+
+    return { googleUrl, icsUrl };
+  }, [bookingResult, studio?.name]);
+
+  if (!bookingResult) {
+    return null;
+  }
+
   return (
-    <div style={styles.container}>
-      {/* Success Icon */}
-      <div style={styles.iconContainer}>
+    <div className="rooom-confirm">
+      {/* Check icon */}
+      <div className="rooom-confirm-icon">
         <svg
-          style={styles.checkIcon}
+          width="32"
+          height="32"
           viewBox="0 0 24 24"
           fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
         >
-          <path
-            d="M9 12.75L11.25 15L15 9.75M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <path d="M5 13l4 4L19 7" />
         </svg>
       </div>
 
       {/* Title */}
-      <h2 style={styles.title}>Reservation confirmee !</h2>
+      <h2 className="rooom-confirm-title">Reservation confirmee !</h2>
 
-      {/* Reference Number */}
-      <div style={styles.referenceContainer}>
-        <span style={styles.referenceLabel}>Reference</span>
-        <span style={styles.referenceNumber}>{bookingResult.reference}</span>
-      </div>
+      {/* Reference */}
+      <div className="rooom-confirm-ref">{bookingResult.reference}</div>
 
-      {/* Summary Details */}
-      <div style={styles.summaryCard}>
-        <div style={styles.summaryRow}>
-          <span style={styles.summaryLabel}>Espace</span>
-          <span style={styles.summaryValue}>{bookingResult.service.name}</span>
+      {/* Summary */}
+      <div className="rooom-confirm-summary">
+        <div className="rooom-confirm-row">
+          <span className="rooom-confirm-label">Espace</span>
+          <span className="rooom-confirm-value">{bookingResult.service.name}</span>
         </div>
-        <div style={styles.divider} />
-        <div style={styles.summaryRow}>
-          <span style={styles.summaryLabel}>Date</span>
-          <span style={styles.summaryValue}>{formatDate(bookingResult.date)}</span>
+        <div className="rooom-confirm-divider" />
+        <div className="rooom-confirm-row">
+          <span className="rooom-confirm-label">Date</span>
+          <span className="rooom-confirm-value">{formatDate(bookingResult.date)}</span>
         </div>
-        <div style={styles.divider} />
-        <div style={styles.summaryRow}>
-          <span style={styles.summaryLabel}>Horaire</span>
-          <span style={styles.summaryValue}>
+        <div className="rooom-confirm-divider" />
+        <div className="rooom-confirm-row">
+          <span className="rooom-confirm-label">Horaire</span>
+          <span className="rooom-confirm-value">
             {formatTime(bookingResult.startTime)} - {formatTime(bookingResult.endTime)}
           </span>
         </div>
-        <div style={styles.divider} />
-        <div style={styles.summaryRow}>
-          <span style={styles.summaryLabel}>Total</span>
-          <span style={styles.summaryValueBold}>
+        <div className="rooom-confirm-divider" />
+        <div className="rooom-confirm-row">
+          <span className="rooom-confirm-label">Total</span>
+          <span className="rooom-confirm-value rooom-confirm-total">
             {formatCurrency(bookingResult.totalAmount)}
           </span>
         </div>
       </div>
 
-      {/* Email Confirmation Message */}
-      <p style={styles.emailMessage}>
+      {/* Calendar links */}
+      {calendarLinks && (
+        <div className="rooom-confirm-cal-links">
+          <a
+            href={calendarLinks.googleUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rooom-confirm-cal-btn"
+          >
+            Google Calendar
+          </a>
+          <a
+            href={calendarLinks.icsUrl}
+            download="reservation.ics"
+            className="rooom-confirm-cal-btn"
+          >
+            Outlook
+          </a>
+          <a
+            href={calendarLinks.icsUrl}
+            download="reservation.ics"
+            className="rooom-confirm-cal-btn"
+          >
+            Apple Calendar
+          </a>
+        </div>
+      )}
+
+      {/* Email notice */}
+      <p className="rooom-confirm-email">
         Un email de confirmation a ete envoye a votre adresse email.
       </p>
 
-      {/* New Booking Button */}
-      <button type="button" style={styles.newBookingButton} onClick={reset}>
-        Faire une nouvelle reservation
+      {/* New booking button */}
+      <button
+        type="button"
+        className="rooom-confirm-new-btn"
+        onClick={reset}
+      >
+        Nouvelle reservation
       </button>
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '2rem 1rem',
-    textAlign: 'center',
-  },
-  iconContainer: {
-    width: '80px',
-    height: '80px',
-    borderRadius: '50%',
-    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '1.5rem',
-  },
-  checkIcon: {
-    width: '48px',
-    height: '48px',
-    color: '#22c55e',
-  },
-  title: {
-    fontSize: '1.5rem',
-    fontWeight: 700,
-    color: 'var(--rooom-text-primary, #1a1a1a)',
-    margin: '0 0 1.5rem 0',
-  },
-  referenceContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '0.25rem',
-    marginBottom: '1.5rem',
-  },
-  referenceLabel: {
-    fontSize: '0.875rem',
-    color: 'var(--rooom-text-secondary, #6b7280)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-  },
-  referenceNumber: {
-    fontSize: '1.25rem',
-    fontWeight: 700,
-    color: 'var(--rooom-accent-color, #3b82f6)',
-    fontFamily: 'monospace',
-    letterSpacing: '0.1em',
-  },
-  summaryCard: {
-    width: '100%',
-    maxWidth: '400px',
-    backgroundColor: 'var(--rooom-bg-card, #ffffff)',
-    border: '1px solid var(--rooom-border-color, #e5e5e5)',
-    borderRadius: '0.75rem',
-    padding: '1rem',
-    marginBottom: '1.5rem',
-  },
-  summaryRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '0.75rem 0',
-  },
-  summaryLabel: {
-    fontSize: '0.875rem',
-    color: 'var(--rooom-text-secondary, #6b7280)',
-  },
-  summaryValue: {
-    fontSize: '0.875rem',
-    fontWeight: 500,
-    color: 'var(--rooom-text-primary, #1a1a1a)',
-    textAlign: 'right',
-  },
-  summaryValueBold: {
-    fontSize: '1rem',
-    fontWeight: 700,
-    color: 'var(--rooom-text-primary, #1a1a1a)',
-  },
-  divider: {
-    height: '1px',
-    backgroundColor: 'var(--rooom-border-color, #e5e5e5)',
-  },
-  emailMessage: {
-    fontSize: '0.875rem',
-    color: 'var(--rooom-text-secondary, #6b7280)',
-    margin: '0 0 1.5rem 0',
-    lineHeight: 1.5,
-  },
-  newBookingButton: {
-    padding: '0.875rem 1.5rem',
-    backgroundColor: 'var(--rooom-accent-color, #3b82f6)',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '0.5rem',
-    fontSize: '1rem',
-    fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'background-color 0.2s ease',
-  },
-};

@@ -3,6 +3,7 @@ import styles from './ThemePresets.module.css';
 
 interface ThemePresetsProps {
   onSelect: (preset: WidgetAppearance) => void;
+  appearance?: WidgetAppearance;
 }
 
 const presets: Array<{
@@ -75,52 +76,118 @@ const presets: Array<{
       mode: 'light',
     },
   },
+  {
+    id: 'studio',
+    name: 'Studio',
+    appearance: {
+      primaryColor: '#7C3AED',
+      secondaryColor: '#DDD6FE',
+      backgroundColor: '#FFFFFF',
+      textColor: '#1A1A1A',
+      fontFamily: 'Poppins',
+      borderRadius: 10,
+      mode: 'light',
+    },
+  },
+  {
+    id: 'tech',
+    name: 'Tech',
+    appearance: {
+      primaryColor: '#0EA5E9',
+      secondaryColor: '#7DD3FC',
+      backgroundColor: '#0F172A',
+      textColor: '#E2E8F0',
+      fontFamily: 'Inter',
+      borderRadius: 6,
+      mode: 'dark',
+    },
+  },
+  {
+    id: 'luxe',
+    name: 'Luxe',
+    appearance: {
+      primaryColor: '#B8860B',
+      secondaryColor: '#DAA520',
+      backgroundColor: '#FFFDF7',
+      textColor: '#1A1A1A',
+      fontFamily: 'Playfair Display',
+      borderRadius: 2,
+      mode: 'light',
+    },
+  },
 ];
 
-export function ThemePresets({ onSelect }: ThemePresetsProps) {
+function isPresetActive(preset: WidgetAppearance, current: WidgetAppearance): boolean {
+  return (
+    preset.primaryColor === current.primaryColor &&
+    preset.secondaryColor === current.secondaryColor &&
+    preset.backgroundColor === current.backgroundColor &&
+    preset.textColor === current.textColor &&
+    preset.fontFamily === current.fontFamily &&
+    preset.borderRadius === current.borderRadius &&
+    preset.mode === current.mode
+  );
+}
+
+export function ThemePresets({ onSelect, appearance }: ThemePresetsProps) {
   return (
     <div className={styles.container}>
       <h4 className={styles.title}>Themes rapides</h4>
       <div className={styles.presets}>
-        {presets.map((preset) => (
-          <button
-            key={preset.id}
-            type="button"
-            className={styles.preset}
-            onClick={() => onSelect(preset.appearance)}
-          >
-            <div
-              className={styles.previewCard}
-              style={{
-                backgroundColor: preset.appearance.backgroundColor,
-                borderRadius: preset.appearance.borderRadius,
-              }}
+        {presets.map((preset) => {
+          const active = appearance ? isPresetActive(preset.appearance, appearance) : false;
+          return (
+            <button
+              key={preset.id}
+              type="button"
+              className={`${styles.preset} ${active ? styles.presetActive : ''}`}
+              onClick={() => onSelect(preset.appearance)}
             >
+              {active && (
+                <div className={styles.checkmarkOverlay}>
+                  {'\u2713'}
+                </div>
+              )}
               <div
-                className={styles.previewHeader}
-                style={{ backgroundColor: preset.appearance.primaryColor }}
-              />
-              <div className={styles.previewContent}>
+                className={styles.previewCard}
+                style={{
+                  backgroundColor: preset.appearance.backgroundColor,
+                  borderRadius: preset.appearance.borderRadius,
+                }}
+              >
                 <div
-                  className={styles.previewLine}
-                  style={{ backgroundColor: preset.appearance.textColor }}
+                  className={styles.previewHeader}
+                  style={{ backgroundColor: preset.appearance.primaryColor }}
                 />
+                <div className={styles.previewContent}>
+                  <div
+                    className={styles.previewLine}
+                    style={{ backgroundColor: preset.appearance.textColor }}
+                  />
+                  <div
+                    className={styles.previewLineSm}
+                    style={{ backgroundColor: preset.appearance.secondaryColor }}
+                  />
+                </div>
                 <div
-                  className={styles.previewLineSm}
-                  style={{ backgroundColor: preset.appearance.secondaryColor }}
+                  className={styles.previewButton}
+                  style={{
+                    backgroundColor: preset.appearance.primaryColor,
+                    borderRadius: preset.appearance.borderRadius / 2,
+                  }}
                 />
               </div>
-              <div
-                className={styles.previewButton}
-                style={{
-                  backgroundColor: preset.appearance.primaryColor,
-                  borderRadius: preset.appearance.borderRadius / 2,
-                }}
-              />
-            </div>
-            <span className={styles.presetName}>{preset.name}</span>
-          </button>
-        ))}
+              <span className={styles.presetName}>{preset.name}</span>
+              <div className={styles.presetMeta}>
+                <div
+                  className={styles.presetColorDot}
+                  style={{ backgroundColor: preset.appearance.primaryColor }}
+                />
+                <span className={styles.presetFont}>{preset.appearance.fontFamily}</span>
+              </div>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

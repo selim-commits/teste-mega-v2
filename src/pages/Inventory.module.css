@@ -3,6 +3,7 @@
 .page {
   min-height: 100vh;
   background-color: var(--bg-secondary);
+  animation: pageEnter 0.4s var(--ease-default);
 }
 
 .content {
@@ -34,12 +35,18 @@
   align-items: center;
   gap: var(--space-4);
   transition: transform var(--duration-fast) var(--ease-default), box-shadow var(--duration-fast) var(--ease-default);
+  animation: staggerFadeIn 0.5s var(--ease-default) both;
 }
 
 .statCard:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
 }
+
+.statCard:nth-child(1) { animation-delay: 0ms; }
+.statCard:nth-child(2) { animation-delay: var(--stagger-delay); }
+.statCard:nth-child(3) { animation-delay: calc(var(--stagger-delay) * 2); }
+.statCard:nth-child(4) { animation-delay: calc(var(--stagger-delay) * 3); }
 
 .statIcon {
   width: 44px;

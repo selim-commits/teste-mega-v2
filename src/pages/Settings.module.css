@@ -12,6 +12,7 @@
 .page {
   min-height: 100vh;
   background-color: var(--bg-secondary);
+  animation: pageEnter 0.4s var(--ease-default);
 }
 
 .content {

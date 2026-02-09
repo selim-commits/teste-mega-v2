@@ -1,5 +1,4 @@
 import { Input } from '../ui/Input';
-import { Select } from '../ui/Select';
 import type { WidgetType, WidgetBehavior } from '../../pages/WidgetBuilder';
 import styles from './BehaviorEditor.module.css';
 
@@ -30,23 +29,63 @@ export function BehaviorEditor({ behavior, onChange, widgetType }: BehaviorEdito
         <h4 className={styles.sectionTitle}>Position & Affichage</h4>
 
         <div className={styles.formGroup}>
-          <Select
-            label="Position du widget"
-            options={positionOptions}
-            value={behavior.position}
-            onChange={(pos) => onChange({ position: pos as WidgetBehavior['position'] })}
-            fullWidth
-          />
+          <span className={styles.label}>Position du widget</span>
+          <div className={styles.positionSelector}>
+            <div className={styles.positionViewport}>
+              {/* Mini widget indicator */}
+              <div
+                className={styles.positionWidget}
+                style={{
+                  top: behavior.position.startsWith('top') ? '8px' : 'auto',
+                  bottom: behavior.position.startsWith('bottom') ? '8px' : 'auto',
+                  left: behavior.position.endsWith('left') ? '8px' : 'auto',
+                  right: behavior.position.endsWith('right') ? '8px' : 'auto',
+                }}
+              />
+              {/* 4 corner dots */}
+              {(['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const).map((pos) => (
+                <button
+                  key={pos}
+                  type="button"
+                  className={`${styles.positionDot} ${behavior.position === pos ? styles.positionDotActive : ''}`}
+                  style={{
+                    top: pos.startsWith('top') ? '6px' : 'auto',
+                    bottom: pos.startsWith('bottom') ? '6px' : 'auto',
+                    left: pos.endsWith('left') ? '6px' : 'auto',
+                    right: pos.endsWith('right') ? '6px' : 'auto',
+                  }}
+                  onClick={() => onChange({ position: pos })}
+                  aria-label={positionOptions.find(o => o.value === pos)?.label}
+                />
+              ))}
+            </div>
+            <span className={styles.positionLabel}>
+              {positionOptions.find(o => o.value === behavior.position)?.label}
+            </span>
+          </div>
         </div>
 
         <div className={styles.formGroup}>
-          <Select
-            label="Animation d'ouverture"
-            options={animationOptions}
-            value={behavior.animationType}
-            onChange={(anim) => onChange({ animationType: anim as WidgetBehavior['animationType'] })}
-            fullWidth
-          />
+          <span className={styles.label}>Animation d'ouverture</span>
+          <div className={styles.animationCards}>
+            {animationOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`${styles.animationCard} ${behavior.animationType === option.value ? styles.animationCardActive : ''}`}
+                onClick={() => onChange({ animationType: option.value as WidgetBehavior['animationType'] })}
+              >
+                <div className={styles.animationDemo}>
+                  <div
+                    className={`${styles.animationRect} ${
+                      behavior.animationType === option.value ? styles[`animationRect${option.value.charAt(0).toUpperCase() + option.value.slice(1)}`] : ''
+                    }`}
+                  />
+                </div>
+                <span className={styles.animationLabel}>{option.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Mobile Toggle */}

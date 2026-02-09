@@ -7,8 +7,8 @@ const STORAGE_KEY = 'rooom-theme';
  * Apply the theme to the document root element via data-theme attribute.
  *
  * - 'dark': sets data-theme="dark" to activate dark CSS variables
- * - 'light': sets data-theme="light" to override @media prefers-color-scheme
- * - 'system': removes data-theme entirely, letting CSS @media rules handle it
+ * - 'light': sets data-theme="light" for light mode
+ * - 'system': detects OS preference via matchMedia and applies data-theme accordingly
  */
 function applyTheme(theme: Theme): void {
   if (typeof document === 'undefined') return;
@@ -20,8 +20,11 @@ function applyTheme(theme: Theme): void {
   } else if (theme === 'light') {
     root.setAttribute('data-theme', 'light');
   } else {
-    // 'system' - remove the attribute so CSS @media rules take effect
-    root.removeAttribute('data-theme');
+    // 'system' - detect OS preference and apply via data-theme
+    const prefersDark =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches;
+    root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
   }
 }
 
@@ -71,7 +74,7 @@ export function useTheme() {
   // Apply theme whenever effectiveTheme changes
   useEffect(() => {
     applyTheme(theme);
-  }, [theme, systemPrefersDark]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [theme, systemPrefersDark]);
 
   const setTheme = useCallback(
     (newTheme: Theme) => {

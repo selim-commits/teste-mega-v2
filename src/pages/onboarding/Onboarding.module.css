@@ -1,0 +1,381 @@
+/* Rooom OS — Onboarding Wizard */
+
+.page {
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px 48px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.logo {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+.progressBar {
+  flex: 1;
+  height: 3px;
+  background: var(--border-subtle);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--text-primary);
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stepCount {
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Content layout */
+.content {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+}
+
+/* Sidebar */
+.sidebar {
+  border-right: 1px solid var(--border-subtle);
+  padding: 48px 32px;
+}
+
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 0;
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.stepItemActive {
+  color: var(--text-primary);
+  font-weight: 400;
+  background: var(--bg-secondary);
+}
+
+.stepItemDone {
+  color: var(--text-tertiary);
+}
+
+.stepDot {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--border-subtle);
+  flex-shrink: 0;
+}
+
+.stepItemActive .stepDot {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-color: var(--text-primary);
+}
+
+.stepItemDone .stepDot {
+  background: transparent;
+  color: var(--text-tertiary);
+  border-color: var(--text-tertiary);
+}
+
+.stepLabel {
+  white-space: nowrap;
+}
+
+/* Main */
+.main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 64px 48px;
+  overflow-y: auto;
+}
+
+.stepContent {
+  width: 100%;
+  max-width: 520px;
+  animation: stepEnter 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes stepEnter {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Shared step styles */
+.stepTitle {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 32px;
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin: 0 0 8px 0;
+}
+
+.stepSubtitle {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-tertiary);
+  line-height: 1.5;
+  margin: 0 0 40px 0;
+}
+
+.stepForm {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stepField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stepFieldLabel {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.stepInput,
+.stepSelect {
+  width: 100%;
+  padding: 12px 0;
+  font-family: 'Jost', sans-serif;
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-subtle);
+  outline: none;
+  transition: border-color 0.3s;
+}
+
+.stepInput:focus,
+.stepSelect:focus {
+  border-bottom-color: var(--text-primary);
+}
+
+.stepSelect {
+  appearance: none;
+  cursor: pointer;
+}
+
+.stepActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.backButton {
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 12px 0;
+  transition: color 0.2s;
+}
+
+.backButton:hover { color: var(--text-primary); }
+
+.nextButton {
+  height: 48px;
+  padding: 0 32px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  margin-left: auto;
+}
+
+.nextButton:hover { opacity: 0.85; }
+
+/* Complete step */
+.completeCenter {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 0;
+}
+
+.completeIcon {
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 24px;
+  color: var(--text-primary);
+}
+
+.completeTitle {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 36px;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.completeText {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 16px 0;
+  max-width: 400px;
+}
+
+.summaryList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  width: 100%;
+  max-width: 360px;
+  margin: 0 0 32px 0;
+  padding: 24px;
+  border: 1px solid var(--border-subtle);
+}
+
+.summaryItem {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 14px;
+}
+
+.summaryLabel {
+  font-weight: 300;
+  color: var(--text-tertiary);
+}
+
+.summaryValue {
+  font-weight: 400;
+  color: var(--text-primary);
+  text-align: right;
+}
+
+.finishButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 36px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: gap 0.3s;
+}
+
+.finishButton:hover { gap: 16px; }
+
+/* Days checkboxes */
+.daysGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dayToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 40px;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dayToggleActive {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-color: var(--text-primary);
+}
+
+.timeRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header { padding: 16px 20px; }
+  .content { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+  .main { padding: 32px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stepContent { animation: none; }
+  .progressFill { transition: none; }
+  .dayToggle, .backButton, .nextButton, .finishButton { transition: none; }
+}

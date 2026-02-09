@@ -7,18 +7,26 @@ import App from './App.tsx'
 ;(() => {
   try {
     const stored = localStorage.getItem('ui-storage');
+    let theme = 'light';
     if (stored) {
       const parsed = JSON.parse(stored) as { state?: { theme?: string } };
-      const theme = parsed?.state?.theme;
-      if (theme === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else if (theme === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
+      theme = parsed?.state?.theme || 'light';
+
+      // Migrate old 'system' preference to 'light'
+      if (theme === 'system') {
+        theme = 'light';
+        parsed.state = { ...parsed.state, theme: 'light' };
+        localStorage.setItem('ui-storage', JSON.stringify(parsed));
       }
-      // 'system' or missing: no attribute, CSS @media handles it
+    }
+
+    if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.setAttribute('data-theme', 'light');
     }
   } catch {
-    // Ignore errors during theme initialization
+    document.documentElement.setAttribute('data-theme', 'light');
   }
 })();
 

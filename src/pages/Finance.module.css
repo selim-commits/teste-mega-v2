@@ -3,6 +3,7 @@
 .page {
   min-height: 100vh;
   background-color: var(--bg-secondary);
+  animation: pageEnter 0.4s var(--ease-default);
 }
 
 .content {
@@ -33,7 +34,20 @@
   display: flex;
   flex-direction: column;
   background-color: var(--bg-primary);
+  transition: transform var(--duration-base) var(--ease-default),
+              box-shadow var(--duration-base) var(--ease-default);
+  animation: staggerFadeIn 0.5s var(--ease-default) both;
 }
+
+.kpiCard:hover {
+  transform: scale(var(--hover-scale));
+  box-shadow: var(--hover-shadow);
+}
+
+.kpiCard:nth-child(1) { animation-delay: 0ms; }
+.kpiCard:nth-child(2) { animation-delay: var(--stagger-delay); }
+.kpiCard:nth-child(3) { animation-delay: calc(var(--stagger-delay) * 2); }
+.kpiCard:nth-child(4) { animation-delay: calc(var(--stagger-delay) * 3); }
 
 .kpiHeader {
   display: flex;

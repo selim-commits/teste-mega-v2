@@ -1,4 +1,5 @@
-import { Trash2, Calendar, MessageCircle, Package } from 'lucide-react';
+import { useState } from 'react';
+import { Trash2, Calendar, MessageCircle, Package, Search } from 'lucide-react';
 import { Modal, ModalHeader, ModalBody } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import { formatDate } from '../../lib/utils';
@@ -26,6 +27,12 @@ const typeLabels: Record<WidgetType, string> = {
 };
 
 export function SavedConfigs({ configs, activeConfigId, onLoad, onDelete, onClose }: SavedConfigsProps) {
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredConfigs = configs.filter(c =>
+    c.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Modal isOpen={true} onClose={onClose} size="lg">
       <ModalHeader
@@ -47,7 +54,19 @@ export function SavedConfigs({ configs, activeConfigId, onLoad, onDelete, onClos
           </div>
         ) : (
           <div className={styles.configList}>
-            {configs.map((config) => {
+            {configs.length >= 3 && (
+              <div className={styles.searchBar}>
+                <Search size={14} className={styles.searchIcon} />
+                <input
+                  type="text"
+                  placeholder="Rechercher une configuration..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={styles.searchInput}
+                />
+              </div>
+            )}
+            {filteredConfigs.map((config) => {
               const Icon = typeIcons[config.type];
               const isActive = config.id === activeConfigId;
 
@@ -100,13 +119,37 @@ export function SavedConfigs({ configs, activeConfigId, onLoad, onDelete, onClos
                     >
                       Charger
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon={<Trash2 size={14} />}
-                      onClick={() => onDelete(config.id)}
-                      className={styles.deleteButton}
-                    />
+                    {pendingDeleteId === config.id ? (
+                      <div className={styles.deleteConfirm}>
+                        <span className={styles.deleteConfirmText}>Supprimer?</span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            onDelete(config.id);
+                            setPendingDeleteId(null);
+                          }}
+                          className={styles.deleteYes}
+                        >
+                          Oui
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setPendingDeleteId(null)}
+                        >
+                          Non
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon={<Trash2 size={14} />}
+                        onClick={() => setPendingDeleteId(config.id)}
+                        className={styles.deleteButton}
+                      />
+                    )}
                   </div>
                 </div>
               );

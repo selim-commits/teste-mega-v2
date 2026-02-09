@@ -198,8 +198,8 @@
 .toggle {
   position: relative;
   display: inline-block;
-  width: 44px;
-  height: 24px;
+  width: 48px;
+  height: 28px;
   flex-shrink: 0;
 }
 
@@ -225,8 +225,8 @@
 .toggleSlider::before {
   position: absolute;
   content: "";
-  height: 18px;
-  width: 18px;
+  height: 22px;
+  width: 22px;
   left: 2px;
   bottom: 2px;
   background-color: var(--color-white);
@@ -380,7 +380,7 @@
 }
 
 .animateIn {
-  animation: fadeInUp var(--duration-normal) var(--ease-out) both;
+  animation: fadeInUp var(--duration-slow) var(--ease-out) both;
 }
 
 /* Responsive */
@@ -407,4 +407,86 @@
   .previewContainer {
     padding: var(--space-4);
   }
+}
+
+/* Save Indicator */
+.saveIndicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-right: auto;
+}
+
+.dirtyDot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background-color: var(--state-warning);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dirtyDot {
+    animation: none;
+  }
+}
+
+.savedCheck {
+  color: var(--state-success);
+}
+
+.saveStatus {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* Save Group */
+.saveGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.kbdHint {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 2px 4px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  line-height: 1;
+}
+
+/* Config Name Input */
+.configNameInput {
+  padding: 0 var(--space-5);
+  padding-top: var(--space-4);
+}
+
+.configNameField {
+  width: 100%;
+  border: none;
+  border-bottom: 1px solid var(--border-default);
+  background: transparent;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-primary);
+  padding: var(--space-1) 0;
+  outline: none;
+  transition: border-color var(--duration-fast) var(--ease-default);
+}
+
+.configNameField:focus {
+  border-bottom-color: var(--accent-primary);
+}
+
+.configNameField::placeholder {
+  color: var(--text-muted);
 }

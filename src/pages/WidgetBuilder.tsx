@@ -1,5 +1,5 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
-import { Save, Download, RotateCcw } from 'lucide-react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
+import { Save, Download, RotateCcw, Check } from 'lucide-react';
 import { Header } from '../components/layout/Header';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
@@ -131,6 +131,26 @@ export function WidgetBuilder() {
   const [activeConfigId, setActiveConfigId] = useState<string | null>(null);
   const [showSavedConfigs, setShowSavedConfigs] = useState(false);
 
+  // Auto-save tracking
+  const [lastSavedSnapshot, setLastSavedSnapshot] = useState(() => JSON.stringify({
+    type: widgetType,
+    appearance,
+    content,
+    behavior,
+    customCSS,
+  }));
+
+  const isDirty = useMemo(() => {
+    const current = JSON.stringify({
+      type: widgetType,
+      appearance,
+      content,
+      behavior,
+      customCSS,
+    });
+    return current !== lastSavedSnapshot;
+  }, [widgetType, appearance, content, behavior, customCSS, lastSavedSnapshot]);
+
   // Persist configs to localStorage whenever they change
   useEffect(() => {
     try {
@@ -211,6 +231,13 @@ export function WidgetBuilder() {
     });
 
     setActiveConfigId(newConfig.id);
+    setLastSavedSnapshot(JSON.stringify({
+      type: widgetType,
+      appearance,
+      content,
+      behavior,
+      customCSS,
+    }));
     addToast({
       title: 'Configuration sauvegardee',
       description: `"${configName}" a ete enregistree.`,
@@ -218,6 +245,18 @@ export function WidgetBuilder() {
       duration: 3000,
     });
   }, [activeConfigId, configName, widgetType, appearance, content, behavior, customCSS, savedConfigs, addToast]);
+
+  // Keyboard shortcut Cmd+S / Ctrl+S
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 's') {
+        e.preventDefault();
+        handleSaveConfig();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleSaveConfig]);
 
   const handleLoadConfig = useCallback((config: WidgetConfig) => {
     setWidgetType(config.type);
@@ -266,27 +305,32 @@ export function WidgetBuilder() {
         subtitle="Configurez et personnalisez vos widgets embarquables"
         actions={
           <div className={styles.headerActions}>
-            <Button
-              variant="ghost"
-              icon={<RotateCcw size={16} />}
-              onClick={handleReset}
-            >
+            {/* Save status indicator */}
+            <div className={styles.saveIndicator}>
+              {isDirty ? (
+                <>
+                  <span className={styles.dirtyDot} />
+                  <span className={styles.saveStatus}>Modifications non sauvegardees</span>
+                </>
+              ) : (
+                <>
+                  <Check size={14} className={styles.savedCheck} />
+                  <span className={styles.saveStatus}>Sauvegarde</span>
+                </>
+              )}
+            </div>
+            <Button variant="ghost" icon={<RotateCcw size={16} />} onClick={handleReset}>
               Reinitialiser
             </Button>
-            <Button
-              variant="ghost"
-              icon={<Download size={16} />}
-              onClick={() => setShowSavedConfigs(true)}
-            >
+            <Button variant="ghost" icon={<Download size={16} />} onClick={() => setShowSavedConfigs(true)}>
               Configs ({savedConfigs.length})
             </Button>
-            <Button
-              variant="primary"
-              icon={<Save size={16} />}
-              onClick={handleSaveConfig}
-            >
-              Sauvegarder
-            </Button>
+            <div className={styles.saveGroup}>
+              <Button variant="primary" icon={<Save size={16} />} onClick={handleSaveConfig}>
+                Sauvegarder
+              </Button>
+              <kbd className={styles.kbdHint}>&#8984;S</kbd>
+            </div>
           </div>
         }
       />
@@ -296,6 +340,17 @@ export function WidgetBuilder() {
           {/* Left Panel - Configuration */}
           <div className={styles.configPanel}>
             <Card padding="none" className={styles.configCard}>
+              {/* Config Name */}
+              <div className={styles.configNameInput}>
+                <input
+                  type="text"
+                  value={configName}
+                  onChange={(e) => setConfigName(e.target.value)}
+                  className={styles.configNameField}
+                  placeholder="Nom de la configuration"
+                />
+              </div>
+
               {/* Widget Type Selector */}
               <div className={styles.configSection}>
                 <WidgetTypeSelector
@@ -316,7 +371,7 @@ export function WidgetBuilder() {
                 <div className={styles.configTabContent}>
                   <TabsContent value="appearance">
                     <div className={styles.animateIn}>
-                      <ThemePresets onSelect={handleThemePresetSelect} />
+                      <ThemePresets onSelect={handleThemePresetSelect} appearance={appearance} />
                       <AppearanceEditor
                         appearance={appearance}
                         onChange={handleAppearanceChange}

@@ -9,6 +9,16 @@ interface ContentEditorProps {
   widgetType: WidgetType;
 }
 
+function CharCounter({ current, max }: { current: number; max: number }) {
+  const percentage = (current / max) * 100;
+  const status = percentage > 100 ? 'error' : percentage > 80 ? 'warning' : 'normal';
+  return (
+    <span className={`${styles.charCounter} ${status === 'warning' ? styles.charCounterWarning : ''} ${status === 'error' ? styles.charCounterError : ''}`}>
+      {current}/{max}
+    </span>
+  );
+}
+
 export function ContentEditor({ content, onChange, widgetType }: ContentEditorProps) {
   return (
     <div className={styles.container}>
@@ -27,11 +37,11 @@ export function ContentEditor({ content, onChange, widgetType }: ContentEditorPr
             hint="Format recommande: PNG ou SVG, 200x200px minimum"
           />
           {content.logoUrl && (
-            <div className={styles.logoPreview}>
+            <div className={`${styles.logoPreview} ${styles.logoPreviewChecked}`}>
               <img
                 src={content.logoUrl}
                 alt="Logo preview"
-                className={styles.logoImage}
+                className={styles.logoImageLarge}
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}
@@ -53,6 +63,8 @@ export function ContentEditor({ content, onChange, widgetType }: ContentEditorPr
             onChange={(e) => onChange({ title: e.target.value })}
             fullWidth
           />
+          <CharCounter current={content.title.length} max={60} />
+          <span className={styles.fieldHint}>Affiche en haut du widget</span>
         </div>
 
         <div className={styles.formGroup}>
@@ -63,6 +75,8 @@ export function ContentEditor({ content, onChange, widgetType }: ContentEditorPr
             onChange={(e) => onChange({ subtitle: e.target.value })}
             fullWidth
           />
+          <CharCounter current={content.subtitle.length} max={100} />
+          <span className={styles.fieldHint}>Sous le titre principal</span>
         </div>
 
         <div className={styles.formGroup}>
@@ -73,6 +87,8 @@ export function ContentEditor({ content, onChange, widgetType }: ContentEditorPr
             onChange={(e) => onChange({ buttonText: e.target.value })}
             fullWidth
           />
+          <CharCounter current={content.buttonText.length} max={30} />
+          <span className={styles.fieldHint}>Bouton d'action principal</span>
         </div>
 
         {widgetType === 'chat' && (
@@ -86,6 +102,7 @@ export function ContentEditor({ content, onChange, widgetType }: ContentEditorPr
               onChange={(e) => onChange({ welcomeMessage: e.target.value })}
               rows={3}
             />
+            <CharCounter current={content.welcomeMessage.length} max={200} />
             <span className={styles.hint}>
               Ce message apparait lorsque le chat s'ouvre.
             </span>
@@ -102,6 +119,7 @@ export function ContentEditor({ content, onChange, widgetType }: ContentEditorPr
             onChange={(e) => onChange({ successMessage: e.target.value })}
             rows={3}
           />
+          <CharCounter current={content.successMessage.length} max={200} />
           <span className={styles.hint}>
             Affiche apres une action reussie (reservation, message envoye, etc.)
           </span>

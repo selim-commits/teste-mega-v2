@@ -1,0 +1,271 @@
+/* ===== PUBLIC LAYOUT ===== */
+
+.publicPage {
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.publicMain {
+  flex: 1;
+}
+
+/* ===== PUBLIC HEADER ===== */
+
+.publicHeader {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 48px;
+  height: 72px;
+  background: var(--bg-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.publicLogo {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  text-decoration: none;
+  letter-spacing: 0.04em;
+}
+
+.publicNav {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.publicNavLink {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.publicNavLink:hover {
+  color: var(--text-primary);
+}
+
+.publicNavActions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: 24px;
+}
+
+.publicNavLogin {
+  background: none;
+  border: none;
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 8px 0;
+}
+
+.publicNavLogin:hover {
+  color: var(--text-primary);
+}
+
+.publicNavCta {
+  height: 40px;
+  padding: 0 24px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.publicNavCta:hover {
+  opacity: 0.85;
+}
+
+.mobileMenuBtn {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-primary);
+  padding: 8px;
+}
+
+/* ===== PUBLIC FOOTER ===== */
+
+.publicFooter {
+  border-top: 1px solid var(--border-subtle);
+  padding: 64px 48px 32px;
+}
+
+.publicFooterInner {
+  display: flex;
+  justify-content: space-between;
+  gap: 64px;
+  max-width: 1320px;
+  margin: 0 auto 56px;
+}
+
+.publicFooterBrand {
+  max-width: 280px;
+}
+
+.publicFooterLogo {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--text-primary);
+  letter-spacing: 0.04em;
+  display: block;
+  margin-bottom: 12px;
+}
+
+.publicFooterDesc {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-tertiary);
+  line-height: 1.6;
+  margin: 0;
+  white-space: pre-line;
+}
+
+.publicFooterColumns {
+  display: flex;
+  gap: 80px;
+}
+
+.publicFooterCol {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.publicFooterColTitle {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-primary);
+}
+
+.publicFooterLink {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.publicFooterLink:hover {
+  color: var(--text-primary);
+}
+
+.publicFooterBottom {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding-top: 32px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 768px) {
+  .publicHeader {
+    padding: 0 20px;
+    height: 64px;
+  }
+
+  .mobileMenuBtn {
+    display: flex;
+    align-items: center;
+  }
+
+  .publicNav {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    background: var(--bg-primary);
+    padding: 24px;
+    transform: translateX(100%);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 49;
+  }
+
+  .publicNavOpen {
+    transform: translateX(0);
+  }
+
+  .publicNavLink {
+    font-size: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .publicNavActions {
+    flex-direction: column;
+    margin-left: 0;
+    margin-top: 24px;
+    gap: 12px;
+  }
+
+  .publicNavLogin {
+    font-size: 16px;
+    padding: 16px 0;
+    width: 100%;
+    text-align: center;
+  }
+
+  .publicNavCta {
+    width: 100%;
+    height: 48px;
+    font-size: 13px;
+  }
+
+  .publicFooter {
+    padding: 40px 20px 20px;
+  }
+
+  .publicFooterInner {
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .publicFooterColumns {
+    gap: 40px;
+    flex-wrap: wrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .publicNav {
+    transition: none;
+  }
+}

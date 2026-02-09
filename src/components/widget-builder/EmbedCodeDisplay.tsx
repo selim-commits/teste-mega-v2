@@ -1,11 +1,98 @@
 import { useState, useMemo } from 'react';
-import { Copy, Check, Code } from 'lucide-react';
+import { Copy, Check, Code, AlertTriangle } from 'lucide-react';
 import { Button } from '../ui/Button';
 import type { WidgetConfig } from '../../pages/WidgetBuilder';
 import styles from './EmbedCodeDisplay.module.css';
 
 interface EmbedCodeDisplayProps {
   config: Omit<WidgetConfig, 'id' | 'createdAt' | 'updatedAt'>;
+}
+
+function highlightCode(code: string): React.ReactNode {
+  const lines = code.split('\n');
+  return lines.map((line, lineIndex) => {
+    // Tokenize the line
+    const tokens: React.ReactNode[] = [];
+    let remaining = line;
+    let keyCounter = 0;
+
+    while (remaining.length > 0) {
+      // HTML comments
+      const commentMatch = remaining.match(/^(<!--[\s\S]*?-->)/);
+      if (commentMatch) {
+        tokens.push(<span key={keyCounter++} className={styles.tokenComment}>{commentMatch[1]}</span>);
+        remaining = remaining.slice(commentMatch[1].length);
+        continue;
+      }
+
+      // JS comments
+      const jsCommentMatch = remaining.match(/^(\/\/.*)/);
+      if (jsCommentMatch) {
+        tokens.push(<span key={keyCounter++} className={styles.tokenComment}>{jsCommentMatch[1]}</span>);
+        remaining = remaining.slice(jsCommentMatch[1].length);
+        continue;
+      }
+
+      // Strings (single or double quotes)
+      const stringMatch = remaining.match(/^(['"](?:[^'"\\]|\\.)*['"])/);
+      if (stringMatch) {
+        tokens.push(<span key={keyCounter++} className={styles.tokenString}>{stringMatch[1]}</span>);
+        remaining = remaining.slice(stringMatch[1].length);
+        continue;
+      }
+
+      // Template literals
+      const templateMatch = remaining.match(/^(`(?:[^`\\]|\\.)*`)/);
+      if (templateMatch) {
+        tokens.push(<span key={keyCounter++} className={styles.tokenString}>{templateMatch[1]}</span>);
+        remaining = remaining.slice(templateMatch[1].length);
+        continue;
+      }
+
+      // HTML tags
+      const tagMatch = remaining.match(/^(<\/?[a-zA-Z][a-zA-Z0-9-]*)/);
+      if (tagMatch) {
+        tokens.push(<span key={keyCounter++} className={styles.tokenTag}>{tagMatch[1]}</span>);
+        remaining = remaining.slice(tagMatch[1].length);
+        continue;
+      }
+
+      // Closing >
+      const closeTagMatch = remaining.match(/^(>)/);
+      if (closeTagMatch && tokens.length > 0) {
+        tokens.push(<span key={keyCounter++} className={styles.tokenTag}>{closeTagMatch[1]}</span>);
+        remaining = remaining.slice(1);
+        continue;
+      }
+
+      // Keywords
+      const keywordMatch = remaining.match(/^(\b(?:const|function|true|false|null|undefined|var|let|src|style|width|height|frameborder|allow)\b)/);
+      if (keywordMatch) {
+        tokens.push(<span key={keyCounter++} className={styles.tokenKeyword}>{keywordMatch[1]}</span>);
+        remaining = remaining.slice(keywordMatch[1].length);
+        continue;
+      }
+
+      // Numbers
+      const numberMatch = remaining.match(/^(\b\d+\b)/);
+      if (numberMatch) {
+        tokens.push(<span key={keyCounter++} className={styles.tokenNumber}>{numberMatch[1]}</span>);
+        remaining = remaining.slice(numberMatch[1].length);
+        continue;
+      }
+
+      // Default: take one char
+      tokens.push(remaining[0]);
+      remaining = remaining.slice(1);
+    }
+
+    return (
+      <div key={lineIndex} className={styles.codeLine}>
+        <span className={styles.lineNumber}>{lineIndex + 1}</span>
+        <span className={styles.lineContent}>{tokens}</span>
+      </div>
+    );
+  });
 }
 
 export function EmbedCodeDisplay({ config }: EmbedCodeDisplayProps) {
@@ -81,6 +168,17 @@ export function EmbedCodeDisplay({ config }: EmbedCodeDisplayProps) {
     }
   };
 
+  const handleSelectAll = () => {
+    const codeElement = document.querySelector(`.${styles.codeLines}`);
+    if (codeElement) {
+      const range = document.createRange();
+      range.selectNodeContents(codeElement);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -107,12 +205,26 @@ export function EmbedCodeDisplay({ config }: EmbedCodeDisplayProps) {
         </div>
       </div>
 
+      {embedCode.includes('YOUR_STUDIO_ID') && (
+        <div className={styles.warningBanner}>
+          <AlertTriangle size={14} />
+          <span>Remplacez YOUR_STUDIO_ID par votre identifiant studio avant de deployer.</span>
+        </div>
+      )}
+
       <div className={styles.codeWrapper}>
         <pre className={styles.code}>
-          <code>{embedCode}</code>
+          <div className={styles.codeLines}>{highlightCode(embedCode)}</div>
         </pre>
 
-        <div className={styles.copyButton}>
+        <div className={styles.codeActions}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSelectAll}
+          >
+            Tout selectionner
+          </Button>
           <Button
             variant={copied ? 'success' : 'secondary'}
             size="sm"

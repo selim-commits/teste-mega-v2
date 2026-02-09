@@ -1,0 +1,272 @@
+/* Rooom OS — Features Page */
+
+.page {
+  font-family: 'Jost', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  overflow-x: hidden;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(48px);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.revealVisible { opacity: 1; transform: translateY(0); }
+
+/* ===== HERO ===== */
+
+.hero {
+  text-align: center;
+  padding: 80px 48px 64px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.heroEyebrow {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 0 16px 0;
+}
+
+.heroTitle {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin: 0 0 16px 0;
+}
+
+.heroSubtitle {
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 32px 0;
+}
+
+.heroCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 52px;
+  padding: 0 36px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: gap 0.3s;
+}
+
+.heroCta:hover { gap: 16px; }
+
+/* ===== BENTO GRID ===== */
+
+.gridSection {
+  padding: 0 48px 100px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.bentoGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.bentoCard {
+  padding: 32px;
+  border: 1px solid var(--border-subtle);
+  transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s;
+}
+
+.bentoCard:hover {
+  border-color: var(--border-strong);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.04);
+  transform: translateY(-4px);
+}
+
+.bentoCard:nth-child(1),
+.bentoCard:nth-child(4) {
+  grid-column: span 2;
+}
+
+.bentoIcon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 20px;
+  color: var(--text-primary);
+}
+
+.bentoTitle {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.bentoDesc {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ===== STEPS ===== */
+
+.stepsSection {
+  padding: 100px 48px;
+  max-width: 1000px;
+  margin: 0 auto;
+  text-align: center;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.stepsEyebrow {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 0 16px 0;
+}
+
+.stepsTitle {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0 0 56px 0;
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 48px;
+  text-align: left;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stepNumber {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 48px;
+  font-weight: 400;
+  color: var(--border-subtle);
+  line-height: 1;
+}
+
+.stepTitle {
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.stepDesc {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ===== CTA ===== */
+
+.ctaSection {
+  padding: 120px 48px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ctaEyebrow {
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 0 20px 0;
+}
+
+.ctaHeadline {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 400;
+  font-style: italic;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin: 0 0 40px 0;
+  text-wrap: balance;
+}
+
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  padding: 0 40px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  transition: gap 0.3s;
+}
+
+.ctaButton:hover { gap: 18px; }
+
+/* ===== RESPONSIVE ===== */
+
+@media (max-width: 1024px) {
+  .bentoGrid { grid-template-columns: repeat(2, 1fr); }
+  .bentoCard:nth-child(1),
+  .bentoCard:nth-child(4) { grid-column: span 1; }
+}
+
+@media (max-width: 768px) {
+  .hero { padding: 48px 20px 40px; }
+  .gridSection { padding: 0 20px 64px; }
+  .bentoGrid { grid-template-columns: 1fr; }
+  .bentoCard { padding: 24px; }
+  .stepsSection { padding: 64px 20px; }
+  .stepsGrid { grid-template-columns: 1fr; gap: 32px; }
+  .ctaSection { padding: 80px 20px; }
+}
+
+@media (max-width: 480px) {
+  .heroCta { height: 48px; padding: 0 28px; font-size: 12px; }
+  .ctaButton { height: 52px; padding: 0 28px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .bentoCard { transition: none; }
+  .heroCta, .ctaButton { transition: none; }
+}

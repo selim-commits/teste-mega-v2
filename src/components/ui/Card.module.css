@@ -15,6 +15,13 @@
   background-color: var(--bg-elevated);
   border: 1px solid var(--border-default);
   box-shadow: var(--shadow-md);
+  transition: transform var(--duration-base) var(--ease-default),
+              box-shadow var(--duration-base) var(--ease-default);
+}
+
+.elevated:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--hover-shadow);
 }
 
 .outlined {
@@ -54,6 +61,7 @@
   border-color: var(--border-strong);
   background-color: var(--bg-secondary);
   transform: translateY(-4px);
+  box-shadow: var(--hover-shadow);
 }
 
 /* Header */

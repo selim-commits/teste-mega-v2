@@ -1,4 +1,5 @@
 // src/embed/components/Calendar.tsx
+import { useState } from 'react';
 import {
   format,
   startOfMonth,
@@ -60,54 +61,54 @@ export function Calendar({
   const canGoNext = !maxDate || !isBefore(startOfDay(maxDate), startOfMonth(addMonths(currentMonth, 1)));
 
   return (
-    <div className="rooom-calendar" style={styles.calendar}>
+    <div className="rooom-cal">
       {/* Header with navigation */}
-      <div className="rooom-calendar-header" style={styles.header}>
+      <div className="rooom-cal-header">
         <button
           type="button"
           onClick={handlePrevMonth}
           disabled={!canGoPrev}
-          style={{
-            ...styles.navButton,
-            ...(canGoPrev ? {} : styles.navButtonDisabled),
-          }}
-          aria-label="Mois précédent"
+          className={`rooom-cal-nav-btn ${!canGoPrev ? 'rooom-cal-nav-disabled' : ''}`}
+          aria-label="Mois precedent"
         >
-          <ChevronLeftIcon />
+          ‹
         </button>
-        <span className="rooom-calendar-title" style={styles.title}>
+        <span className="rooom-cal-title">
           {format(currentMonth, 'MMMM yyyy', { locale: fr })}
         </span>
         <button
           type="button"
           onClick={handleNextMonth}
           disabled={!canGoNext}
-          style={{
-            ...styles.navButton,
-            ...(canGoNext ? {} : styles.navButtonDisabled),
-          }}
+          className={`rooom-cal-nav-btn ${!canGoNext ? 'rooom-cal-nav-disabled' : ''}`}
           aria-label="Mois suivant"
         >
-          <ChevronRightIcon />
+          ›
         </button>
       </div>
 
       {/* Weekday headers */}
-      <div className="rooom-calendar-weekdays" style={styles.weekdays}>
+      <div className="rooom-cal-weekdays">
         {weekDays.map((day) => (
-          <div key={day} style={styles.weekday}>
+          <div key={day} className="rooom-cal-weekday">
             {day}
           </div>
         ))}
       </div>
 
       {/* Calendar grid */}
-      <div className="rooom-calendar-grid" style={styles.grid}>
+      <div className="rooom-cal-grid">
         {days.map((day) => {
           const isCurrentMonth = isSameMonth(day, currentMonth);
           const isSelected = selectedDate && isSameDay(day, selectedDate);
           const isTodayDate = isToday(day);
           const disabled = !isCurrentMonth || isDateDisabled(day);
+
+          let className = 'rooom-cal-day';
+          if (!isCurrentMonth) className += ' rooom-cal-day-other';
+          if (isTodayDate && !isSelected) className += ' rooom-cal-day-today';
+          if (isSelected) className += ' rooom-cal-day-selected';
+          if (disabled) className += ' rooom-cal-day-disabled';
 
           return (
             <button
@@ -115,13 +116,7 @@ export function Calendar({
               type="button"
               onClick={() => !disabled && onSelectDate(day)}
               disabled={disabled}
-              style={{
-                ...styles.dayButton,
-                ...(isCurrentMonth ? {} : styles.dayOtherMonth),
-                ...(isTodayDate && !isSelected ? styles.dayToday : {}),
-                ...(isSelected ? styles.daySelected : {}),
-                ...(disabled ? styles.dayDisabled : {}),
-              }}
+              className={className}
               aria-label={format(day, 'd MMMM yyyy', { locale: fr })}
               aria-pressed={isSelected || undefined}
             >
@@ -133,136 +128,3 @@ export function Calendar({
     </div>
   );
 }
-
-// Need to import useState
-import { useState } from 'react';
-
-// Icons
-function ChevronLeftIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M12.5 15L7.5 10L12.5 5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ChevronRightIcon() {
-  return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 20 20"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M7.5 15L12.5 10L7.5 5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-// Inline styles
-const styles: Record<string, React.CSSProperties> = {
-  calendar: {
-    backgroundColor: 'var(--rooom-bg-card, #ffffff)',
-    borderRadius: '0.75rem',
-    padding: '1rem',
-    border: '1px solid var(--rooom-border-color, #e5e5e5)',
-  },
-  header: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '1rem',
-  },
-  navButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '36px',
-    height: '36px',
-    border: '1px solid var(--rooom-border-color, #e5e5e5)',
-    borderRadius: '0.5rem',
-    backgroundColor: 'var(--rooom-bg-card, #ffffff)',
-    color: 'var(--rooom-text-primary, #1a1a1a)',
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-  },
-  navButtonDisabled: {
-    opacity: 0.4,
-    cursor: 'not-allowed',
-  },
-  title: {
-    fontSize: '1rem',
-    fontWeight: 600,
-    color: 'var(--rooom-text-primary, #1a1a1a)',
-    textTransform: 'capitalize',
-  },
-  weekdays: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)',
-    gap: '0.25rem',
-    marginBottom: '0.5rem',
-  },
-  weekday: {
-    fontSize: '0.75rem',
-    fontWeight: 500,
-    color: 'var(--rooom-text-muted, #9ca3af)',
-    textAlign: 'center',
-    padding: '0.5rem 0',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(7, 1fr)',
-    gap: '0.25rem',
-  },
-  dayButton: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    aspectRatio: '1',
-    border: 'none',
-    borderRadius: '0.5rem',
-    backgroundColor: 'transparent',
-    color: 'var(--rooom-text-primary, #1a1a1a)',
-    fontSize: '0.875rem',
-    fontWeight: 500,
-    cursor: 'pointer',
-    transition: 'all 0.15s ease',
-  },
-  dayOtherMonth: {
-    color: 'var(--rooom-text-muted, #9ca3af)',
-    opacity: 0.5,
-  },
-  dayToday: {
-    backgroundColor: 'var(--rooom-bg-muted, #f3f4f6)',
-    fontWeight: 700,
-  },
-  daySelected: {
-    backgroundColor: 'var(--rooom-accent-color, #3b82f6)',
-    color: '#ffffff',
-    fontWeight: 600,
-  },
-  dayDisabled: {
-    opacity: 0.3,
-    cursor: 'not-allowed',
-    pointerEvents: 'none' as const,
-  },
-};

@@ -1,7 +1,7 @@
 /* src/embed/embed.css - Rooom OS Booking Widget Styles */
 
 /* Font imports */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 /* ========================================
    CSS Custom Properties (Variables)
@@ -17,9 +17,9 @@
   --rooom-text-muted: #9ca3af;
   --rooom-border-color: #e5e7eb;
   --rooom-border-light: #f3f4f6;
-  --rooom-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --rooom-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --rooom-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --rooom-shadow-sm: none;
+  --rooom-shadow-md: none;
+  --rooom-shadow-lg: none;
   --rooom-success: #10b981;
   --rooom-success-bg: #ecfdf5;
   --rooom-error: #ef4444;
@@ -40,9 +40,9 @@
   --rooom-text-muted: #71717a;
   --rooom-border-color: #3f3f46;
   --rooom-border-light: #27272a;
-  --rooom-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --rooom-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  --rooom-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.4);
+  --rooom-shadow-sm: none;
+  --rooom-shadow-md: none;
+  --rooom-shadow-lg: none;
   --rooom-success: #34d399;
   --rooom-success-bg: #064e3b;
   --rooom-error: #f87171;
@@ -68,11 +68,11 @@
 .rooom-widget {
   background-color: var(--rooom-bg-primary);
   color: var(--rooom-text-primary);
-  border-radius: 12px;
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: var(--rooom-shadow-lg);
   max-width: 100%;
   min-height: 400px;
+  border: 1px solid var(--rooom-border-color);
 }
 
 .rooom-widget * {
@@ -88,7 +88,7 @@
    ======================================== */
 
 .rooom-heading-display {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-weight: 600;
 }
 
@@ -177,10 +177,10 @@
   font-size: 0.9375rem;
   font-weight: 500;
   line-height: 1;
-  border-radius: 8px;
+  border-radius: 4px;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 150ms ease;
   text-decoration: none;
   white-space: nowrap;
 }
@@ -203,12 +203,9 @@
 
 .rooom-btn-primary:hover:not(:disabled) {
   filter: brightness(1.1);
-  transform: translateY(-1px);
-  box-shadow: var(--rooom-shadow-md);
 }
 
 .rooom-btn-primary:active:not(:disabled) {
-  transform: translateY(0);
   filter: brightness(0.95);
 }
 
@@ -264,7 +261,7 @@
 /* Icon button */
 .rooom-btn-icon {
   padding: 8px;
-  border-radius: 50%;
+  border-radius: 4px;
 }
 
 .rooom-btn-icon svg {
@@ -285,8 +282,8 @@
   color: var(--rooom-text-primary);
   background-color: var(--rooom-bg-primary);
   border: 1px solid var(--rooom-border-color);
-  border-radius: 8px;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 4px;
+  transition: border-color 150ms ease;
 }
 
 .rooom-input::placeholder {
@@ -300,7 +297,6 @@
 .rooom-input:focus {
   outline: none;
   border-color: var(--accent-color, #6366f1);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
 }
 
 .rooom-input:disabled {
@@ -314,7 +310,7 @@
 }
 
 .rooom-input-error:focus {
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+  border-color: var(--rooom-error);
 }
 
 /* Input group */
@@ -390,9 +386,9 @@
 .rooom-card {
   background-color: var(--rooom-bg-primary);
   border: 1px solid var(--rooom-border-color);
-  border-radius: 12px;
+  border-radius: 4px;
   padding: 20px;
-  transition: all 0.2s ease;
+  transition: all 150ms ease;
 }
 
 .rooom-card-interactive {
@@ -401,14 +397,12 @@
 
 .rooom-card-interactive:hover {
   border-color: var(--rooom-text-muted);
-  box-shadow: var(--rooom-shadow-md);
-  transform: translateY(-2px);
+  background-color: var(--rooom-bg-secondary);
 }
 
 .rooom-card-selected {
   border-color: var(--accent-color, #6366f1);
-  border-width: 2px;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+  border-left: 3px solid var(--accent-color, #6366f1);
 }
 
 .rooom-card-selected:hover {
@@ -436,7 +430,7 @@
   width: 100%;
   height: 160px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 2px;
   margin-bottom: 12px;
 }
 
@@ -612,92 +606,111 @@
 .rooom-py-4 { padding-top: 16px; padding-bottom: 16px; }
 
 /* ========================================
-   Widget Header
+   Widget Header (flat breadcrumb style)
    ======================================== */
 
-.rooom-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.rooom-header-flat {
   padding: 16px 24px;
-  border-bottom: 1px solid var(--rooom-border-light);
-  background-color: var(--rooom-bg-secondary);
+  border-bottom: 1px solid var(--rooom-border-color);
+  background-color: var(--rooom-bg-primary);
 }
 
-.rooom-header-logo {
-  height: 32px;
-  width: auto;
-}
-
-.rooom-header-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0;
-}
-
-.rooom-header-nav {
+.rooom-header-studio {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
-/* Progress steps */
-.rooom-progress {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 24px;
-  background-color: var(--rooom-bg-secondary);
+.rooom-header-logo-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  object-fit: cover;
 }
 
-.rooom-progress-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.875rem;
-  color: var(--rooom-text-muted);
-}
-
-.rooom-progress-step-active {
-  color: var(--accent-color, #6366f1);
-  font-weight: 500;
-}
-
-.rooom-progress-step-completed {
-  color: var(--rooom-success);
-}
-
-.rooom-progress-step-number {
+.rooom-header-logo-placeholder {
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background-color: var(--accent-color, #6366f1);
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background-color: var(--rooom-bg-tertiary);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 
-.rooom-progress-step-active .rooom-progress-step-number {
-  background-color: var(--accent-color, #6366f1);
-  color: #ffffff;
+.rooom-header-studio-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--rooom-text-primary);
 }
 
-.rooom-progress-step-completed .rooom-progress-step-number {
-  background-color: var(--rooom-success);
-  color: #ffffff;
+/* Breadcrumb navigation */
+.rooom-breadcrumb-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0;
 }
 
-.rooom-progress-divider {
-  flex: 1;
-  height: 2px;
-  background-color: var(--rooom-border-color);
-  max-width: 40px;
+.rooom-breadcrumb-wrapper {
+  display: inline-flex;
+  align-items: center;
 }
 
-.rooom-progress-divider-completed {
-  background-color: var(--rooom-success);
+.rooom-breadcrumb-separator {
+  color: var(--rooom-text-muted);
+  font-size: 0.8125rem;
+  margin: 0 8px;
+  user-select: none;
+}
+
+.rooom-breadcrumb-item {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--rooom-text-muted);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: default;
+  font-family: inherit;
+  transition: color 150ms ease;
+}
+
+.rooom-breadcrumb-active {
+  font-weight: 600;
+  color: var(--accent-color, #6366f1);
+}
+
+.rooom-breadcrumb-past {
+  color: var(--rooom-text-secondary);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.rooom-breadcrumb-past:hover {
+  color: var(--accent-color, #6366f1);
+  text-decoration: underline;
+}
+
+.rooom-breadcrumb-future {
+  color: var(--rooom-text-muted);
+}
+
+/* Mobile: show only current step */
+@media (max-width: 480px) {
+  .rooom-breadcrumb-nav .rooom-breadcrumb-wrapper {
+    display: none;
+  }
+  .rooom-breadcrumb-nav .rooom-breadcrumb-wrapper:has(.rooom-breadcrumb-active) {
+    display: inline-flex;
+  }
+  .rooom-breadcrumb-nav .rooom-breadcrumb-wrapper:has(.rooom-breadcrumb-active) .rooom-breadcrumb-separator {
+    display: none;
+  }
 }
 
 /* ========================================
@@ -764,347 +777,748 @@
 }
 
 /* ========================================
-   Service Cards
+   Service List (vertical stacked)
    ======================================== */
 
-.rooom-service-card {
+.rooom-service-list-container {
+  padding: 0;
+}
+
+.rooom-service-list-heading {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--rooom-text-primary);
+  margin: 0 0 16px 0;
+}
+
+.rooom-service-list {
   display: flex;
   flex-direction: column;
 }
 
-.rooom-service-image {
+.rooom-service-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
-  height: 140px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  background-color: var(--rooom-bg-tertiary);
+  padding: 16px 0;
+  border: none;
+  border-bottom: 1px solid var(--rooom-border-color);
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: background-color 150ms ease;
+  gap: 16px;
 }
 
-.rooom-service-name {
-  font-size: 1rem;
+.rooom-service-row:first-child {
+  border-top: 1px solid var(--rooom-border-color);
+}
+
+.rooom-service-row:hover {
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-service-row-selected {
+  border-left: 3px solid var(--accent-color, #6366f1);
+  padding-left: 12px;
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-service-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rooom-service-row-name {
+  font-size: 0.9375rem;
   font-weight: 600;
-  margin-bottom: 4px;
+  color: var(--rooom-text-primary);
 }
 
-.rooom-service-description {
-  font-size: 0.875rem;
+.rooom-service-row-desc {
+  font-size: 0.8125rem;
   color: var(--rooom-text-secondary);
-  margin-bottom: 12px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  white-space: nowrap;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.rooom-service-price {
-  font-size: 1.125rem;
+.rooom-service-row-duration {
+  font-size: 0.75rem;
+  color: var(--rooom-text-muted);
+}
+
+.rooom-service-row-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.rooom-service-row-price {
+  font-size: 0.9375rem;
   font-weight: 600;
   color: var(--accent-color, #6366f1);
 }
 
-.rooom-service-price-unit {
-  font-size: 0.875rem;
-  font-weight: 400;
-  color: var(--rooom-text-muted);
-}
-
-.rooom-service-amenities {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
-}
-
-.rooom-amenity-tag {
+.rooom-service-row-btn {
   font-size: 0.75rem;
-  padding: 4px 8px;
-  background-color: var(--rooom-bg-tertiary);
-  border-radius: 4px;
-  color: var(--rooom-text-secondary);
+  color: var(--accent-color, #6366f1);
+  font-weight: 500;
+}
+
+.rooom-service-list-empty {
+  text-align: center;
+  color: var(--rooom-text-muted);
+  padding: 2rem;
+  font-size: 0.875rem;
 }
 
 /* ========================================
-   Calendar & Time Slots
+   Flat Calendar
    ======================================== */
 
-.rooom-calendar {
+.rooom-cal {
   background-color: var(--rooom-bg-primary);
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 4px;
+  padding: 16px;
 }
 
-.rooom-calendar-header {
+.rooom-cal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 0;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
-.rooom-calendar-title {
-  font-size: 1rem;
+.rooom-cal-title {
+  font-size: 0.9375rem;
   font-weight: 600;
+  color: var(--rooom-text-primary);
+  text-transform: capitalize;
 }
 
-.rooom-calendar-nav {
+.rooom-cal-nav-btn {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 4px;
+  background: var(--rooom-bg-primary);
+  color: var(--rooom-text-primary);
+  cursor: pointer;
+  font-size: 1.125rem;
+  transition: background-color 150ms ease;
+  font-family: inherit;
 }
 
-.rooom-calendar-weekdays {
+.rooom-cal-nav-btn:hover:not(:disabled) {
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-cal-nav-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rooom-cal-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: 8px;
+  gap: 2px;
+  margin-bottom: 4px;
 }
 
-.rooom-calendar-weekday {
+.rooom-cal-weekday {
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--rooom-text-muted);
   text-align: center;
-  padding: 8px 0;
+  padding: 6px 0;
 }
 
-.rooom-calendar-days {
+.rooom-cal-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 2px;
 }
 
-.rooom-calendar-day {
+.rooom-cal-day {
   aspect-ratio: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.875rem;
-  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background-color 150ms ease;
   border: none;
   background: none;
   color: var(--rooom-text-primary);
+  font-family: inherit;
 }
 
-.rooom-calendar-day:hover:not(:disabled) {
+.rooom-cal-day:hover:not(:disabled) {
   background-color: var(--rooom-bg-tertiary);
 }
 
-.rooom-calendar-day-today {
-  font-weight: 600;
-  color: var(--accent-color, #6366f1);
-}
-
-.rooom-calendar-day-selected {
-  background-color: var(--accent-color, #6366f1);
-  color: #ffffff;
-}
-
-.rooom-calendar-day-selected:hover {
-  background-color: var(--accent-color, #6366f1);
-}
-
-.rooom-calendar-day-disabled {
-  color: var(--rooom-text-muted);
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.rooom-calendar-day-other-month {
+.rooom-cal-day-other {
   color: var(--rooom-text-muted);
   opacity: 0.3;
 }
 
-/* Time slots */
-.rooom-time-slots {
-  margin-top: 24px;
+.rooom-cal-day-today {
+  font-weight: 700;
+  background-color: var(--rooom-bg-tertiary);
 }
 
-.rooom-time-slots-title {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--rooom-text-secondary);
-  margin-bottom: 12px;
-}
-
-.rooom-time-slots-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 8px;
-}
-
-.rooom-time-slot {
-  padding: 10px 12px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  text-align: center;
-  border: 1px solid var(--rooom-border-color);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  background-color: var(--rooom-bg-primary);
-  color: var(--rooom-text-primary);
-}
-
-.rooom-time-slot:hover:not(:disabled) {
-  border-color: var(--accent-color, #6366f1);
-  background-color: var(--rooom-bg-secondary);
-}
-
-.rooom-time-slot-selected {
+.rooom-cal-day-selected {
   background-color: var(--accent-color, #6366f1);
-  border-color: var(--accent-color, #6366f1);
   color: #ffffff;
 }
 
-.rooom-time-slot-unavailable {
-  opacity: 0.4;
+.rooom-cal-day-selected:hover {
+  background-color: var(--accent-color, #6366f1);
+}
+
+.rooom-cal-day-disabled {
+  opacity: 0.3;
   cursor: not-allowed;
-  text-decoration: line-through;
-}
-
-.rooom-time-slot-price {
-  font-size: 0.75rem;
-  color: var(--rooom-text-muted);
-  margin-top: 2px;
-}
-
-.rooom-time-slot-selected .rooom-time-slot-price {
-  color: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
 }
 
 /* ========================================
-   Booking Form
+   DateTime Layout (stacked)
    ======================================== */
 
-.rooom-form {
+.rooom-dt-container {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.rooom-form-section {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.rooom-form-section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.rooom-form-row {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
-}
-
-@media (max-width: 480px) {
-  .rooom-form-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.rooom-form-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.rooom-form-actions-stack {
-  flex-direction: column;
-}
-
-/* ========================================
-   Booking Summary
-   ======================================== */
-
-.rooom-summary {
-  background-color: var(--rooom-bg-secondary);
-  border-radius: 12px;
-  padding: 20px;
-}
-
-.rooom-summary-title {
-  font-size: 1rem;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-
-.rooom-summary-row {
-  display: flex;
-  justify-content: space-between;
+.rooom-dt-service-chip {
+  display: inline-flex;
   align-items: center;
-  padding: 8px 0;
-}
-
-.rooom-summary-label {
+  gap: 6px;
+  font-size: 0.8125rem;
   color: var(--rooom-text-secondary);
-  font-size: 0.875rem;
 }
 
-.rooom-summary-value {
-  font-weight: 500;
+.rooom-dt-chip-label {
+  color: var(--rooom-text-muted);
 }
 
-.rooom-summary-divider {
-  height: 1px;
-  background-color: var(--rooom-border-color);
-  margin: 12px 0;
-}
-
-.rooom-summary-total {
-  font-size: 1.125rem;
+.rooom-dt-chip-name {
   font-weight: 600;
-}
-
-.rooom-summary-total .rooom-summary-value {
   color: var(--accent-color, #6366f1);
 }
 
+.rooom-dt-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rooom-dt-section-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--rooom-text-primary);
+  margin: 0;
+}
+
+.rooom-dt-date-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--rooom-text-primary);
+  text-transform: capitalize;
+  padding-bottom: 4px;
+}
+
+.rooom-dt-error {
+  text-align: center;
+  padding: 24px;
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 4px;
+}
+
+.rooom-dt-error-text {
+  font-size: 0.875rem;
+  color: var(--rooom-error);
+  margin: 0 0 12px 0;
+}
+
+.rooom-dt-retry-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--accent-color, #6366f1);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--accent-color, #6366f1);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 150ms ease;
+}
+
+.rooom-dt-retry-btn:hover {
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-dt-placeholder {
+  text-align: center;
+  padding: 32px 16px;
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 4px;
+}
+
+.rooom-dt-placeholder-text {
+  font-size: 0.875rem;
+  color: var(--rooom-text-muted);
+  margin: 0;
+}
+
 /* ========================================
-   Confirmation
+   Time Slots (vertical list)
    ======================================== */
 
-.rooom-confirmation {
-  text-align: center;
-  padding: 32px 24px;
+.rooom-slots-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.rooom-confirmation-icon {
-  width: 64px;
-  height: 64px;
-  margin: 0 auto 24px;
-  color: var(--rooom-success);
-}
-
-.rooom-confirmation-title {
-  font-size: 1.5rem;
+.rooom-slots-heading {
+  font-size: 0.9375rem;
   font-weight: 600;
-  margin-bottom: 8px;
+  color: var(--rooom-text-primary);
+  margin: 0;
 }
 
-.rooom-confirmation-message {
-  color: var(--rooom-text-secondary);
-  margin-bottom: 24px;
+.rooom-slots-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 320px;
+  overflow-y: auto;
 }
 
-.rooom-confirmation-reference {
-  display: inline-block;
-  padding: 12px 24px;
+.rooom-slot-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-bottom: 1px solid var(--rooom-border-color);
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 150ms ease;
+}
+
+.rooom-slot-row:first-child {
+  border-top: 1px solid var(--rooom-border-color);
+}
+
+.rooom-slot-row:hover {
   background-color: var(--rooom-bg-secondary);
-  border-radius: 8px;
-  font-family: monospace;
+}
+
+.rooom-slot-row-selected {
+  background-color: var(--accent-color, #6366f1);
+  color: #ffffff;
+}
+
+.rooom-slot-row-selected:hover {
+  background-color: var(--accent-color, #6366f1);
+}
+
+.rooom-slot-time {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.rooom-slot-price {
+  font-size: 0.8125rem;
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-slot-price-selected {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.rooom-slots-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  gap: 12px;
+}
+
+.rooom-slots-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--rooom-border-color);
+  border-top-color: var(--accent-color, #6366f1);
+  border-radius: 50%;
+  animation: rooom-spin 0.8s linear infinite;
+}
+
+.rooom-slots-loading-text {
+  font-size: 0.8125rem;
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-slots-empty {
+  text-align: center;
+  padding: 24px;
+}
+
+.rooom-slots-empty-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--rooom-text-primary);
+  margin: 0 0 4px 0;
+}
+
+.rooom-slots-empty-sub {
+  font-size: 0.75rem;
+  color: var(--rooom-text-muted);
+  margin: 0;
+}
+
+.rooom-slots-unavailable {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rooom-border-color);
+}
+
+.rooom-slots-unavailable-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--rooom-text-muted);
+  margin: 0 0 8px 0;
+}
+
+.rooom-slot-row-unavailable {
+  padding: 8px 16px;
+  opacity: 0.4;
+}
+
+.rooom-slot-time-unavailable {
+  font-size: 0.8125rem;
+  color: var(--rooom-text-muted);
+  text-decoration: line-through;
+}
+
+/* ========================================
+   Booking Form (flat)
+   ======================================== */
+
+.rooom-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rooom-form-banner {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--rooom-text-secondary);
+  padding: 12px 16px;
+  background-color: var(--rooom-bg-secondary);
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 4px;
+  text-transform: capitalize;
+}
+
+.rooom-form-flat {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rooom-form-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--rooom-text-primary);
+  margin: 0;
+}
+
+.rooom-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rooom-form-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--rooom-text-primary);
+}
+
+.rooom-form-required {
+  color: var(--rooom-error);
+}
+
+.rooom-form-optional {
+  font-weight: 400;
+  color: var(--rooom-text-muted);
+}
+
+.rooom-form-input {
+  font-family: inherit;
+  font-size: 0.9375rem;
+  padding: 10px 12px;
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 4px;
+  background-color: var(--rooom-bg-primary);
+  color: var(--rooom-text-primary);
+  outline: none;
+  transition: border-color 150ms ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.rooom-form-input::placeholder {
+  color: var(--rooom-text-muted);
+}
+
+.rooom-form-input:focus {
+  border-color: var(--accent-color, #6366f1);
+}
+
+.rooom-form-input:disabled {
+  opacity: 0.5;
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-form-input-error {
+  border-color: var(--rooom-error);
+}
+
+.rooom-form-textarea {
+  font-family: inherit;
+  font-size: 0.9375rem;
+  padding: 10px 12px;
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 4px;
+  background-color: var(--rooom-bg-primary);
+  color: var(--rooom-text-primary);
+  outline: none;
+  transition: border-color 150ms ease;
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.rooom-form-textarea:focus {
+  border-color: var(--accent-color, #6366f1);
+}
+
+.rooom-form-error {
+  font-size: 0.75rem;
+  color: var(--rooom-error);
+}
+
+.rooom-form-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rooom-form-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.rooom-form-checkbox {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--accent-color, #6366f1);
+  cursor: pointer;
+}
+
+.rooom-form-checkbox-text {
+  font-size: 0.8125rem;
+  color: var(--rooom-text-secondary);
+  line-height: 1.5;
+}
+
+.rooom-form-link {
+  color: var(--accent-color, #6366f1);
+  text-decoration: underline;
+}
+
+.rooom-form-submit {
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  padding: 12px;
+  background-color: var(--accent-color, #6366f1);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: filter 150ms ease;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.rooom-form-submit:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.rooom-form-submit-loading {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ========================================
+   Confirmation (flat)
+   ======================================== */
+
+.rooom-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 8px 0;
+}
+
+.rooom-confirm-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--rooom-success);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.rooom-confirm-title {
   font-size: 1.25rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
-  margin-bottom: 24px;
+  color: var(--rooom-text-primary);
+  margin: 0 0 12px 0;
 }
 
-.rooom-confirmation-details {
+.rooom-confirm-ref {
+  font-family: monospace;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent-color, #6366f1);
+  letter-spacing: 0.08em;
+  padding: 8px 16px;
+  background-color: var(--rooom-bg-secondary);
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.rooom-confirm-summary {
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--rooom-border-color);
+  border-radius: 4px;
+  padding: 4px 16px;
+  margin-bottom: 20px;
   text-align: left;
-  margin-top: 24px;
+}
+
+.rooom-confirm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.rooom-confirm-label {
+  font-size: 0.8125rem;
+  color: var(--rooom-text-secondary);
+}
+
+.rooom-confirm-value {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--rooom-text-primary);
+  text-align: right;
+}
+
+.rooom-confirm-total {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.rooom-confirm-divider {
+  height: 1px;
+  background-color: var(--rooom-border-color);
+}
+
+/* Calendar links */
+.rooom-confirm-cal-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.rooom-confirm-cal-btn {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--accent-color, #6366f1);
+  border: 1px solid var(--accent-color, #6366f1);
+  border-radius: 4px;
+  padding: 6px 12px;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+  font-family: inherit;
+}
+
+.rooom-confirm-cal-btn:hover {
+  background-color: var(--rooom-bg-secondary);
+}
+
+.rooom-confirm-email {
+  font-size: 0.8125rem;
+  color: var(--rooom-text-muted);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.rooom-confirm-new-btn {
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  padding: 10px 24px;
+  color: var(--accent-color, #6366f1);
+  background: none;
+  border: 1px solid var(--accent-color, #6366f1);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+  width: 100%;
+  max-width: 400px;
+}
+
+.rooom-confirm-new-btn:hover {
+  background-color: var(--rooom-bg-secondary);
 }
 
 /* ========================================
@@ -1116,7 +1530,7 @@
   align-items: flex-start;
   gap: 12px;
   padding: 16px;
-  border-radius: 8px;
+  border-radius: 4px;
 }
 
 .rooom-alert-icon {
@@ -1268,15 +1682,15 @@
 }
 
 .rooom-animate-fade-in {
-  animation: rooom-fade-in 0.2s ease-out;
+  animation: rooom-fade-in 150ms ease-out;
 }
 
 .rooom-animate-slide-up {
-  animation: rooom-slide-up 0.3s ease-out;
+  animation: rooom-slide-up 150ms ease-out;
 }
 
 .rooom-animate-scale-in {
-  animation: rooom-scale-in 0.2s ease-out;
+  animation: rooom-scale-in 150ms ease-out;
 }
 
 /* ========================================
@@ -1285,10 +1699,10 @@
 
 @media (max-width: 480px) {
   .rooom-content {
-    padding: 16px;
+    padding: 12px;
   }
 
-  .rooom-header {
+  .rooom-header-flat {
     padding: 12px 16px;
   }
 
@@ -1298,6 +1712,11 @@
 
   .rooom-heading-2 {
     font-size: 1.25rem;
+  }
+
+  .rooom-confirm-cal-links {
+    flex-direction: column;
+    align-items: center;
   }
 }
 

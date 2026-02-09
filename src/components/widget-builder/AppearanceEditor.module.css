@@ -117,3 +117,108 @@
   background-color: var(--accent-primary);
   transition: border-radius var(--duration-fast) var(--ease-default);
 }
+
+/* Color Palettes */
+.palettesRow {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.paletteItem {
+  width: 40px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all var(--duration-fast) var(--ease-default);
+}
+
+.paletteItem:hover {
+  transform: scale(1.1);
+  border-color: var(--accent-primary);
+}
+
+.paletteBar {
+  flex: 1;
+}
+
+/* Contrast Badge */
+.contrastRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.contrastBadge {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+
+.contrastBadgePass {
+  background-color: var(--state-success-bg);
+  color: var(--state-success);
+}
+
+.contrastBadgeWarn {
+  background-color: var(--state-warning-bg);
+  color: var(--state-warning);
+}
+
+.contrastBadgeFail {
+  background-color: var(--state-error-bg);
+  color: var(--state-error);
+}
+
+.contrastRatio {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* Mode Cards */
+.modeCards {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.modeCard {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-default);
+  background: transparent;
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.modeCard:hover {
+  border-color: var(--border-strong);
+}
+
+.modeCardActive {
+  border-color: var(--accent-primary);
+  border-width: 2px;
+}
+
+.modeIcon {
+  font-size: var(--text-lg);
+  line-height: 1;
+}
+
+.modeLabel {
+  font-size: var(--text-xs);
+  font-weight: 500;
+}

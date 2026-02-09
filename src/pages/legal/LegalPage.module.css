@@ -1,0 +1,139 @@
+/* Rooom OS — Legal Pages (Privacy, Terms) */
+
+.legalPage {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 48px 120px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.legalHero {
+  grid-column: 1 / -1;
+  margin-bottom: 24px;
+}
+
+.legalEyebrow {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-tertiary);
+  margin: 0 0 16px 0;
+}
+
+.legalTitle {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: clamp(36px, 5vw, 56px);
+  font-weight: 400;
+  color: var(--text-primary);
+  line-height: 1.1;
+  margin: 0 0 12px 0;
+}
+
+.legalDate {
+  font-size: 14px;
+  font-weight: 300;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Table of Contents */
+.toc {
+  position: sticky;
+  top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tocTitle {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+}
+
+.tocLink {
+  font-size: 13px;
+  font-weight: 300;
+  color: var(--text-tertiary);
+  text-decoration: none;
+  padding: 6px 0;
+  border-left: 2px solid transparent;
+  padding-left: 12px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.tocLink:hover {
+  color: var(--text-primary);
+  border-left-color: var(--text-primary);
+}
+
+/* Content */
+.legalContent {
+  max-width: 720px;
+}
+
+.legalSection {
+  margin-bottom: 48px;
+  scroll-margin-top: 96px;
+}
+
+.sectionTitle {
+  font-family: 'Bodoni Moda', Georgia, serif;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+  line-height: 1.2;
+}
+
+.sectionText {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin: 0 0 16px 0;
+}
+
+.sectionText:last-child {
+  margin-bottom: 0;
+}
+
+.sectionList {
+  font-size: 15px;
+  font-weight: 300;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  padding-left: 24px;
+  margin: 0 0 16px 0;
+}
+
+.sectionList li {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 768px) {
+  .legalPage {
+    grid-template-columns: 1fr;
+    padding: 48px 20px 80px;
+    gap: 0;
+  }
+
+  .toc {
+    position: static;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 24px;
+    margin-bottom: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tocLink { transition: none; }
+}

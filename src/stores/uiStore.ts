@@ -93,8 +93,8 @@ export const useUIStore = create<UIState>()(
       sidebarCollapsed: false,
       sidebarMobileOpen: false,
 
-      // Initial theme
-      theme: 'system',
+      // Initial theme - default to light to avoid unexpected dark mode
+      theme: 'light',
 
       // Initial modals
       openModals: [],
@@ -136,8 +136,11 @@ export const useUIStore = create<UIState>()(
           } else if (theme === 'light') {
             root.setAttribute('data-theme', 'light');
           } else {
-            // 'system' - remove attribute, let CSS @media handle it
-            root.removeAttribute('data-theme');
+            // 'system' - detect OS preference and apply via JS
+            const prefersDark =
+              typeof window !== 'undefined' &&
+              window.matchMedia('(prefers-color-scheme: dark)').matches;
+            root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
           }
         }
       },
