@@ -50,6 +50,7 @@ const Landing = lazy(() => import('./pages/Landing').then(m => ({ default: m.Lan
 
 // Public pages
 const Features = lazy(() => import('./pages/Features').then(m => ({ default: m.Features })));
+const Agents = lazy(() => import('./pages/Agents').then(m => ({ default: m.Agents })));
 const Pricing = lazy(() => import('./pages/Pricing').then(m => ({ default: m.Pricing })));
 const Contact = lazy(() => import('./pages/Contact').then(m => ({ default: m.Contact })));
 const About = lazy(() => import('./pages/About').then(m => ({ default: m.About })));
@@ -81,6 +82,7 @@ function App() {
                   <Route element={<PublicLayout />}>
                     <Route path="/" element={<Landing />} />
                     <Route path="/features" element={<Features />} />
+                    <Route path="/agents" element={<Agents />} />
                     <Route path="/pricing" element={<Pricing />} />
                     <Route path="/contact" element={<Contact />} />
                     <Route path="/about" element={<About />} />

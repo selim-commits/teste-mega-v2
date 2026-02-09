@@ -5,6 +5,7 @@ import styles from './PublicLayout.module.css';
 
 const NAV_LINKS = [
   { to: '/features', label: 'Fonctionnalites' },
+  { to: '/agents', label: 'Agents IA' },
   { to: '/pricing', label: 'Tarifs' },
   { to: '/about', label: 'A propos' },
   { to: '/contact', label: 'Contact' },
@@ -29,7 +30,7 @@ export function PublicHeader() {
             {link.label}
           </Link>
         ))}
-        <div className={styles.publicNavActions}>
+        <div className={styles.publicNavActionsMobile}>
           <button className={styles.publicNavLogin} onClick={() => { navigate('/login'); setMobileOpen(false); }}>
             Connexion
           </button>
@@ -38,6 +39,15 @@ export function PublicHeader() {
           </button>
         </div>
       </nav>
+
+      <div className={styles.publicHeaderActions}>
+        <button className={styles.publicNavLogin} onClick={() => navigate('/login')}>
+          Connexion
+        </button>
+        <button className={styles.publicNavCta} onClick={() => navigate('/signup')}>
+          Commencer
+        </button>
+      </div>
 
       <button
         className={styles.mobileMenuBtn}
