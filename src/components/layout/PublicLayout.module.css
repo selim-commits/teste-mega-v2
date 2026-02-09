@@ -26,8 +26,9 @@
   height: 72px;
   background: var(--bg-primary);
   border-bottom: 1px solid var(--border-subtle);
-  backdrop-filter: blur(12px);
-  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255, 255, 255, 0.95);
 }
 
 .publicLogo {
@@ -234,10 +235,12 @@
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     z-index: 49;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   .publicNavOpen {
-    transform: translateX(0);
+    transform: none;
   }
 
   .publicNavLink {

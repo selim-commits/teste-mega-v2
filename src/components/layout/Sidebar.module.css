@@ -426,10 +426,12 @@
     transition: transform var(--duration-slow) var(--ease-default);
     z-index: 100;
     width: 300px;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
   }
 
   .sidebarOpen {
-    transform: translateX(0);
+    transform: none;
   }
 
   .closeBtn {
