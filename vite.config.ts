@@ -19,6 +19,7 @@ export default defineConfig({
       }) as PluginOption),
   ],
   build: {
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
@@ -42,5 +43,8 @@ export default defineConfig({
         },
       },
     },
+  },
+  esbuild: {
+    drop: process.env.NODE_ENV === 'production' ? ['console', 'debugger'] : [],
   },
 })
