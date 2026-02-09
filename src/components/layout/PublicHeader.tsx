@@ -30,7 +30,7 @@ export function PublicHeader() {
             {link.label}
           </Link>
         ))}
-        <div className={styles.publicNavActionsMobile}>
+        <div className={styles.mobileActions}>
           <button className={styles.publicNavLogin} onClick={() => { navigate('/login'); setMobileOpen(false); }}>
             Connexion
           </button>
@@ -40,7 +40,7 @@ export function PublicHeader() {
         </div>
       </nav>
 
-      <div className={styles.publicHeaderActions}>
+      <div className={styles.desktopActions}>
         <button className={styles.publicNavLogin} onClick={() => navigate('/login')}>
           Connexion
         </button>

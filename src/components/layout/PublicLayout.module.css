@@ -66,7 +66,7 @@
 }
 
 /* Desktop header actions (right side) */
-.publicHeaderActions {
+.desktopActions {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -75,7 +75,7 @@
 }
 
 /* Mobile-only actions inside the nav overlay */
-.publicNavActionsMobile {
+.mobileActions {
   display: none;
 }
 
@@ -212,7 +212,7 @@
     height: 64px;
   }
 
-  .publicHeaderActions {
+  .desktopActions {
     display: none;
   }
 
@@ -249,7 +249,7 @@
     border-bottom: 1px solid var(--border-subtle);
   }
 
-  .publicNavActionsMobile {
+  .mobileActions {
     display: flex;
     flex-direction: column;
     margin-top: 24px;
